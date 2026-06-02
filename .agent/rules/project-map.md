@@ -29,10 +29,11 @@ The demo loop is:
 
 ## Current Architecture Boundary
 
-- Use a single RuoYi backend process on `8081`.
-- Use a single RuoYi Vue3 frontend process on `8082`.
-- Use local MySQL and Redis.
-- Do not add Docker, Nacos, Gateway, or service splitting for the current demo.
+- `main` is the local PM2 demo branch and must remain stable for course defense.
+- The final course architecture is a lightweight distributed system: Nacos, Gateway, OpenFeign, Redis, RabbitMQ, MinIO, Actuator, Vue3, and WeChat mini program.
+- Use local MySQL and Redis; keep database splitting optional.
+- Docker Compose belongs to the `deploy/docker-compose` branch and is not the primary local demo path.
+- Use PM2 for long-running local services and avoid loose background processes.
 
 ## Known Risk Areas
 
@@ -41,3 +42,4 @@ The demo loop is:
 - Legacy names such as `Dish`, `Setmeal`, `sky`, `itcast`, and `itheima` remain.
 - Some mini program text and asset names still expose the original catering project.
 - Business interfaces are mounted inside RuoYi but are not yet deeply integrated with RuoYi menu and permission conventions.
+- Microservice splitting should stay lightweight and course-demo oriented; avoid production-grade multi-database complexity before the local demo is stable.
