@@ -1,0 +1,136 @@
+{
+  "sprint_id": "S01",
+  "title": "GreenFruit Demo Stabilization",
+    "last_updated": "2026-06-02 08:51",
+  "objective": "Make the GreenFruit course project credible and locally demo-ready on the RuoYi Vue3 and Spring Boot stack.",
+  "scope_boundary": [
+    "No Docker",
+    "No microservice splitting",
+    "Use PM2 for long-running local services",
+    "Treat Vue2 admin as migration reference only"
+  ],
+  "key_results": [
+    {
+      "id": "S01-KR1",
+      "text": "Services are managed by PM2 and can restart without unmanaged zombie processes."
+    },
+    {
+      "id": "S01-KR2",
+      "text": "RuoYi Vue3 admin shows GreenFruit business pages."
+    },
+    {
+      "id": "S01-KR3",
+      "text": "Mini program demo flow works through mock WeChat login and mock payment."
+    },
+    {
+      "id": "S01-KR4",
+      "text": "Visible legacy Sky Take Out traces are reduced."
+    },
+    {
+      "id": "S01-KR5",
+      "text": "Demo secrets are removed or masked."
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "S01-T01",
+      "title": "Establish local agent rules and PM2 governance",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "S01-T01-STEP01",
+          "action": "create_agent_rules",
+          "target_files": [
+            ".agent/rules/ralph-execution-framework.md",
+            ".agent/rules/project-map.md",
+            ".agent/rules/security.md",
+            ".agent/workflows/local-demo-smoke-test.md",
+            "ecosystem.config.cjs",
+            "start-all-services.sh"
+          ],
+          "verification": [
+            "bash -n start-all-services.sh",
+            "pm2 list",
+            "curl --noproxy '*' -sS http://127.0.0.1:8081/captchaImage",
+            "curl --noproxy '*' -sS http://127.0.0.1:8082/"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S01-T02",
+      "title": "Fix API encoding and shop status initialization blockers",
+      "status": "done",
+      "steps": [
+        {
+          "step_id": "S01-T02-STEP01",
+          "action": "diagnose_and_fix_encoding",
+          "target_area": "ruoyi-vue-lgg-backend",
+          "verification": "User/category API returns readable Chinese fruit category names."
+        },
+        {
+          "step_id": "S01-T02-STEP02",
+          "action": "initialize_shop_status_safely",
+          "target_area": "ruoyi-business shop controllers",
+          "verification": "/user/shop/status returns {code:1,data:1} after clean startup."
+        }
+      ]
+    },
+        {
+            "task_id": "S01-T03",
+            "title": "Add GreenFruit menus and minimal Vue3 business pages",
+            "status": "done",
+      "steps": [
+        {
+          "step_id": "S01-T03-STEP01",
+          "status": "done",
+          "action": "add_admin_api_clients",
+          "target_area": "ruoyi-vue-lgg-frontend/src/api/business",
+          "verification": "Frontend build passes."
+        },
+        {
+          "step_id": "S01-T03-STEP02",
+                    "status": "done",
+                    "action": "add_minimal_business_views",
+                    "target_area": "ruoyi-vue-lgg-frontend/src/views/business",
+                    "verification": "Frontend production build passes and business components exist under src/views/business."
+                },
+                {
+                    "step_id": "S01-T03-STEP03",
+                    "status": "done",
+                    "action": "fix_business_menu_encoding",
+                    "target_area": "sys_menu and ruoyi-vue-lgg-backend/sql/lgg_business_menu.sql",
+                    "verification": "sys_menu returns readable GreenFruit menu names and admin role has menu_id 2000-2005."
+                },
+                {
+                    "step_id": "S01-T03-STEP04",
+                    "status": "done",
+                    "action": "replace_stock_home_dashboard",
+                    "target_area": "ruoyi-vue-lgg-frontend/src/views/index.vue and visible login/navbar entry points",
+                    "verification": "Frontend production build passes and default RuoYi login title/source/doc links no longer appear in active UI."
+                },
+                {
+                    "step_id": "S01-T03-STEP05",
+                    "status": "done",
+                    "action": "repair_database_mojibake",
+                    "target_area": "lgg_ruoyi RuoYi initialization tables and ruoyi-vue-lgg-backend/sql/lgg_fix_mojibake.sql",
+                    "verification": "Full database text-column mojibake scan returns zero rows; menu/config/dict samples show readable Chinese; PM2 frontend/backend are online."
+                }
+            ]
+        },
+        {
+            "task_id": "S01-T04",
+            "title": "Clean visible mini program legacy text and project identity",
+            "status": "done",
+            "steps": [
+                {
+                    "step_id": "S01-T04-STEP01",
+                    "status": "done",
+                    "action": "replace_visible_legacy_copy",
+                    "target_area": "mp-weixin pages/components/common bundle",
+                    "verification": "No visible 苍穹/黑马/itcast/itheima/外卖/菜品/餐具/备餐 text remains in mp-weixin pages, components, common bundle, or project config."
+                }
+            ]
+        }
+    ]
+}
