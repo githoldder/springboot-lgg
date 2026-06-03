@@ -7,8 +7,8 @@ from pathlib import Path
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[2]
-INPUT_DIR = ROOT / "00-input-sources"
-OUTPUT_DIR = ROOT / "01-text-workbench" / "00-extracted-sources"
+INPUT_DIR = ROOT / "01-resource"
+OUTPUT_DIR = ROOT / "02-process" / "data" / "extracted-sources"
 
 
 def normalize_text(text: str) -> str:
@@ -53,6 +53,28 @@ def should_skip(path: Path) -> bool:
     return path.suffix.lower() not in {".docx", ".pdf", ".md"}
 
 
+def source_key(path: Path) -> str:
+    relative = path.relative_to(INPUT_DIR)
+    stem = str(relative.with_suffix(""))
+    stem = re.sub(r"^[0-9]{2}-", "", stem)
+    return stem
+
+
+def prefer_pdf_sources(paths: list[Path]) -> list[Path]:
+    grouped: dict[str, list[Path]] = {}
+    for path in paths:
+        grouped.setdefault(source_key(path), []).append(path)
+
+    selected: list[Path] = []
+    for items in grouped.values():
+        pdfs = [p for p in items if p.suffix.lower() == ".pdf"]
+        if pdfs:
+            selected.extend(pdfs)
+        else:
+            selected.extend(items)
+    return sorted(selected)
+
+
 def output_name(path: Path, index: int) -> str:
     relative = path.relative_to(INPUT_DIR)
     safe = re.sub(r"[^\w\u4e00-\u9fff.-]+", "_", str(relative.with_suffix("")))
@@ -62,9 +84,15 @@ def output_name(path: Path, index: int) -> str:
 
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    sources = [p for p in sorted(INPUT_DIR.rglob("*")) if p.is_file() and not should_skip(p)]
+    raw_sources = [p for p in sorted(INPUT_DIR.rglob("*")) if p.is_file() and not should_skip(p)]
+    sources = prefer_pdf_sources(raw_sources)
 
-    manifest: list[str] = ["原始材料纯文本抽取清单", ""]
+    manifest: list[str] = [
+        "原始材料纯文本抽取清单",
+        "",
+        "规则：同一材料同时存在 docx 和 pdf 时，优先抽取 pdf；pdf 文本保留 --- PAGE n --- 页码标注。",
+        "",
+    ]
     for index, path in enumerate(sources, start=1):
         suffix = path.suffix.lower()
         if suffix == ".docx":

@@ -6,19 +6,19 @@ Word 手工粘贴脚本
 步骤：
 
 1. 打开最终交付目录：
-   docs/02-final-delivery/reports/第五组/
+   docs/03-report/reports/第五组/
 
 2. 打开设计报告 Word：
-   22软一-第五组-springboot-lgg-设计报告.docx
+   23软一-第五组-springboot-lgg-设计报告.docx
 
 3. 打开 txt 母版：
-   docs/01-text-workbench/01-report-txt/00-report-master.txt
+   docs/02-process/document/report-txt/00-report-master.txt
 
 4. 按章节复制正文到 Word：
    封面 -> 摘要 -> Abstract -> 目录 -> 第 1 章 -> 第 2 章 -> 第 3 章 -> 第 4 章 -> 第 5 章 -> 第 6 章。
 
 5. 遇到截图占位符时：
-   查看 docs/01-text-workbench/03-screenshot-placeholders/screenshot-checklist.txt
+   查看 docs/02-process/Figure/screenshot-checklist.txt
    按编号手动截图，粘贴到 Word 对应位置。
 
 6. 每张截图下方添加题注：
