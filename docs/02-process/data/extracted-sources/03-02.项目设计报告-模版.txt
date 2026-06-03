@@ -1,0 +1,71 @@
+来源文件: 01-resource/02.项目设计报告-模版.docx
+文件类型: .docx
+========================================================================
+
+4890135-212090KC021-1
+KC021-1
+
+173355099060
+
+CHANGZHOU   INSTITUTE   OF   TECHNOLOGY
+课程大作业说明书
+课程名：   分布式应用开发技术 (Q)    
+题  目：                         
+	
+二级学院： 计算机信息工程学院 
+	
+专    业：       软件工程      
+	
+班    级：                           
+	
+学号姓名：                           
+	
+                           
+	
+                           
+	
+指导教师：           江亮            
+	
+
+2026 年 6 月
+题目
+摘 要
+     
+
+关键词：
+Title
+Abstract
+
+Keywords: 
+目 录
+		 TOC \o "1-3" \h \z \u  HYPERLINK \l "_Toc201237324" 第 1 章	引言	 PAGEREF _Toc201237324 \h 3
+		 HYPERLINK \l "_Toc201237325" 1.1	项目目的	 PAGEREF _Toc201237325 \h 3
+		 HYPERLINK \l "_Toc201237326" 1.2	本文组织结构	 PAGEREF _Toc201237326 \h 3
+		 HYPERLINK \l "_Toc201237327" 第 2 章	相关技术概述	 PAGEREF _Toc201237327 \h 4
+		 HYPERLINK \l "_Toc201237339" 第 3 章	系统分析设计	 PAGEREF _Toc201237339 \h 5
+		 HYPERLINK \l "_Toc201237347" 第 4 章	项目测试	 PAGEREF _Toc201237347 \h 6
+		 HYPERLINK \l "_Toc201237354" 第 5 章	总结与展望	 PAGEREF _Toc201237354 \h 错误！未定义书签。
+		
+	 HYPERLINK \l "_Toc201237360" 致 谢	 PAGEREF _Toc201237360 \h 7
+	 HYPERLINK \l "_Toc201237361" 参考文献	 PAGEREF _Toc201237361 \h 8
+	
+引言
+项目目的
+
+本文组织结构
+
+相关技术概述
+
+系统分析设计
+需求分析
+可行性分析
+项目系统架构 。
+项目设计
+本章小结
+项目测试
+
+总结与展望
+致 谢
+感谢在整个大作业完成过程中给予帮助的个人和单位。包括学术上、生活上、情感上的支持。
+ ADDIN NE.Bib
+参考文献

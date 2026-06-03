@@ -1,0 +1,13 @@
+原始材料纯文本抽取清单
+
+规则：同一材料同时存在 docx 和 pdf 时，优先抽取 pdf；pdf 文本保留 --- PAGE n --- 页码标注。
+
+01. 01-resource/00.分布式应用技术课程大作业指导书(2026).docx -> 02-process/data/extracted-sources/01-00.分布式应用技术课程大作业指导书_2026.txt
+02. 01-resource/01.答辩记录.docx -> 02-process/data/extracted-sources/02-01.答辩记录.txt
+03. 01-resource/02.项目设计报告-模版.docx -> 02-process/data/extracted-sources/03-02.项目设计报告-模版.txt
+04. 01-resource/03.项目设计报告参考模板.docx -> 02-process/data/extracted-sources/04-03.项目设计报告参考模板.txt
+05. 01-resource/04.参考模板/第八组/22软一-22030309-黄哲-答辩记录.pdf -> 02-process/data/extracted-sources/05-04.参考模板_第八组_22软一-22030309-黄哲-答辩记录.txt
+06. 01-resource/04.参考模板/第八组/22软一-22030313-李远志-答辩记录.pdf -> 02-process/data/extracted-sources/06-04.参考模板_第八组_22软一-22030313-李远志-答辩记录.txt
+07. 01-resource/04.参考模板/第八组/22软一-22030314-刘骐玮-答辩记录.pdf -> 02-process/data/extracted-sources/07-04.参考模板_第八组_22软一-22030314-刘骐玮-答辩记录.txt
+08. 01-resource/04.参考模板/第八组/22软一-第八组-项目名-设计报告.pdf -> 02-process/data/extracted-sources/08-04.参考模板_第八组_22软一-第八组-项目名-设计报告.txt
+09. 01-resource/大作业提交说明(重要)/分布式应用技术大作业提交说明.md -> 02-process/data/extracted-sources/09-大作业提交说明_重要_分布式应用技术大作业提交说明.txt
