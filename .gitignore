@@ -19,11 +19,15 @@ upload/
 uploads/
 pm2.log
 
+docs/00-input-sources/**/.~*
+docs/00-input-sources/**/~$*
 docs/01-references/**/.~*
 docs/01-references/**/~$*
 
 # Local-only references and legacy migration material
+docs/00-input-sources/
 docs/01-references/
+docs/01-text-workbench/00-extracted-sources/
 plan/
 asserts/
 context/

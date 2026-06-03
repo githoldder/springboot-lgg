@@ -1,0 +1,236 @@
+第五组项目设计报告纯文本母版
+
+使用说明：
+1. 本文件作为 Word 报告正文粘贴母版。
+2. 每次修改报告内容，优先修改本 txt。
+3. 遇到 [截图占位符: Sxx-名称] 时，按 screenshot-checklist.txt 手动截图并粘贴到 Word。
+4. Word 中的封面、目录、页眉页脚、题注和页码由人工按模板调整。
+
+========================================================================
+
+课程名：分布式应用开发技术(Q)
+题目：基于 Spring Boot 与 Spring Cloud Alibaba 的绿果果生鲜分布式运营系统设计与实现
+二级学院：计算机信息工程学院
+专业：软件工程
+班级：22 软件一
+组别：第五组
+学号姓名：
+  待填学号  待填姓名
+  待填学号  待填姓名
+  待填学号  待填姓名
+指导教师：江亮
+日期：2026 年 6 月
+
+========================================================================
+
+摘 要
+
+本项目围绕生鲜水果零售与配送场景，设计并实现了一个基于 Spring Boot 与 Spring Cloud Alibaba 的绿果果生鲜分布式运营系统。系统采用前后端分离与轻量微服务架构，管理端基于 RuoYi Vue3 与 Element Plus 实现，后端以 Spring Boot 为基础，结合 Nacos、Gateway、OpenFeign、Redis、RabbitMQ、MinIO、WebSocket 等技术完成服务治理、统一网关、服务调用、缓存、异步通知、对象存储和实时提醒等功能。
+
+系统主要包括后台管理端、微信小程序端、统一网关、业务服务、支付服务和通知服务等模块。后台管理端支持水果分类管理、水果品种管理、订单管理和运营数据展示；微信小程序端支持用户浏览、下单与模拟支付；后端通过支付成功事件驱动订单状态更新和包装提醒推送，形成完整的业务闭环。系统本地演示采用 PM2 管理长运行进程，降低现场演示风险；同时保留 Docker Compose 分支作为后续一键部署和工程化扩展方案。
+
+通过本项目，能够展示 Spring Boot 单体业务开发能力、Spring Cloud 微服务治理能力、前后端分离开发能力以及分布式应用常见中间件的综合使用能力，满足分布式应用技术课程大作业的设计与实践要求。
+
+关键词：Spring Boot；Spring Cloud Alibaba；Nacos；Gateway；OpenFeign；Redis；RabbitMQ；MinIO；WebSocket；Vue3
+
+========================================================================
+
+Abstract
+
+This project designs and implements GreenFruit, a distributed fresh-fruit retail and delivery operation system based on Spring Boot and Spring Cloud Alibaba. The system adopts a front-end/back-end separated architecture and a lightweight microservice design. The management frontend is built with RuoYi Vue3 and Element Plus, while the backend integrates Nacos, Gateway, OpenFeign, Redis, RabbitMQ, MinIO, and WebSocket to support service governance, unified routing, inter-service calls, caching, asynchronous notification, object storage, and real-time order reminders.
+
+The system includes an admin management frontend, a WeChat mini-program client, a gateway service, a business service, a payment service, and a notification service. The admin frontend supports fruit category management, fruit item management, order management, and operation dashboard display. The mini-program supports browsing, ordering, and mock payment. After payment succeeds, the backend updates the order status and pushes packaging reminders, forming a complete business workflow. For local demonstration, PM2 is used to manage long-running processes, while a Docker Compose branch is reserved for one-click deployment and engineering extension.
+
+Keywords: Spring Boot; Spring Cloud Alibaba; Nacos; Gateway; OpenFeign; Redis; RabbitMQ; MinIO; WebSocket; Vue3
+
+========================================================================
+
+第 1 章 引言
+
+1.1 项目背景
+
+随着线上零售和即时配送业务的发展，生鲜水果零售系统需要同时支持用户下单、后台运营、订单处理、支付回调和实时通知等功能。传统单体系统虽然开发简单，但在服务治理、接口扩展、异步处理和部署维护方面存在一定局限。分布式应用技术能够通过服务拆分、统一网关、服务注册、缓存、消息队列等方式提升系统的可扩展性和可维护性。
+
+本项目以“绿果果”生鲜水果运营系统为业务背景，在已有 Spring Boot 业务基础上进行课程设计级别的轻量微服务改造，使系统既能保持本地演示稳定，又能体现分布式应用技术课程要求。
+
+1.2 项目目标
+
+本项目的主要目标包括：
+
+1. 实现绿果果生鲜运营系统的基础业务闭环，包括水果分类管理、水果品种管理、订单管理、小程序下单和模拟支付。
+2. 采用 Spring Cloud Alibaba 技术栈补齐服务注册、统一网关和服务间调用能力。
+3. 使用 Redis、RabbitMQ、MinIO、WebSocket 等中间件体现分布式系统常见组件的实际应用。
+4. 使用 PM2 管理本地演示进程，避免僵尸进程和端口混乱。
+5. 使用 Apifox CLI/Newman 和 Playwright 分别完成接口测试和端到端测试。
+6. 保留 Docker Compose 分支，作为后续一键部署和工程化加分方案。
+
+1.3 本文组织结构
+
+本文首先介绍项目背景与目标，然后说明系统采用的主要技术，接着进行需求分析、架构设计、数据库设计和功能模块设计，随后展示系统测试和运行效果，最后总结项目成果与后续展望。
+
+========================================================================
+
+第 2 章 相关技术概述
+
+2.1 Spring Boot
+
+Spring Boot 是本项目后端开发的基础框架，用于快速构建独立运行的 Java Web 服务。它通过自动配置、内嵌 Web 容器和统一依赖管理简化了 Spring 应用开发。在本项目中，后台管理、业务服务、支付服务和通知服务均以 Spring Boot 为基础实现。
+
+2.2 Spring Cloud Alibaba
+
+Spring Cloud Alibaba 用于构建轻量微服务架构。项目计划使用 Nacos 实现服务注册与发现，使用 Gateway 作为统一入口，使用 OpenFeign 完成服务间远程调用。通过这些组件，系统能够体现分布式应用中服务治理和服务协作的核心思想。
+
+2.3 RuoYi Vue3
+
+RuoYi Vue3 是本项目管理后台的基础框架，提供登录认证、权限管理、菜单管理、字典管理、系统监控等通用后台能力。本项目在其基础上扩展绿果果业务模块，使后台管理端具备课程演示所需的完整界面。
+
+2.4 MySQL 与 MyBatis
+
+MySQL 用于存储若依系统基础数据和绿果果业务数据。MyBatis 用于完成数据持久层映射，使业务代码能够通过 Mapper 和 XML 动态 SQL 访问数据库。
+
+2.5 Redis
+
+Redis 用于验证码、登录态、缓存和热点数据处理。在分布式应用中，Redis 可作为共享缓存组件，提升系统访问性能并降低数据库压力。
+
+2.6 RabbitMQ
+
+RabbitMQ 用于解耦支付成功事件和包装通知逻辑。当订单支付成功后，支付服务向消息队列发送事件，通知服务消费事件并触发 WebSocket 提醒，实现异步通信。
+
+2.7 MinIO
+
+MinIO 是本地对象存储服务，可替代真实云 OSS，用于水果图片和附件上传演示。相较于真实云服务，MinIO 更适合课程本地演示和截图展示。
+
+2.8 WebSocket
+
+WebSocket 用于后台实时订单包装提醒。当用户完成下单和支付后，管理端能够收到实时提醒，增强系统演示效果。
+
+2.9 PM2
+
+PM2 用于管理本地长运行进程，包括前端开发服务、后端 jar、Nacos、Gateway 等。通过 PM2 可以集中查看服务状态、重启服务和避免僵尸进程。
+
+2.10 Apifox CLI/Newman 与 Playwright
+
+Apifox CLI 或 Newman 用于接口测试报告生成，Playwright 用于浏览器端到端测试。二者分别覆盖接口层和用户操作层，提升测试材料完整度。
+
+========================================================================
+
+第 3 章 系统分析与设计
+
+3.1 功能需求
+
+系统主要功能需求如下：
+
+1. 管理端登录与权限控制。
+2. 水果分类管理。
+3. 水果品种管理。
+4. 水果套餐或果篮管理。
+5. 订单管理与订单状态流转。
+6. 微信小程序用户登录、浏览、下单和模拟支付。
+7. 支付成功后的包装提醒。
+8. 运营数据首页展示。
+9. 接口测试与端到端测试。
+
+3.2 非功能需求
+
+系统需要满足以下非功能需求：
+
+1. 本地演示稳定，服务能够通过 PM2 统一管理。
+2. 支持服务注册与统一网关，体现分布式架构。
+3. 支持缓存、消息队列、对象存储等常见分布式组件。
+4. 不提交真实密钥，敏感配置使用环境变量或占位符。
+5. 代码结构清晰，便于后续扩展。
+
+3.3 系统架构设计
+
+[截图占位符: S01-PM2服务状态]
+[截图占位符: S02-Nacos服务注册]
+
+系统采用前后端分离与轻量微服务架构。用户通过管理端或微信小程序访问系统，请求先进入统一网关，再由网关路由到后台管理服务、业务服务、支付服务和通知服务。各服务注册到 Nacos，并通过 OpenFeign 进行服务间调用。MySQL 负责数据存储，Redis 负责缓存，RabbitMQ 负责异步消息，MinIO 负责对象存储，WebSocket 负责实时提醒。
+
+3.4 服务模块设计
+
+服务模块包括：
+
+1. lgg-gateway：统一入口，负责路由转发和跨域处理。
+2. lgg-admin：若依后台管理服务，负责登录、权限、菜单和系统管理。
+3. lgg-business：业务服务，负责水果分类、水果品种、订单等核心业务。
+4. lgg-pay：支付服务，负责模拟微信支付和支付回调。
+5. lgg-notice：通知服务，负责包装提醒和 WebSocket 推送。
+6. lgg-frontend：Vue3 管理端。
+7. mp-weixin：微信小程序端。
+
+3.5 数据库设计
+
+数据库采用统一数据源 `lgg_ruoyi`，包含若依系统基础表和绿果果业务表。业务表主要包括分类表、菜品/水果表、套餐/果篮表、订单表、订单明细表、用户表、地址表、购物车表等。短期使用统一数据库降低演示风险，后续可演进为多库多服务。
+
+========================================================================
+
+第 4 章 系统实现
+
+4.1 管理后台实现
+
+[截图占位符: S03-绿果果管理端登录]
+[截图占位符: S04-运营数据大屏]
+
+管理后台基于 RuoYi Vue3 实现，系统标题、主题色和菜单均已调整为绿果果生鲜运营场景。首页改造为运营数据大屏，用于展示订单、销售额、待包装订单等核心指标。
+
+4.2 水果分类与品种管理
+
+[截图占位符: S05-水果分类管理]
+[截图占位符: S06-水果品种管理]
+
+水果分类管理用于维护水果所属类别，水果品种管理用于维护具体水果信息、价格、图片和状态。相关接口通过业务服务提供，前端通过统一 API 调用后端。
+
+4.3 订单与支付闭环
+
+[截图占位符: S07-订单管理]
+[截图占位符: S08-微信小程序首页]
+[截图占位符: S09-模拟支付闭环]
+
+用户在微信小程序中浏览水果并提交订单，支付服务完成模拟支付后更新订单状态，并触发后续通知流程。
+
+4.4 包装提醒与异步通知
+
+[截图占位符: S10-WebSocket包装提醒]
+
+支付成功后，系统通过 RabbitMQ 发送支付成功事件，通知服务消费事件后向管理端推送包装提醒，实现订单处理流程的异步解耦。
+
+4.5 本地 PM2 演示实现
+
+本地演示使用 PM2 管理服务进程。相比手动后台启动，PM2 可以统一查看服务状态、重启服务和查看日志，适合课程答辩现场演示。
+
+========================================================================
+
+第 5 章 系统测试
+
+5.1 接口测试
+
+[截图占位符: S11-接口测试报告]
+
+接口测试使用 Apifox CLI 或 Newman 执行，覆盖登录、验证码、水果分类、水果品种、订单、支付回调等接口。测试报告用于证明后端接口可用性和业务流程稳定性。
+
+5.2 端到端测试
+
+[截图占位符: S12-Playwright端到端测试]
+
+端到端测试使用 Playwright 执行，覆盖管理端登录、业务菜单访问和核心页面渲染。该测试用于验证前端页面与后端接口的整体协同。
+
+5.3 健康检查
+
+核心服务通过 Spring Boot Actuator 提供 `/actuator/health` 健康检查接口。通过健康检查可以快速判断服务是否正常运行。
+
+========================================================================
+
+第 6 章 总结与展望
+
+6.1 项目总结
+
+本项目完成了绿果果生鲜分布式运营系统的设计与实现，系统具备管理后台、小程序端、订单支付闭环、包装提醒、服务治理和自动化测试等能力。通过 Spring Boot、Spring Cloud Alibaba、Redis、RabbitMQ、MinIO、WebSocket 等技术，项目较好地体现了分布式应用技术课程的核心要求。
+
+6.2 不足与改进
+
+当前系统仍存在一些不足：服务拆分以课程演示为主，尚未达到生产级微服务复杂度；数据库暂时采用统一数据源，后续可进一步进行多库拆分；消息队列和 MinIO 功能目前以核心演示场景为主，后续可扩展更多真实业务。
+
+6.3 后续展望
+
+后续可在 Docker Compose 分支中完善一键部署能力，并进一步加入日志追踪、链路监控和更完整的自动化测试体系，使系统具备更强的工程化和可维护性。
