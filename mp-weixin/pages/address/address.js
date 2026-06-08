@@ -270,9 +270,7 @@ var _reachBottom = _interopRequireDefault(__webpack_require__(/*! @/components/r
   methods: _objectSpread(_objectSpread({},
   (0, _vuex.mapMutations)(['setAddress'])), {}, {
     goBack: function goBack() {
-      console.log('this.addressBackUrl', this.addressBackUrl);
-      uni.redirectTo({
-        url: this.addressBackUrl });
+      uni.navigateBack();
 
     },
     getLableVal: function getLableVal(item) {
@@ -310,12 +308,12 @@ var _reachBottom = _interopRequireDefault(__webpack_require__(/*! @/components/r
       // 编辑与新增
       if (type === '新增') {
         // TODO
-        uni.redirectTo({
+        uni.navigateTo({
           url: '/pages/addOrEditAddress/addOrEditAddress' });
 
       } else {
         // TODO
-        uni.redirectTo({
+        uni.navigateTo({
           url: '/pages/addOrEditAddress/addOrEditAddress?type=' + '编辑' + '&' + 'id=' + item.id });
 
       }
@@ -327,10 +325,9 @@ var _reachBottom = _interopRequireDefault(__webpack_require__(/*! @/components/r
       if (this.addressBackUrl !== '/pages/order/index') {
         return false;
       }
-      uni.redirectTo({
-        url: '/pages/order/index?address=' + JSON.stringify(item) });
-
       this.setAddress(item);
+      uni.navigateBack();
+
     },
     getRadio: function getRadio(index, item) {
       // this.current = e

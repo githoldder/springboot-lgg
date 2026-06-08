@@ -425,7 +425,7 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
     // 去详情页面
     goDetail: function goDetail(id) {
       this.setAddressBackUrl('/pages/historyOrder/historyOrder');
-      uni.redirectTo({
+      uni.navigateTo({
         url: '/pages/details/index?orderId=' + id });
 
 
@@ -447,8 +447,7 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
     },
     // 返回我的
     goBack: function goBack() {
-      uni.redirectTo({
-        url: '/pages/my/my' });
+      uni.navigateBack();
 
     } }) };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))

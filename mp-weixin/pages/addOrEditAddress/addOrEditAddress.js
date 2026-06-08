@@ -418,8 +418,7 @@ var _api = __webpack_require__(/*! ../api/api.js */ 24);function ownKeys(object,
       this.platform = res.platform;
     },
     goBack: function goBack() {
-      uni.redirectTo({
-        url: "/pages/address/address" });
+      uni.navigateBack();
 
     },
     // 查询地址详情接口
@@ -548,8 +547,7 @@ var _api = __webpack_require__(/*! ../api/api.js */ 24);function ownKeys(object,
       if (this.showDel) {
         (0, _api.editAddressBook)(params).then(function (res) {
           if (res.code === 1) {
-            uni.redirectTo({
-              url: "/pages/address/address" });
+            uni.navigateBack();
 
           }
         });
@@ -557,8 +555,7 @@ var _api = __webpack_require__(/*! ../api/api.js */ 24);function ownKeys(object,
         delete params.id;
         (0, _api.addAddressBook)(params).then(function (res) {
           if (res.code === 1) {
-            uni.redirectTo({
-              url: "/pages/address/address" });
+            uni.navigateBack();
 
           }
         });
@@ -568,8 +565,7 @@ var _api = __webpack_require__(/*! ../api/api.js */ 24);function ownKeys(object,
     deleteAddressFun: function deleteAddressFun() {var _this2 = this;
       (0, _api.delAddressBook)(this.delId).then(function (res) {
         if (res.code === 1) {
-          uni.redirectTo({
-            url: "/pages/address/address" });
+          uni.navigateBack();
 
           uni.showToast({
             title: "地址删除成功",

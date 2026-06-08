@@ -22053,11 +22053,11 @@ var _default = {
     goAddress: function goAddress() {
       this.setAddressBackUrl('/pages/order/index');
       if (this.addressList.length === 0) {
-        uni.redirectTo({
+        uni.navigateTo({
           url: '/pages/addOrEditAddress/addOrEditAddress' });
 
       } else {
-        uni.redirectTo({
+        uni.navigateTo({
           url: '/pages/address/address' });
 
       }
@@ -22081,8 +22081,7 @@ var _default = {
     },
     // 返回上一级
     goBack: function goBack() {
-      uni.redirectTo({
-        url: '/pages/index/index' });
+      uni.navigateBack();
 
     },
     closeMask: function closeMask() {
@@ -22160,7 +22159,7 @@ var _default = {
     // 进入备注页
     goRemark: function goRemark() {
       this.setAddressBackUrl('/pages/order/index');
-      uni.redirectTo({
+      uni.navigateTo({
         url: '/pages/remark/index' });
 
     },
@@ -22292,7 +22291,7 @@ var _default = {
     // 进入支付页
     goPay: function goPay() {
       this.setAddressBackUrl('/pages/details/index');
-      uni.redirectTo({
+      uni.navigateTo({
         url: '/pages/pay/index?orderId=' + orderDetailsData.id });
 
     },
@@ -28570,10 +28569,11 @@ var _default = {
     oneMoreOrder: function oneMoreOrder(id) {return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:_context.next = 2;return (
 
                   (0, _api.delShoppingCart)());case 2:
-                (0, _api.repetitionOrder)(id).then(function (res) {
+                  (0, _api.repetitionOrder)(id).then(function (res) {
                   if (res.code === 1) {
-                    uni.redirectTo({
+                    uni.switchTab({
                       url: '/pages/index/index' });
+
 
                   }
                 });case 3:case "end":return _context.stop();}}}, _callee);}))();
@@ -28643,8 +28643,7 @@ var _default = {
     },
     // 返回上一级
     goBack: function goBack() {
-      uni.redirectTo({
-        url: '/pages/historyOrder/historyOrder' });
+      uni.navigateBack();
 
     },
     openPopuos: function openPopuos(type) {
@@ -28679,7 +28678,7 @@ var _default = {
 
       this.setOrderData(obj);
       // this.setAddressBackUrl('/pages/details/index')
-      uni.redirectTo({
+      uni.navigateTo({
         url: '/pages/pay/index?orderId=' + id });
 
     },

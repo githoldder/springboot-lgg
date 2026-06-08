@@ -369,7 +369,7 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
     goAddress: function goAddress() {
       this.setAddressBackUrl('/pages/my/my');
       // TODO
-      uni.redirectTo({
+      uni.navigateTo({
         url: '/pages/address/address?form=' + 'my' });
 
     },
@@ -402,7 +402,7 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
     // 去详情页面
     goDetail: function goDetail(id) {
       this.setAddressBackUrl('/pages/my/my');
-      uni.redirectTo({
+      uni.navigateTo({
         url: '/pages/details/index?orderId=' + id });
 
 
@@ -425,7 +425,7 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
 
     },
     goBack: function goBack() {
-      uni.redirectTo({
+      uni.switchTab({
         url: '/pages/index/index' });
 
     } }) };exports.default = _default;

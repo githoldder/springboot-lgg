@@ -203,16 +203,14 @@ var _vuex = __webpack_require__(/*! vuex */ 13);function ownKeys(object, enumera
   (0, _vuex.mapMutations)(['setRemark'])),
   (0, _vuex.mapState)(['remarkData'])), {}, {
     goBack: function goBack() {
-      uni.redirectTo({
-        url: '/pages/order/index' });
+      uni.navigateBack();
 
     },
     // 保存返回订单页
     handleSaveRemark: function handleSaveRemark() {
-      uni.redirectTo({
-        url: '/pages/order/index' });
-
       this.setRemark(this.remark);
+      uni.navigateBack();
+
     },
     // 文本输入字数
     monitorInput: function monitorInput() {
