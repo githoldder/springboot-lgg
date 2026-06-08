@@ -15,9 +15,34 @@
   "subPackages": [],
   "window": {
     "navigationBarTextStyle": "white",
-    "navigationBarTitleText": "绿果果",
+    "navigationBarTitleText": "常工鲜生",
     "navigationBarBackgroundColor": "#00b894",
     "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#009E81",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/brand-icon.png",
+        "selectedIconPath": "static/brand-icon.png",
+        "text": "常工鲜生"
+      },
+      {
+        "pagePath": "pages/order/index",
+        "iconPath": "static/order_tab.png",
+        "selectedIconPath": "static/order_tab_active.png",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "iconPath": "static/brand-logo.png",
+        "selectedIconPath": "static/brand-logo.png",
+        "text": "我的"
+      }
+    ]
   },
   "usingComponents": {},
   "sitemapLocation": "sitemap.json"

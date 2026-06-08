@@ -113,7 +113,7 @@ var render = function() {
           }
         })
       : null
-  var m0 = _vm.orderListData()
+  var m0 = _vm.orderListData || []
   var g1 = !(m0.length === 0) ? _vm.orderDishPrice.toFixed(2) : null
 
   var l2 = _vm.__map(_vm.moreNormdata, function(obj, index) {

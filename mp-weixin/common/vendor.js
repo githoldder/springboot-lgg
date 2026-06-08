@@ -4197,11 +4197,11 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
   computed: {
     // 购物车信息列表
     orderListDataes: function orderListDataes() {
-      return this.orderListData();
+      return this.orderListData;
       // return this.orderListData().dishList
     },
     loaddingSt: function loaddingSt() {
-      return this.lodding();
+      return this.lodding;
     },
     orderAndUserInfo: function orderAndUserInfo() {
       var orderData = [];
@@ -20506,7 +20506,7 @@ function createAnimation(option, _this) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });exports.baseUrl = void 0;
 
-var baseUrl = 'http://localhost:8080';//请求nginx，由nginx将请求转发到后端服务
+var baseUrl = 'http://localhost:8090';//请求nginx，由nginx将请求转发到后端服务
 //var baseUrl = 'https://c223c79.r2.cpolar.top';
 
 exports.baseUrl = baseUrl;
@@ -21896,13 +21896,13 @@ var _default = {
   },
   computed: {
     tableInfo: function tableInfo() {
-      return this.shopInfo();
+      return this.shopInfo;
     },
     getTimes: function getTimes() {
-      return this.arrivals();
+      return this.arrivals;
     },
     orderListDataes: function orderListDataes() {
-      return this.orderListData();
+      return this.orderListData;
       // return this.orderListData().dishList
     },
     orderDataes: function orderDataes() {
@@ -28485,10 +28485,10 @@ var _default = {
   },
   computed: {
     orderListDataes: function orderListDataes() {
-      return this.orderListData();
+      return this.orderListData;
     },
     phone: function phone() {
-      return this.shopPhone();
+      return this.shopPhone;
     },
     // // 处理订单详情列表
     orderDataes: function orderDataes() {

@@ -53,3 +53,4 @@ verify-miniprogram-images.sh
 # Preserve nested Git metadata locally while committing as root monorepo
 .git-backups/
 **/.git-backup-before-monorepo/
+bin/minio
