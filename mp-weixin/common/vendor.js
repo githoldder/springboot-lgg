@@ -4197,8 +4197,7 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
   computed: {
     // 购物车信息列表
     orderListDataes: function orderListDataes() {
-      return this.orderListData;
-      // return this.orderListData().dishList
+      return this.orderListData || [];
     },
     loaddingSt: function loaddingSt() {
       return this.lodding;
@@ -21902,8 +21901,7 @@ var _default = {
       return this.arrivals;
     },
     orderListDataes: function orderListDataes() {
-      return this.orderListData;
-      // return this.orderListData().dishList
+      return this.orderListData || [];
     },
     orderDataes: function orderDataes() {
       var testList = [];
@@ -28485,7 +28483,7 @@ var _default = {
   },
   computed: {
     orderListDataes: function orderListDataes() {
-      return this.orderListData;
+      return this.orderListData || [];
     },
     phone: function phone() {
       return this.shopPhone;
