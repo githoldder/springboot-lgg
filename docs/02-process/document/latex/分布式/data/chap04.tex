@@ -8,7 +8,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S10-dashboard-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S10-dashboard-real.png}
   \caption{核心运营多维统计图表}
   \label{fig:S10}
 \end{figure}
@@ -18,7 +18,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S03-gateway-route-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S03-gateway-route-real.png}
   \caption{Gateway接口动态路由转发}
   \label{fig:S03}
 \end{figure}
@@ -44,7 +44,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures-pdf/S07-mp-checkout.pdf}
+  \includegraphics[height=0.40\textheight,keepaspectratio]{figures-pdf/S07-mp-checkout.pdf}
   \caption{微信小程序商品结算UI}
   \label{fig:S07}
 \end{figure}
@@ -74,7 +74,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures-pdf/S14-mp-order-detail.pdf}
+  \includegraphics[height=0.40\textheight,keepaspectratio]{figures-pdf/S14-mp-order-detail.pdf}
   \caption{微信小程序订单详情UI}
   \label{fig:S14}
 \end{figure}
@@ -84,9 +84,9 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S08-mock-pay-success-real.png}
-  \caption{生鲜模拟支付成功界面}
-  \label{fig:S08}
+  \includegraphics[height=0.40\textheight,keepaspectratio]{figures/S13-mp-pay-success.png}
+  \caption{微信小程序支付成功界面}
+  \label{fig:S13}
 \end{figure}
 
 在模拟支付回调阶段，系统对 OpenFeign 接口执行了异常健壮性优化。由于微信异步支付回调在到达服务端时不携带当前用户上下文信息，且业务订单号可能包含字母前缀，因此在业务服务核心接口的订单查询逻辑中，系统首先尝试通过订单号精确匹配查询。如果首次查询未能命中记录，则进入兼容查询分支。在兼容查询中，系统先通过正则表达式判断传入的订单号是否为纯数字字符串，只有当订单号完全由数字组成时才调用 Long.valueOf 将其转换为主键 ID 并执行主键查询，从而规避了对含有字母前缀的订单号强行执行类型转换导致的 NumberFormatException 运行时异常。对于非纯数字订单号，系统则直接通过业务服务持久层的多条件分页查询 pageQuery 降级查找。这一设计保证了支付回调链路在各种订单号格式下的稳定运行。
@@ -96,7 +96,7 @@ OpenFeign 客户端的调用配置中设置了 connectTimeout 连接超时为 50
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures-pdf/S15-mp-order-list.pdf}
+  \includegraphics[height=0.40\textheight,keepaspectratio]{figures-pdf/S15-mp-order-list.pdf}
   \caption{微信小程序订单列表UI}
   \label{fig:S15}
 \end{figure}
@@ -104,12 +104,12 @@ OpenFeign 客户端的调用配置中设置了 connectTimeout 连接超时为 50
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S04-feign-call-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S04-feign-call-real.png}
   \caption{OpenFeign跨服务远程状态调用}
   \label{fig:S04}
 \end{figure}
 
-上述截图 S07 展示了微信小程序端的商品结算页面，用户可以在该页面确认购物车中选购的水果品种及数量、选择或新增收货地址、查看应付总金额并提交订单。截图 S08 展示了调用模拟支付接口后返回的支付成功 JSON 响应，其中包含操作成功标识 code 值 200 和支付流水号。截图 S04 则展示了支付服务控制台的日志输出，能够清晰看到 OpenFeign 远程调用业务服务接口的完整 HTTP 请求与响应信息，包括目标服务名、请求路径、请求方法以及返回的 200 状态码。
+上述截图 S07 展示了微信小程序端的商品结算页面，用户可以在该页面确认购物车中选购的水果品种及数量、选择或新增收货地址、查看应付总金额并提交订单。截图 S13 展示了微信小程序支付成功界面，用户可在该页面查看支付状态、订单编号及支付金额。截图 S04 则展示了支付服务控制台的日志输出，能够清晰看到 OpenFeign 远程调用业务服务接口的完整 HTTP 请求与响应信息，包括目标服务名、请求路径、请求方法以及返回的 200 状态码。
 
 \section{WebSocket 消息广播与 RabbitMQ 解耦实现}
 
@@ -119,34 +119,34 @@ OpenFeign 客户端的调用配置中设置了 connectTimeout 连接超时为 50
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S05-rabbitmq-bindings-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S05-rabbitmq-bindings-real.png}
   \caption{RabbitMQ消息事件队列绑定}
   \label{fig:S05}
 \end{figure}
 
 通知服务 lgg-notice 中的消费者监听类采用了 RabbitListener 注解与 QueueBinding 注解的组合声明方式来完成队列与交换机的自动绑定。QueueBinding 注解中的 value 属性声明了队列名称 pay.success.queue 并通过 durable 参数设置为持久化队列，exchange 属性声明了交换机名称 pay.exchange 并设置为持久化 Topic 类型交换机，key 属性指定路由键为 pay.success。这种声明式绑定方式的核心优势在于，当通知服务首次启动时，即使 RabbitMQ 中尚未手动创建上述队列和交换机，Spring AMQP 也会根据注解声明自动完成队列创建、交换机创建以及两者之间的路由绑定操作。这一设计彻底规避了早期版本中因 RabbitMQ 中队列不存在而导致通知服务冷启动时抛出 404 NOT\_FOUND 异常并被 PM2 反复拉起的严重故障。
 
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/S06-websocket-frames-real.png}
-  \caption{WebSocket后台实时提醒推送}
-  \label{fig:S06}
-\end{figure}
-
 当消费者监听方法成功接收并反序列化消息后，首先提取订单号字段，然后构建统一格式的 JSON 推送报文。推送报文结构包含四个核心字段：type 字段固定为 ORDER\_REMINDER 用于前端消息类型分发、orderNumber 字段携带业务订单号、message 字段为中文提示语"您有新的生鲜订单，请及时包装！"、timestamp 字段记录推送时刻的 ISO 8601 格式时间戳。构建完成后，消费者调用 WebSocket 服务层的 broadcastMessage 广播方法，该方法遍历当前所有已建立 WebSocket 长连接的会话对象并逐一发送推送报文。
 
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S09-admin-notification-real.png}
-  \caption{后台订单即时提醒卡片UI}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S09-admin-notification-real.png}
+  \caption{管理端WebSocket实时订单提醒}
   \label{fig:S09}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S16-order-status-page.png}
+  \caption{订单状态实时变化页面}
+  \label{fig:S16}
 \end{figure}
 
 在前端管理界面中，Vue3 组件在 onMounted 生命周期钩子中创建 WebSocket 客户端实例并连接至通知微服务的 WebSocket 端点。当前端 WebSocket 客户端收到 onmessage 事件后，首先对消息数据进行 JSON 解析，然后根据 type 字段判断消息类型。若为 ORDER\_REMINDER 类型，则立即调用 Element Plus 提供的 ElNotification 全局通知组件在页面右上角弹出订单提醒卡片，卡片标题显示"新订单提醒"、正文显示推送报文中的 message 内容以及订单号。同时，前端通过创建 Audio 对象并调用其 play 方法播放预置的提示音文件，实现听觉层面的即时提醒。ElNotification 组件的 duration 参数设置为 0 表示不自动关闭，运营人员需要手动点击关闭按钮确认已收到订单提醒，这一设计避免了高频订单场景下提醒被自动消失而遗漏的风险。
 
-上述截图 S05 展示了 RabbitMQ 管理后台中 pay.success.queue 队列与 pay.exchange 交换机的绑定关系视图，可以看到队列已成功绑定且含有消息流转的统计数据。截图 S06 展示了浏览器开发者工具网络面板中 WebSocket 连接的详细信息，包括成功建立的 ws 协议握手以及接收到的来单提醒文本帧数据。截图 S09 展示了管理端后台页面右上角弹出的 Element Plus 全局浮动通知卡片，卡片中显示了"您有新的生鲜订单，请及时包装！"的提醒内容以及对应的订单编号。
+上述截图 S05 展示了 RabbitMQ 管理后台中 pay.success.queue 队列与 pay.exchange 交换机的绑定关系视图，可以看到队列已成功绑定且含有消息流转的统计数据。截图展示了管理后台在收到支付回调后，通过 WebSocket 长连接触发的实时订单提醒推送，管理端弹出的 Element Plus 全局浮动通知卡片直接验证了 WebSocket 推送链路已成功打通。截图展示了管理后台订单管理页面中订单状态的实时更新情况，当 WebSocket 推送触发后，订单列表中的状态字段随之自动刷新，无需手动刷新页面即可感知订单流转的实时变化。
 
 \section{本地 PM2 长运行进程托管实现}
 
@@ -155,7 +155,7 @@ OpenFeign 客户端的调用配置中设置了 connectTimeout 连接超时为 50
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S01-pm2-status-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S01-pm2-status-real.png}
   \caption{PM2服务运行状态}
   \label{fig:S01}
 \end{figure}

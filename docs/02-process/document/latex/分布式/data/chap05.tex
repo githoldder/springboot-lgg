@@ -8,7 +8,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S11-newman-cli-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S11-newman-cli-real.png}
   \caption{Newman微服务接口测试报告}
   \label{fig:S11}
 \end{figure}
@@ -25,7 +25,9 @@
   \centering
   \caption{核心接口自动化回归测试用例表}
   \label{tab:api_tests}
-  \begin{tabular}{lp{0.28\textwidth}lp{0.35\textwidth}}
+  {\small
+    \setlength{\tabcolsep}{4pt}%
+    \begin{tabular}{>{\raggedright\arraybackslash}p{0.10\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}}
     \toprule
     接口名称 & 请求路径 & 验证目标 & 核心断言规则 \\
     \midrule
@@ -34,7 +36,7 @@
     分类列表查询 & /admin/category/list & 业务服务与缓存读取 & data 数组非空，响应耗时 <2s \\
     订单分页查询 & /admin/order/conditionSearch & 分页结构与跨服务查询 & data.records 非空，格式符合标准 \\
     \bottomrule
-  \end{tabular}
+  \end{tabular}}
 \end{table}
 
 测试集中每个请求的 Tests 脚本标签页内编写了多维度的 JavaScript 自动断言。第一层断言统一检查 HTTP 响应状态码是否为 200，若非 200 则立即标记该用例为失败。第二层断言解析响应 JSON 体并检查业务操作成功标识字段 code 的值是否为预期的 200。第三层断言针对特定接口检查关键业务字段的存在性与格式正确性，例如登录接口必须返回非空的 token 字段，订单提交接口必须返回符合正则模式的业务订单号。第四层断言通过 pm.expect(responseTime).to.be.below(2000) 语句限制每个接口的响应时间不得超过 2000 毫秒，确保微服务在本地运行环境下的基本性能达标。
@@ -47,7 +49,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S12-playwright-cli-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S12-playwright-cli-real.png}
   \caption{Playwright端到端闭环测试结果}
   \label{fig:S12}
 \end{figure}
@@ -67,14 +69,14 @@
 \section{微服务健康监控与全局看板}
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S02-nacos-services-real.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S02-nacos-services-real.png}
   \caption{Nacos服务注册中心}
   \label{fig:S02}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/S06-health-dashboard.png}
+  \includegraphics[height=0.22\textheight,keepaspectratio]{figures/S06-health-dashboard.png}
   \caption{微服务健康监控与全局看板}
   \label{fig:health}
 \end{figure}

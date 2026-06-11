@@ -1,37 +1,39 @@
-# 绿果果生鲜分布式运营系统 — 交接包
+# 绿果果生鲜分布式运营系统 — v1.0 交接包
 
 本目录是第五组（曹磊、陈佳明、陈晓楠、程志阳）课程设计报告交接包，
 包含完成 Word 报告所需的全部材料和参考。
 
-## 目录说明
-
 ```
-01-reference/      去年的参考材料（第八组）
-  ├── doc/         设计报告/答辩记录 Word 版 + 模板 + 指导书
-  ├── pdf/         设计报告/答辩记录 PDF 版
-  └── txt/         txt 提取说明
-
-02-process/        你需要的全部工作材料
-  ├── Figure/      图片资源
-  │   ├── logos/   技术标识图 (15张 .png)
-  │   ├── screenshots/  系统截图 (12张 .png + 3张 .pdf)
-  │   └── diagrams/     工程图 (12张 .pdf + 10张 .png)
-  ├── txt/         报告正文
-  │   ├── 00-report-master.txt   完整母版
-  │   ├── chapters/              分章文件
-  │   └── defense/               答辩记录
-  ├── doc/         Word 模板
-  └── script/      粘贴脚本 + 对齐清单 + 图清册
-
-03-report/         最终交付物放这里
-  ├── doc/         完成后的 Word 报告
-  └── pdf/         导出的 PDF 报告
+📂 01-reference/      去年的参考材料（第八组）
+📂 02-process/        你需要的全部工作材料
+  ├── Figure/
+  │   ├── logos/      技术标识图 (15张)
+  │   ├── screenshots/ 系统截图 (18张) ← 包含新增S16
+  │   └── diagrams/   工程图 (12张PDF + 10张PNG)
+  ├── txt/            报告正文（含分章&答辩记录）
+  ├── doc/            Word 模板
+  └── script/         粘贴脚本 + 图清册
+📂 03-report/         最终交付物
+  ├── doc/            Word 报告放这里
+  └── pdf/            导出的 PDF 报告放这里
 ```
+
+## ⚠️ 先看修改说明（重要！）
+**`02-process/修改说明-20260612-v1.0.md`**
+记录本次迭代所有变化：哪些图替换了、哪几章文本改了、哪些文件名变了的细节。
 
 ## 使用流程
+1. **先读修改说明** → `02-process/修改说明-20260612-v1.0.md`
+2. 打开 `02-process/doc/项目设计报告-模版.docx` → 另存为自己的报告
+3. 按 `02-process/script/paste-script.txt` 步骤粘贴图片
+4. 参考 `02-process/txt/chapters/` 更新对应章节文字
+5. 将 `02-process/txt/defense/` 答辩记录粘贴到模板
+6. 完成后把 Word 报告和 PDF 放到 `03-report/`
 
-1. 打开 02-process/doc/项目设计报告-模版.docx → 另存为自己的报告
-2. 参考 01-reference/ 中的第八组范例了解格式要求
-3. 按 02-process/script/paste-script.txt 的步骤粘贴图片
-4. 将 02-process/txt/defense/ 中的答辩记录粘贴到 02-process/doc/答辩记录-模板.docx
-5. 完成后把 Word 报告和导出的 PDF 放到 03-report/
+## v1.0 封板（2026-06-12）
+- ✅ 系统全流程闭环：下单→支付→WebSocket通知→接单→配送→完成
+- ✅ 截图全部刷新：小程序UI已更换为最新版本
+- ✅ WeoSocket证明：S09替代S06作为WebSocket通信证明
+- ✅ 新增S16：订单状态实时变化页面截图
+- ✅ 论文51页，0错误，0溢出
+- ✅ 图中：截图统一缩放到页面1/4高度（小程序UI单独放大一倍）
