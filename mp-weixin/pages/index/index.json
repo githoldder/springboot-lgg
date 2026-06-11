@@ -1,8 +1,0 @@
-{
-  "navigationStyle": "custom",
-  "navigationBarTitleText": "绿果果",
-  "usingComponents": {
-    "nav-bar": "/pages/common/Navbar/navbar",
-    "phone": "/components/uni-phone/index"
-  }
-}
