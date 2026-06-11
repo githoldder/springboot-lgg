@@ -54,3 +54,8 @@ verify-miniprogram-images.sh
 .git-backups/
 **/.git-backup-before-monorepo/
 bin/minio
+
+# Nacos runtime data (logs + raft data) — too large for git
+bin/nacos/logPath_IS_UNDEFINED/
+bin/nacos/logs/
+bin/nacos/data/
