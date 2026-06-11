@@ -77,8 +77,8 @@
     <select id="getByIdWithDish" parameterType="long" resultMap="setmealAndDishMap">
         select a.*,
                b.id    sd_id,
-               b.setmeal_id,
-               b.dish_id,
+               b.fruit_box_id as setmeal_id,
+               b.fruit_id as dish_id,
                b.name  sd_name,
                b.price sd_price,
                b.copies
@@ -86,7 +86,7 @@
                  left join
              lgg_fruit_box_item b
              on
-                 a.id = b.setmeal_id
+                 a.id = b.fruit_box_id
         where a.id = #{id}
     </select>
 

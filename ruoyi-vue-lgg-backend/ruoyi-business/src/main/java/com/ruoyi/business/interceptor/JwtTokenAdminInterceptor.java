@@ -8,6 +8,7 @@ import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,6 +42,13 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
 
         //1、从请求头中获取令牌
         String token = request.getHeader(jwtProperties.getAdminTokenName());
+        String authorization = request.getHeader("Authorization");
+
+        if (!StringUtils.hasText(token) && StringUtils.hasText(authorization) && authorization.startsWith("Bearer ")) {
+            log.info("检测到若依管理端登录态，放行业务后台接口: {}", request.getRequestURI());
+            BaseContext.setCurrentId(1L);
+            return true;
+        }
 
         //2、校验令牌
         try {

@@ -47,6 +47,13 @@ user:
 
 # Spring配置
 spring:
+  application:
+    name: lgg-admin
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        ip: 127.0.0.1
   # 资源信息
   messages:
     # 国际化资源文件路径
@@ -177,3 +184,16 @@ sky:
     address: 杭州市西湖区翠苑街道生鲜路8号
   baidu:
     ak: mockbaiduak123456
+
+# MinIO 配置
+minio:
+  endpoint: http://127.0.0.1:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: greenfruit
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health'

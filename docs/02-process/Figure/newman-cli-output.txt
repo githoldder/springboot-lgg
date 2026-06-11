@@ -1,0 +1,43 @@
+newman
+
+GreenFruit API Collection
+
+→ Gateway - Get Captcha
+  GET http://127.0.0.1:8090/captchaImage [200 OK, 363B, 76ms]
+  ✓  HTTP 200
+  ✓  Captcha endpoint returns success
+
+→ Gateway - Admin Login
+  POST http://127.0.0.1:8090/login [200 OK, 568B, 60ms]
+  ✓  HTTP 200
+  ✓  Login returns admin token
+
+→ Business - Category List
+  GET http://127.0.0.1:8088/admin/category/list?page=1&pageSize=5 [200 OK, 1.02kB, 30ms]
+  ✓  HTTP 200
+  ✓  Category list has seeded data
+
+→ Business - Order Search
+  GET http://127.0.0.1:8088/admin/order/conditionSearch?page=1&pageSize=5 [200 OK, 3.54kB, 25ms]
+  ✓  HTTP 200
+  ✓  Order search returns paged records
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                 4 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                 4 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                 0 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                 8 │                0 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 244ms                                      │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 4.22kB (approx)                           │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 47ms [min: 25ms, max: 76ms, s.d.: 21ms] │
+└────────────────────────────────────────────────────────────────┘

@@ -1,0 +1,113 @@
+============================================================================
+doc → pdf 对齐检查清单 — 绿果果课程报告
+============================================================================
+目标: 确保从 txt 粘贴到 Word (.doc/docx) 后，导出的 PDF 与 LaTeX PDF 内容一致
+
+========================
+A. 结构对齐
+========================
+
+[ ] 封面: 校名/学院/课题/成员/日期 → 与 LaTeX PDF 封面一致
+[ ] 中文摘要: 200-300 字，含关键词 3-5 个
+[ ] 英文 Abstract: 对应翻译，含 Keywords
+[ ] 目录: 自动生成，含图目录和表目录 (如需要)
+[ ] 第 1 章 引言: 项目背景 / 项目目标 / 团队分工
+[ ] 第 2 章 相关技术概述: 15 小节 (Spring Boot → Playwright)
+[ ] 第 3 章 系统分析与设计: 功能需求 / 非功能需求 / 架构设计 / 数据库设计
+[ ] 第 4 章 系统实现: 管理后台 / 业务 / 支付 / 通知 / PM2
+[ ] 第 5 章 系统测试: Newman / Playwright / 健康检查
+[ ] 第 6 章 总结: 工作成果 / 技术挑战 / 局限与展望
+[ ] 致谢
+[ ] 参考文献
+
+========================
+B. 图片对齐 (按 00-COMPLETE-FIGURE-LIST.txt 逐一核对)
+========================
+
+第 2 章 (15 张技术 LOGO):
+[ ] 图 2-1  Spring Boot 标识 → logo-springboot.png
+[ ] 图 2-2  Spring Cloud 标识 → logo-springcloud.png
+[ ] 图 2-3  Nacos 标识 → logo-nacos.png
+[ ] 图 2-4  OpenFeign (Java) 标识 → logo-java.png
+[ ] 图 2-5  RuoYi 标识 → logo-ruoyi.png
+[ ] 图 2-6  Vue.js 标识 → logo-vue.png
+[ ] 图 2-7  Element Plus 标识 → logo-element.png
+[ ] 图 2-8  MySQL 标识 → logo-mysql.png
+[ ] 图 2-9  Redis 标识 → logo-redis.png
+[ ] 图 2-10 RabbitMQ 标识 → logo-rabbitmq.png
+[ ] 图 2-11 MinIO 标识 → logo-minio.png
+[ ] 图 2-12 WebSocket 标识 → logo-websocket.png
+[ ] 图 2-13 PM2 标识 → logo-pm2.png
+[ ] 图 2-14 Newman API Testing → logo-postman.png
+[ ] 图 2-15 Playwright E2E Testing → logo-playwright.png
+
+第 3 章 (7 张工程图):
+[ ] 图 3-1 系统用例图 → 用例图.pdf
+[ ] 图 3-2 数据库 ER 图 → U07-database-er.pdf
+[ ] 图 3-3 系统总体架构图 → 系统总体架构图.pdf
+[ ] 图 3-4 微服务模块依赖结构图 → 微服务模块依赖结构图.pdf
+[ ] 图 3-5 购物活动图 → U06-shopping-activity.pdf
+[ ] 图 3-6 订单状态流转图 → 订单状态流转图.pdf
+[ ] 图 3-7 支付成功与包装提醒时序图 → 支付成功与包装提醒时序图.pdf
+
+第 4 章 (11 张系统截图):
+[ ] 图 4-1  运营大屏多维统计 → S10-dashboard-real.png
+[ ] 图 4-2  Gateway 接口动态路由转发 → S03-gateway-route-real.png
+[ ] 图 4-3  微信小程序商品结算 UI → S07-mp-checkout.pdf/png
+[ ] 图 4-4  小程序订单详情 → S14-mp-order-detail.pdf/png
+[ ] 图 4-5  生鲜模拟支付成功界面 → S08-mock-pay-success-real.png
+[ ] 图 4-6  小程序订单列表 → S15-mp-order-list.pdf/png
+[ ] 图 4-7  OpenFeign 跨服务远程状态调用 → S04-feign-call-real.png
+[ ] 图 4-8  RabbitMQ 消息事件队列绑定 → S05-rabbitmq-bindings-real.png
+[ ] 图 4-9  WebSocket 后台实时提醒推送 → S06-websocket-frames-real.png
+[ ] 图 4-10 后台订单即时提醒卡片 UI → S09-admin-notification-real.png
+[ ] 图 4-11 PM2 服务运行状态 → S01-pm2-status-real.png
+
+第 5 章 (4 张测试截图):
+[ ] 图 5-1 Newman 微服务接口测试报告 → S11-newman-cli-real.png
+[ ] 图 5-2 Playwright 端到端闭环测试结果 → S12-playwright-cli-real.png
+[ ] 图 5-3 Nacos 服务注册中心 → S02-nacos-services-real.png
+[ ] 图 5-4 微服务健康检查 Dashboard → S06-health-dashboard.png
+
+========================
+C. 文本内容对齐
+========================
+
+[ ] 摘要: txt 与 LaTeX abstract.tex 关键词、篇幅一致
+[ ] 第 1 章: 团队成员分工表一致 (姓名/学号/角色/任务)
+[ ] 第 2 章: 各项技术描述深度一致 (不缩水、不过度展开)
+[ ] 第 3 章: 功能需求列表完整、非功能指标数值一致
+[ ] 第 4 章: 各模块实现描述对应实际代码结构
+[ ] 第 5 章: 测试通过率 100%、测试用例数量标注
+[ ] 第 6 章: 技术挑战记录一致、局限与展望客观
+[ ] 致谢: txt 与 LaTeX acknowledgements.tex 一致
+[ ] 参考文献: txt 与 LaTeX references.tex 一致
+
+========================
+D. 格式对齐
+========================
+
+[ ] 页边距: 上 2.5cm / 下 2.5cm / 左 3cm / 右 2.5cm (或按学校模板)
+[ ] 正文字体: 宋体小四 (12pt)，行距 1.5 倍
+[ ] 标题字体: 一级黑体三号 / 二级黑体四号 / 三级黑体小四
+[ ] 代码块: Consolas 或 Courier New 五号 (9pt)，灰色底纹
+[ ] 图题注: 宋体五号 (10pt)，居中，编号连续
+[ ] 表题注: 宋体五号，居左
+[ ] 页码: 目录页用罗马数字，正文从第 1 页阿拉伯数字起始
+[ ] 页眉: 奇数页 "绿果果生鲜分布式运营系统"，偶数页 "第 X 章 XXXX"
+
+========================
+E. 交付前最终检查
+========================
+
+[ ] Word 全文无 [截图占位符: ...] 残留文本 (共 30 处)
+[ ] Word 全文无 [工程图占位符: ...] 残留文本 (共 9 处)
+[ ] 所有图片清晰可读，无模糊/拉伸变形
+[ ] 所有图片题注编号连续无跳号 (Ch1-Ch4 合计 ~32 张)
+[ ] 目录页号与实际内容页号一致
+[ ] Word → PDF 导出后中文无乱码/字体丢失
+[ ] PDF 正文搜索 "占位符"、"TODO"、"待补充" → 结果为零
+[ ] PDF 文件大小合理 (含截图后 < 20MB)
+[ ] 答辩记录四份均已粘贴至 Word 附录并替换为真实姓名学号
+
+============================================================================

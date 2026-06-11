@@ -1,0 +1,142 @@
+ruoyi:
+  name: RuoYi
+  version: 3.9.2
+  copyrightYear: 2026
+  profile: D:/ruoyi/uploadPath
+  addressEnabled: false
+  captchaType: math
+
+server:
+  port: 8088
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+    accept-count: 1000
+    threads:
+      max: 800
+      min-spare: 100
+
+logging:
+  level:
+    com.ruoyi: debug
+    org.springframework: warn
+
+user:
+  password:
+    maxRetryCount: 5
+    lockTime: 10
+
+spring:
+  application:
+    name: lgg-business
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        ip: 127.0.0.1
+  messages:
+    basename: i18n/messages
+  profiles:
+    active: druid
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  devtools:
+    restart:
+      enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      password:
+      timeout: 10s
+      lettuce:
+        pool:
+          min-idle: 0
+          max-idle: 8
+          max-active: 8
+          max-wait: -1ms
+
+token:
+  header: Authorization
+  secret: ${LGG_TOKEN_SECRET:greenfruit-demo-token-secret-change-me}
+  expireTime: 30
+
+mybatis:
+  typeAliasesPackage: com.ruoyi.**.domain,com.ruoyi.business.entity
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  configLocation: classpath:mybatis/mybatis-config.xml
+
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+  params: count=countSql
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+  group-configs:
+    - group: 'default'
+      display-name: '测试模块'
+      paths-to-match: '/**'
+      packages-to-scan: com.ruoyi.web.controller.tool
+
+referer:
+  enabled: false
+  allowed-domains: localhost,127.0.0.1,ruoyi.vip,www.ruoyi.vip
+
+xss:
+  enabled: true
+  excludes: /system/notice
+  urlPatterns: /system/*,/monitor/*,/tool/*
+
+sky:
+  jwt:
+    admin-secret-key: greenfruitgreenfruitgreenfruitgreenfruit
+    admin-ttl: 7200000
+    admin-token-name: token
+    user-secret-key: greenfruitusersecretkey
+    user-ttl: 7200000
+    user-token-name: authentication
+  alioss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id: LTAI5tMockOSSkeyxxxxxx
+    access-key-secret: MockOSSSecretKeyxxxxxx
+    bucket-name: green-fruit-bucket
+  wechat:
+    appid: wxmockappid123456
+    secret: mockwechatsecret123456
+    mchid : 1561414331
+    mchSerialNo: 4B3B3DC35414AD50B1B755BAF8DE9CC7CF407606
+    privateKeyFilePath: /dev/null
+    weChatPayCertFilePath: /dev/null
+    apiV3Key: CZBK51236435wxpay435434323FFDuv3
+    notifyUrl: http://localhost:8088/notify/paySuccess
+    refundNotifyUrl: http://localhost:8088/notify/refundSuccess
+  shop:
+    address: 杭州市西湖区翠苑街道生鲜路8号
+  baidu:
+    ak: mockbaiduak123456
+
+# MinIO 配置
+minio:
+  endpoint: http://127.0.0.1:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: greenfruit
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health'

@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 绿果果运营数据统计分析层实现
+ * 常工鲜生运营数据统计分析层实现
  */
 @Service
 @Slf4j
@@ -151,7 +151,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     /**
-     * 销量排名前 10 的商品统计 (绿果果最热销水果排行)
+     * 销量排名前 10 的商品统计
      */
     public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
         LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
@@ -168,22 +168,61 @@ public class ReportServiceImpl implements ReportService {
                 .build();
     }
 
-    /**
-     * 导出运营数据报表 (提供空实现或基本导出支持，避免报表导出时崩溃)
-     */
     public void exportBusinessData(HttpServletResponse response) {
-        log.info("开始准备导出绿果果生鲜零售运营数据...");
-        // 此处可使用 POI 填充模板或者返回空白导出以避开报错
+        log.info("开始准备导出常工鲜生生鲜零售运营数据...");
         try {
+            LocalDate end = LocalDate.now();
+            LocalDate begin = end.minusDays(6);
+            TurnoverReportVO turnoverReportVO = getTurnoverStatistics(begin, end);
+            OrderReportVO orderReportVO = getOrderStatistics(begin, end);
+            SalesTop10ReportVO salesTop10ReportVO = getSalesTop10(begin, end);
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("常工鲜生运营数据报表\n");
+            builder.append("统计周期,").append(begin).append(" 至 ").append(end).append("\n\n");
+            builder.append("日期,营业额,订单总数,有效订单数\n");
+
+            String[] dates = turnoverReportVO.getDateList().split(",");
+            String[] turnovers = turnoverReportVO.getTurnoverList().split(",");
+            String[] orderCounts = orderReportVO.getOrderCountList().split(",");
+            String[] validOrderCounts = orderReportVO.getValidOrderCountList().split(",");
+            for (int i = 0; i < dates.length; i++) {
+                builder.append(dates[i]).append(",")
+                        .append(valueAt(turnovers, i)).append(",")
+                        .append(valueAt(orderCounts, i)).append(",")
+                        .append(valueAt(validOrderCounts, i)).append("\n");
+            }
+
+            builder.append("\n汇总指标,数值\n");
+            builder.append("订单总数,").append(orderReportVO.getTotalOrderCount()).append("\n");
+            builder.append("有效订单数,").append(orderReportVO.getValidOrderCount()).append("\n");
+            builder.append("订单完成率,").append(orderReportVO.getOrderCompletionRate()).append("\n\n");
+
+            builder.append("热销商品,销量\n");
+            String[] names = salesTop10ReportVO.getNameList().split(",");
+            String[] numbers = salesTop10ReportVO.getNumberList().split(",");
+            for (int i = 0; i < names.length; i++) {
+                if (names[i].isBlank()) {
+                    continue;
+                }
+                builder.append(names[i]).append(",").append(valueAt(numbers, i)).append("\n");
+            }
+
             response.setStatus(200);
-            response.setContentType("application/vnd.ms-excel");
+            response.setContentType("application/vnd.ms-excel;charset=utf-8");
             response.setCharacterEncoding("utf-8");
-            response.setHeader("Content-disposition", "attachment;filename=GreenFruitBusinessReport.xlsx");
-            // 返回一个简单的字节流
-            response.getOutputStream().write(new byte[0]);
+            response.setHeader("Content-disposition", "attachment;filename=CGFreshBusinessReport.xls");
+            response.getOutputStream().write(0xEF);
+            response.getOutputStream().write(0xBB);
+            response.getOutputStream().write(0xBF);
+            response.getOutputStream().write(builder.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
             response.flushBuffer();
         } catch (Exception e) {
             log.error("报表导出异常", e);
         }
+    }
+
+    private String valueAt(String[] values, int index) {
+        return index < values.length ? values[index] : "0";
     }
 }

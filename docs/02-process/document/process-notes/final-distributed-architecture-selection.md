@@ -42,11 +42,10 @@ flowchart LR
     P --> DB
     B --> R["Redis"]
     A --> R
-    B --> M["MinIO<br/>图片/附件"]
+    A --> M["MinIO<br/>图片/附件"]
     P --> Q["RabbitMQ<br/>pay.success"]
     Q --> N
-    B -. OpenFeign .-> P
-    P -. OpenFeign .-> N
+    P -. OpenFeign .-> B
 
     A -. register .-> C["Nacos"]
     B -. register .-> C
@@ -63,7 +62,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | `lgg-gateway` | `8090` | 统一入口、路由、跨域、鉴权转发 | `/actuator/health`、路由转发 |
 | `lgg-admin` | `8081` | 若依登录、权限、菜单、系统管理 | `/captchaImage`、`/login`、系统菜单 |
-| `lgg-business` | `8083` | 水果分类、水果品种、订单、购物车 | `/business/category/list`、订单查询 |
+| `lgg-business` | `8088` | 水果分类、水果品种、订单、购物车 | `/business/category/list`、订单查询 |
 | `lgg-pay` | `8085` | 微信模拟支付、支付回调、订单状态联动 | `/pay/mock`、`/pay/callback` |
 | `lgg-notice` | `8086` | WebSocket 包装提醒、异步通知消费 | `/notice/health`、WebSocket 推送 |
 | `lgg-frontend` | `8082` | Vue3 管理端页面 | 管理端首页和业务菜单 |
@@ -134,7 +133,7 @@ flowchart LR
 - 本系统采用前后端分离与轻量微服务架构。
 - 通过 Nacos 实现服务注册与发现。
 - 通过 Gateway 统一对外暴露接口。
-- 通过 OpenFeign 完成支付、通知等服务间调用。
+- 通过 OpenFeign 完成支付服务调用业务服务更新订单状态。
 - 通过 RabbitMQ 解耦支付成功与包装通知。
 - 通过 Redis 提升登录、验证码、缓存等场景性能。
 - 通过 MinIO 完成本地对象存储替代真实 OSS。
@@ -144,7 +143,7 @@ flowchart LR
 
 1. `main` 分支补齐 PM2 本地演示脚本与健康检查。
 2. 新增 Nacos、Gateway、Actuator，先让服务注册和路由截图成立。
-3. 拆出 `lgg-pay` 与 `lgg-notice` 两个轻服务，完成 OpenFeign/RabbitMQ 演示闭环。
+3. 拆出 `lgg-pay` 与 `lgg-notice` 两个轻服务，完成 pay 通过 OpenFeign 更新订单状态、RabbitMQ 投递事件、notice 消费并 WebSocket 推送的演示闭环。
 4. 接入 MinIO，用于水果图片或文件上传演示。
 5. 编写 Apifox CLI/Newman 接口测试集。
 6. 编写 Playwright 管理端 E2E 测试。

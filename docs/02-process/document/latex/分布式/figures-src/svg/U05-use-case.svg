@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="700" viewBox="0 0 1040 700">
+    <defs>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 11 6 L 1 11 Z" fill="#2563eb"/></marker><marker id="arrow-green" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 11 6 L 1 11 Z" fill="#00b894"/></marker><marker id="arrow-orange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 11 6 L 1 11 Z" fill="#f59e0b"/></marker><marker id="arrow-red" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 11 6 L 1 11 Z" fill="#ef4444"/></marker><marker id="arrow-purple" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 11 6 L 1 11 Z" fill="#7c3aed"/></marker><marker id="arrow-gray" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M 1 1 L 11 6 L 1 11 Z" fill="#9aa8b5"/></marker>
+  </defs>
+    <style>text{dominant-baseline:middle}.small{font-size:14px}</style>
+    <text x="520" y="44" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="32" font-weight="800" fill="#17212b"><tspan x="520" dy="0">核心用例图</tspan></text>
+    
+    <rect x="210" y="95" width="660" height="555" fill="none" stroke="#9aa8b5" stroke-width="2"/>
+    <text x="540" y="125" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="20" font-weight="700" fill="#17212b"><tspan x="540" dy="0">常工鲜生生鲜零售配送系统</tspan></text>
+    <circle cx="90" cy="182" r="16" fill="none" stroke="#17212b" stroke-width="2"/>
+  <path d="M 90 198 V 248 M 58 216 H 122 M 90 248 L 62 290 M 90 248 L 118 290" fill="none" stroke="#17212b" stroke-width="2"/>
+  <text x="90" y="312" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="16" font-weight="700" fill="#17212b"><tspan x="90" dy="0">小程序用户</tspan></text>
+    <circle cx="90" cy="417" r="16" fill="none" stroke="#17212b" stroke-width="2"/>
+  <path d="M 90 433 V 483 M 58 451 H 122 M 90 483 L 62 525 M 90 483 L 118 525" fill="none" stroke="#17212b" stroke-width="2"/>
+  <text x="90" y="547" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="16" font-weight="700" fill="#17212b"><tspan x="90" dy="0">运营人员</tspan></text>
+    <circle cx="950" cy="417" r="16" fill="none" stroke="#17212b" stroke-width="2"/>
+  <path d="M 950 433 V 483 M 918 451 H 982 M 950 483 L 922 525 M 950 483 L 978 525" fill="none" stroke="#17212b" stroke-width="2"/>
+  <text x="950" y="547" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="16" font-weight="700" fill="#17212b"><tspan x="950" dy="0">骑手</tspan></text>
+    <ellipse cx="330" cy="190" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="330" y="190" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="330" dy="0">浏览水果与套餐</tspan></text>
+    <ellipse cx="540" cy="190" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="540" y="190" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="540" dy="0">加入购物车</tspan></text>
+    <ellipse cx="750" cy="190" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="750" y="190" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="750" dy="0">提交订单并支付</tspan></text>
+    <ellipse cx="330" cy="325" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="330" y="325" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="330" dy="0">查看订单状态</tspan></text>
+    <ellipse cx="540" cy="325" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="540" y="325" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="540" dy="0">选择配送方式</tspan></text>
+    <ellipse cx="750" cy="325" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="750" y="325" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="750" dy="0">取消/催单</tspan></text>
+    <ellipse cx="330" cy="500" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="330" y="500" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="330" dy="0">维护商品与分类</tspan></text>
+    <ellipse cx="540" cy="500" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="540" y="500" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="540" dy="0">接单与指派骑手</tspan></text>
+    <ellipse cx="750" cy="500" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="750" y="500" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="750" dy="0">小票打印与导出</tspan></text>
+    <ellipse cx="750" cy="610" rx="82" ry="35" fill="#e9f8f1" stroke="#00b894" stroke-width="2"/><text x="750" y="610" text-anchor="middle" font-family="'Times New Roman','SimSun'" font-size="15" font-weight="400" fill="#17212b"><tspan x="750" dy="0">完成配送</tspan></text>
+    <path d="M 130 220 H 203 V 190 H 275" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 220 H 308 V 190 H 485" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 220 H 410 V 190 H 690" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 220 H 203 V 325 H 275" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 220 H 308 V 325 H 485" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 220 H 410 V 325 H 690" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 455 H 203 V 500 H 275" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 455 H 308 V 500 H 485" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 130 455 H 410 V 500 H 690" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 910 455 H 860 V 500 H 810" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+    <path d="M 910 455 H 860 V 610 H 810" stroke="#9aa8b5" stroke-width="1.8" fill="none"/>
+  
+  </svg>

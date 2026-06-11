@@ -1,0 +1,37 @@
+@startuml
+title 图2：系统用例图
+
+left to right direction
+actor "后台管理员" as Admin
+actor "小程序用户" as User
+actor "系统服务" as System
+
+rectangle "绿果果生鲜分布式运营系统" {
+  usecase "登录管理端" as UC1
+  usecase "维护水果分类" as UC2
+  usecase "维护水果品种" as UC3
+  usecase "查看订单" as UC4
+  usecase "接收包装提醒" as UC5
+  usecase "浏览水果" as UC6
+  usecase "提交订单" as UC7
+  usecase "模拟支付" as UC8
+  usecase "更新订单状态" as UC9
+  usecase "发送支付成功事件" as UC10
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+User --> UC6
+User --> UC7
+User --> UC8
+System --> UC9
+System --> UC10
+UC8 --> UC9
+UC9 --> UC10
+UC10 --> UC5
+
+@enduml
+

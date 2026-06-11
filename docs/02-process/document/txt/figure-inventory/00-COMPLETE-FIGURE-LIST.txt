@@ -1,0 +1,82 @@
+============================================================================
+绿果果生鲜分布式运营系统 — LaTeX 图片完整清单
+============================================================================
+生成时间: 2026-06-09
+用途: txt/txt-doc 专区核对 LaTeX 正文引用图片，确保 txt 与 Word 报告一致
+
+============================================================================
+第 2 章 相关技术概述 — 技术 LOGO (15 张，全部 PNG)
+============================================================================
+
+序号 | 图号 | 图片文件 | 所属节 | 位置 (figures/)
+-----|------|---------|--------|------------------
+2-1  | 2-1  | logo-springboot.png | 2.1 Spring Boot 3.2.5 | figures/logo-springboot.png
+2-2  | 2-2  | logo-springcloud.png | 2.2 Spring Cloud | figures/logo-springcloud.png
+2-3  | 2-3  | logo-nacos.png | 2.2 Nacos | figures/logo-nacos.png
+2-4  | 2-4  | logo-java.png | 2.2 OpenFeign (Java) | figures/logo-java.png
+2-5  | 2-5  | logo-ruoyi.png | 2.3 RuoYi Vue3 | figures/logo-ruoyi.png
+2-6  | 2-6  | logo-vue.png | 2.3 Vue.js | figures/logo-vue.png
+2-7  | 2-7  | logo-element.png | 2.3 Element Plus | figures/logo-element.png
+2-8  | 2-8  | logo-mysql.png | 2.4 MySQL | figures/logo-mysql.png
+2-9  | 2-9  | logo-redis.png | 2.5 Redis | figures/logo-redis.png
+2-10 | 2-10 | logo-rabbitmq.png | 2.6 RabbitMQ | figures/logo-rabbitmq.png
+2-11 | 2-11 | logo-minio.png | 2.7 MinIO | figures/logo-minio.png
+2-12 | 2-12 | logo-websocket.png | 2.8 WebSocket | figures/logo-websocket.png
+2-13 | 2-13 | logo-pm2.png | 2.9 PM2 | figures/logo-pm2.png
+2-14 | 2-14 | logo-postman.png | 2.10 Newman | figures/logo-postman.png
+2-15 | 2-15 | logo-playwright.png | 2.10 Playwright | figures/logo-playwright.png
+
+============================================================================
+第 3 章 系统分析与设计 — 工程图 (7 张，全部 PDF)
+============================================================================
+
+序号 | 图号 | 图片文件 | 内容说明 | 位置 (figures-pdf/)
+-----|------|---------|---------|-------------------
+3-1  | 3-1  | 用例图.pdf | 系统用例图 | figures-pdf/用例图.pdf
+3-2  | 3-2  | U07-database-er.pdf | 数据库 ER 图 | figures-pdf/U07-database-er.pdf
+3-3  | 3-3  | 系统总体架构图.pdf | 系统总体架构 | figures-pdf/系统总体架构图.pdf
+3-4  | 3-4  | 微服务模块依赖结构图.pdf | 微服务模块依赖结构 | figures-pdf/微服务模块依赖结构图.pdf
+3-5  | 3-5  | U06-shopping-activity.pdf | 购物活动图 | figures-pdf/U06-shopping-activity.pdf
+3-6  | 3-6  | 订单状态流转图.pdf | 订单状态流转 | figures-pdf/订单状态流转图.pdf
+3-7  | 3-7  | 支付成功与包装提醒时序图.pdf | 支付成功与包装提醒时序图 | figures-pdf/支付成功与包装提醒时序图.pdf
+
+============================================================================
+第 4 章 系统实现 — 系统截图 (11 张，PNG + PDF 混用)
+============================================================================
+
+序号 | 图号 | 图片文件 | 内容说明 | 位置
+-----|------|---------|---------|------------------
+4-1  | 4-1  | S10-dashboard-real.png | 运营大屏多维统计 | figures/S10-dashboard-real.png
+4-2  | 4-2  | S03-gateway-route-real.png | Gateway 路由转发 | figures/S03-gateway-route-real.png
+4-3  | 4-3  | S07-mp-checkout.pdf | 小程序结算页 | figures-pdf/S07-mp-checkout.pdf
+4-4  | 4-4  | S14-mp-order-detail.pdf | 小程序订单详情 | figures-pdf/S14-mp-order-detail.pdf
+4-5  | 4-5  | S08-mock-pay-success-real.png | 模拟支付成功 | figures/S08-mock-pay-success-real.png
+4-6  | 4-6  | S15-mp-order-list.pdf | 小程序订单列表 | figures-pdf/S15-mp-order-list.pdf
+4-7  | 4-7  | S04-feign-call-real.png | OpenFeign 跨服务调用 | figures/S04-feign-call-real.png
+4-8  | 4-8  | S05-rabbitmq-bindings-real.png | RabbitMQ 消息绑定 | figures/S05-rabbitmq-bindings-real.png
+4-9  | 4-9  | S06-websocket-frames-real.png | WebSocket 帧推送 | figures/S06-websocket-frames-real.png
+4-10 | 4-10 | S09-admin-notification-real.png | 后台通知提醒卡片 | figures/S09-admin-notification-real.png
+4-11 | 4-11 | S01-pm2-status-real.png | PM2 进程状态 | figures/S01-pm2-status-real.png
+
+============================================================================
+第 5 章 系统测试 — 测试截图 (4 张，全部 PNG)
+============================================================================
+
+序号 | 图号 | 图片文件 | 内容说明 | 位置
+-----|------|---------|---------|------------------
+5-1  | 5-1  | S11-newman-cli-real.png | Newman 接口测试报告 | figures/S11-newman-cli-real.png
+5-2  | 5-2  | S12-playwright-cli-real.png | Playwright E2E 测试 | figures/S12-playwright-cli-real.png
+5-3  | 5-3  | S02-nacos-services-real.png | Nacos 服务注册中心 | figures/S02-nacos-services-real.png
+5-4  | 5-4  | S06-health-dashboard.png | 健康检查 Dashboard | figures/S06-health-dashboard.png
+
+============================================================================
+总 计: 37 张图片 (第 2 章 15 | 第 3 章 7 | 第 4 章 11 | 第 5 章 4)
+============================================================================
+
+关键说明:
+- *.SVG 文件是 LOGO 源文件，不用于 LaTeX 引用，仅供未来编辑
+- figures-pdf/ 中的 PDF 用于 LaTeX 编译 (矢量清晰不模糊)
+- figures/ 中的 PNG 用于 Word 报告直接插入 (兼容性好)
+- 第 3 章图片全是 PDF → Word 中需用对应的 PNG 替代 (如有) 或直接插入 PDF
+
+============================================================================

@@ -29,10 +29,15 @@ The demo loop is:
 
 ## Current Architecture Boundary
 
-- Use a single RuoYi backend process on `8081`.
-- Use a single RuoYi Vue3 frontend process on `8082`.
-- Use local MySQL and Redis.
-- Do not add Docker, Nacos, Gateway, or service splitting for the current demo.
+- Use microservice architecture managed by local PM2:
+  - `lgg-gateway` on `8090` (API Gateway)
+  - `lgg-admin` on `8081` (System Admin)
+  - `lgg-business` on `8088` (GreenFruit Core Business)
+  - `lgg-pay` on `8085` (Mock Payment Processing)
+  - `lgg-notice` on `8086` (WebSocket Notifications)
+  - `lgg-ruoyi-frontend` on `8082` (Vite Admin Panel)
+- Integrated local middleware: Nacos (8848), Redis (6379), MinIO (9000/9001), RabbitMQ (5672/15672).
+- Do not use Docker or Docker-compose for service application layer; all run directly in local environment via PM2 daemon.
 
 ## Known Risk Areas
 

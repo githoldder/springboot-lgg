@@ -1,7 +1,11 @@
 <template>
   <div class="login">
     <el-form ref="loginRef" :model="loginForm" :rules="loginRules" class="login-form">
-      <h3 class="title">绿果果管理系统</h3>
+      <div class="brand-lockup">
+        <img :src="brandLogo" alt="常工鲜生" class="brand-logo" />
+        <h3 class="title">常工鲜生管理系统</h3>
+        <p class="subtitle">C-G Fresh Operations</p>
+      </div>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -59,7 +63,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright © 2026 绿果果生鲜运营平台 All Rights Reserved.</span>
+      <span>Copyright © 2026 常工鲜生运营平台 All Rights Reserved.</span>
     </div>
   </div>
 </template>
@@ -69,6 +73,7 @@ import { getCodeImg } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from "@/utils/jsencrypt";
 import useUserStore from '@/store/modules/user'
+import brandLogo from '@/assets/logo/logo.png'
 
 const userStore = useUserStore()
 const route = useRoute();
@@ -168,20 +173,43 @@ getCookie();
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/images/login-background.jpg");
+  background-image: linear-gradient(90deg, rgba(5, 31, 24, 0.42), rgba(5, 31, 24, 0.08)), url("../assets/images/login-background.jpg");
   background-size: cover;
+  background-position: center;
 }
 .title {
-  margin: 0px auto 30px auto;
+  margin: 10px auto 4px auto;
   text-align: center;
-  color: #707070;
+  color: #274337;
+  font-weight: 700;
+}
+.brand-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.brand-logo {
+  width: 116px;
+  height: 116px;
+  object-fit: contain;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(34, 126, 68, 0.12);
+}
+.subtitle {
+  margin: 0;
+  color: #6b8b78;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .login-form {
   border-radius: 6px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.94);
   width: 400px;
   padding: 25px 25px 5px 25px;
+  box-shadow: 0 20px 60px rgba(10, 44, 34, 0.18);
   .el-input {
     height: 40px;
     input {

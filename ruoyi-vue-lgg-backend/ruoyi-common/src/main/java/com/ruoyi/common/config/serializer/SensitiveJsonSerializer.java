@@ -1,13 +1,14 @@
 package com.ruoyi.common.config.serializer;
 
+import java.io.IOException;
 import java.util.Objects;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.BeanProperty;
-import tools.jackson.databind.DatabindException;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.ruoyi.common.annotation.Sensitive;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.enums.DesensitizedType;
@@ -18,7 +19,7 @@ import com.ruoyi.common.utils.SecurityUtils;
  *
  * @author ruoyi
  */
-public class SensitiveJsonSerializer extends StdSerializer<String>
+public class SensitiveJsonSerializer extends StdSerializer<String> implements ContextualSerializer
 {
     private final DesensitizedType desensitizedType;
 
@@ -35,7 +36,7 @@ public class SensitiveJsonSerializer extends StdSerializer<String>
     }
 
     @Override
-    public void serialize(String value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException
+    public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException
     {
         if (desensitizedType != null && desensitization())
         {
@@ -48,14 +49,14 @@ public class SensitiveJsonSerializer extends StdSerializer<String>
     }
 
     @Override
-    public ValueSerializer<?> createContextual(SerializationContext ctxt, BeanProperty property) throws DatabindException
+    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException
     {
         Sensitive annotation = property.getAnnotation(Sensitive.class);
         if (Objects.nonNull(annotation) && Objects.equals(String.class, property.getType().getRawClass()))
         {
             return new SensitiveJsonSerializer(annotation.desensitizedType());
         }
-        return ctxt.findValueSerializer(property.getType());
+        return prov.findValueSerializer(property.getType(), property);
     }
 
     /**

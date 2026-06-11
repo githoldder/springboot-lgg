@@ -8,6 +8,16 @@
         values (#{openid}, #{name}, #{phone}, #{sex}, #{idNumber}, #{avatar}, #{createTime})
     </insert>
 
+    <update id="update" parameterType="com.ruoyi.business.entity.User">
+        update lgg_user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="sex != null">sex = #{sex},</if>
+        </set>
+        where id = #{id}
+    </update>
+
     <select id="countByMap" resultType="java.lang.Integer">
         select count(id) from lgg_user
         <where>

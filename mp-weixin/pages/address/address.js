@@ -320,29 +320,23 @@ var _reachBottom = _interopRequireDefault(__webpack_require__(/*! @/components/r
     },
     // 点击整体设置为默认地址并返填订单页面
     choseAddress: function choseAddress(e, item) {
-      // this.getRadio(e, item)
       console.log(item, 555);
-      if (this.addressBackUrl !== '/pages/order/index') {
-        return false;
-      }
       this.setAddress(item);
-      uni.navigateBack();
+      if (this.addressBackUrl === '/pages/order/index') {
+        uni.navigateBack();
+      }
 
     },
     getRadio: function getRadio(index, item) {
-      // this.current = e
-      // // 提供默认接口
       item.isDefault = 1;
       this.isActive = index;
+      this.setAddress(item);
       (0, _api.putAddressBookDefault)({ id: item.id }).then(function (res) {
         if (res.code === 1) {
           uni.showToast({
             title: '默认地址设置成功',
             duration: 2000,
             icon: 'none' });
-
-          // this.getAddressList()
-
         }
       });
     } }) };exports.default = _default;

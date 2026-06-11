@@ -1,0 +1,662 @@
+{
+  "sprint_id": "S02",
+  "title": "Distributed Microservices Refactoring",
+  "last_updated": "2026-06-06 10:45",
+  "objective": "完成绿果果项目（springboot-lgg）的微服务架构改造，引入全套微服务治理与外围组件（Nacos, Gateway, Redis, MinIO, RabbitMQ），并通过 PM2 实现本地一键守护稳定演示。同时完成接口与前端端到端（E2E）测试覆盖，满足大作业高级要求。",
+  "scope_boundary": [
+    "保持数据库现状，逻辑隔离即可",
+    "RabbitMQ 服务由 brew services 管理",
+    "全量依赖 PM2 进行本地 Java/Vue 进程守护",
+    "直接跳过 Docker Compose",
+    "WebSocket 演示直连 notice 端口 8086"
+  ],
+  "key_results": [
+    {
+      "id": "S02-KR1",
+      "text": "系统成功拆分为 lgg-gateway, lgg-admin, lgg-business, lgg-pay, lgg-notice 五个微服务，并在 Nacos 成功注册发现。"
+    },
+    {
+      "id": "S02-KR2",
+      "text": "完成 PM2 生态集成，能够通过 pm2 start 一键拉起 Nacos 及所有 Java/Vue 进程并守护。"
+    },
+    {
+      "id": "S02-KR3",
+      "text": "lgg-business 发起支付 -> lgg-pay 模拟支付成功并使用 OpenFeign 调用 lgg-business 更新订单状态 -> lgg-pay 发送 RabbitMQ 消息 -> lgg-notice 消费并推送 WebSocket 提醒。"
+    },
+    {
+      "id": "S02-KR4",
+      "text": "静态资源（图片/附件）存储由本地/OSS 成功切换至 MinIO。"
+    },
+    {
+      "id": "S02-KR5",
+      "text": "输出 Apifox CLI / Newman 的接口测试报告及 Playwright 的 E2E 端到端演示截图。"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "S02-T01",
+      "title": "搭建微服务基座与网关",
+      "status": "success",
+      "kr_ids": ["S02-KR1"],
+      "steps": [
+        {
+          "step_id": "S02-T01-STEP01",
+          "title": "Integrate Nacos & Spring Cloud in root POM",
+          "status": "success",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/pom.xml"
+          ],
+          "verification": [
+            "mvn clean dependency:tree -Dincludes=com.alibaba.cloud:spring-cloud-alibaba-dependencies"
+          ],
+          "evidence": [
+            "mvn dependency:tree returns spring-cloud-alibaba-dependencies:pom:2023.0.0.0-RC1:import"
+          ]
+        },
+        {
+          "step_id": "S02-T01-STEP02",
+          "title": "Create ruoyi-gateway module",
+          "status": "success",
+          "depends_on": ["S02-T01-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-gateway/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-gateway/src/main/resources/application.yml",
+            "ruoyi-vue-lgg-backend/ruoyi-gateway/src/main/java/com/ruoyi/gateway/RuoYiGatewayApplication.java"
+          ],
+          "verification": [
+            "curl -s http://127.0.0.1:8090/actuator/health | grep -q 'UP'"
+          ],
+          "evidence": [
+            "curl -s http://127.0.0.1:8090/actuator/health returns {\"status\":\"UP\"}"
+          ]
+        },
+        {
+          "step_id": "S02-T01-STEP03",
+          "title": "Add Actuator endpoints to core modules",
+          "status": "success",
+          "depends_on": ["S02-T01-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-admin/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-business/pom.xml"
+          ],
+          "verification": [
+            "curl -s http://127.0.0.1:8081/actuator/health | grep -q 'UP'",
+            "curl -s http://127.0.0.1:8088/actuator/health | grep -q 'UP'"
+          ],
+          "evidence": [
+            "curl -s http://127.0.0.1:8081/actuator/health returns {\"status\":\"UP\"}",
+            "curl -s http://127.0.0.1:8088/actuator/health returns {\"status\":\"UP\"}"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T02",
+      "title": "本地 PM2 与 MinIO 整合",
+      "status": "running",
+      "kr_ids": ["S02-KR2", "S02-KR4"],
+      "steps": [
+        {
+          "step_id": "S02-T02-STEP01",
+          "title": "Configure PM2 ecosystem for middleware and services",
+          "status": "success",
+          "depends_on": [],
+          "target_files": [
+            "ecosystem.config.cjs"
+          ],
+          "verification": [
+            "pm2 list | grep -q 'lgg-minio'",
+            "pm2 list | grep -q 'lgg-nacos'",
+            "pm2 list | grep -q 'lgg-redis'"
+          ],
+          "evidence": [
+            "pm2 show lgg-minio shows status: online",
+            "pm2 show lgg-nacos shows status: online",
+            "pm2 show lgg-redis shows status: online"
+          ]
+        },
+        {
+          "step_id": "S02-T02-STEP02",
+          "title": "Add MinIO Maven dependency and properties",
+          "status": "todo",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-common/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-admin/src/main/resources/application.yml",
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/resources/application.yml"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-common dependency:tree | grep -q 'minio'",
+            "grep -q 'minio:' ruoyi-vue-lgg-backend/ruoyi-admin/src/main/resources/application.yml"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T02-STEP03",
+          "title": "Implement MinIO Configuration and Client Utility",
+          "status": "todo",
+          "depends_on": ["S02-T02-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-common/src/main/java/com/ruoyi/common/config/MinioConfig.java",
+            "ruoyi-vue-lgg-backend/ruoyi-common/src/main/java/com/ruoyi/common/utils/file/MinioUtil.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-common compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T02-STEP04",
+          "title": "Refactor file upload controller to use MinIO with token validation",
+          "status": "todo",
+          "depends_on": ["S02-T02-STEP03"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-admin/src/main/java/com/ruoyi/web/controller/common/CommonController.java"
+          ],
+          "verification": [
+            "curl -X POST -H \"Authorization: Bearer <token>\" -F 'file=@Agent.md' http://127.0.0.1:8090/common/upload | grep -q 'http'",
+            "curl -s http://127.0.0.1:9001/ buckets checklist shows uploaded file"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T03",
+      "title": "系统管理服务改造",
+      "status": "success",
+      "kr_ids": ["S02-KR1"],
+      "steps": [
+        {
+          "step_id": "S02-T03-STEP01",
+          "title": "Configure ruoyi-admin to register in Nacos",
+          "status": "success",
+          "depends_on": ["S02-T01-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-admin/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-admin/src/main/resources/application.yml"
+          ],
+          "verification": [
+            "curl -s http://127.0.0.1:8848/nacos/v1/ns/instance/list?serviceName=lgg-admin | grep -q 'lgg-admin'"
+          ],
+          "evidence": [
+            "curl -s http://127.0.0.1:8848/nacos/v1/ns/instance/list?serviceName=lgg-admin returns list containing lgg-admin ip/port"
+          ]
+        },
+        {
+          "step_id": "S02-T03-STEP02",
+          "title": "Verify authentication endpoints route and work via Redis",
+          "status": "success",
+          "depends_on": ["S02-T03-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-admin/src/main/java/com/ruoyi/web/controller/system/SysLoginController.java"
+          ],
+          "verification": [
+            "curl -s http://127.0.0.1:8081/captchaImage | grep -q 'img'"
+          ],
+          "evidence": [
+            "curl -s http://127.0.0.1:8081/captchaImage returns json with code=200 and base64 img"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T04",
+      "title": "Vue3 前端路由与网关对接",
+      "status": "running",
+      "kr_ids": ["S02-KR1", "S02-KR2"],
+      "steps": [
+        {
+          "step_id": "S02-T04-STEP01",
+          "title": "Adjust frontend API proxy target to Gateway (8090)",
+          "status": "todo",
+          "depends_on": ["S02-T01-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend/vite.config.js"
+          ],
+          "verification": [
+            "grep -q 'http://localhost:8090' ruoyi-vue-lgg-frontend/vite.config.js"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T04-STEP02",
+          "title": "Verify CAPTCHA and login request flows through Gateway",
+          "status": "todo",
+          "depends_on": ["S02-T04-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend/src/views/login.vue"
+          ],
+          "verification": [
+            "curl -s http://127.0.0.1:8090/captchaImage | grep -q 'img'",
+            "pm2 logs lgg-gateway --lines 20 | grep -q '/captchaImage'"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T05",
+      "title": "核心业务服务与 OpenFeign 基础",
+      "status": "running",
+      "kr_ids": ["S02-KR1", "S02-KR3"],
+      "steps": [
+        {
+          "step_id": "S02-T05-STEP01",
+          "title": "Configure ruoyi-business to register in Nacos",
+          "status": "success",
+          "depends_on": ["S02-T01-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/resources/application.yml"
+          ],
+          "verification": [
+            "curl -s http://127.0.0.1:8848/nacos/v1/ns/instance/list?serviceName=lgg-business | grep -q 'lgg-business'"
+          ],
+          "evidence": [
+            "curl -s http://127.0.0.1:8848/nacos/v1/ns/instance/list?serviceName=lgg-business returns list containing lgg-business ip/port"
+          ]
+        },
+        {
+          "step_id": "S02-T05-STEP02",
+          "title": "Verify core business APIs respond on port 8088",
+          "status": "success",
+          "depends_on": ["S02-T05-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/controller/CategoryController.java"
+          ],
+          "verification": [
+            "curl -s http://127.0.0.1:8088/admin/category/list | grep -q 'code'"
+          ],
+          "evidence": [
+            "curl -s http://127.0.0.1:8088/admin/category/list returns json with code=200"
+          ]
+        },
+        {
+          "step_id": "S02-T05-STEP03",
+          "title": "Add OpenFeign and LoadBalancer dependencies to business module",
+          "status": "todo",
+          "depends_on": ["S02-T05-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/RuoYiBusinessApplication.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-business dependency:tree | grep -E 'spring-cloud-starter-openfeign'"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T06",
+      "title": "数据库表与关联校验",
+      "status": "success",
+      "kr_ids": ["S02-KR1"],
+      "steps": [
+        {
+          "step_id": "S02-T06-STEP01",
+          "title": "Verify table prefixes and logical db isolation",
+          "status": "success",
+          "depends_on": [],
+          "target_files": [
+            "sky.sql",
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/resources/application-druid.yml"
+          ],
+          "verification": [
+            "mysql -u root -p123456 -e 'show tables from lgg_ruoyi' | grep -E '^lgg_'"
+          ],
+          "evidence": [
+            "mysql query output lists lgg_order, lgg_category, lgg_shopping_cart, etc."
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T07",
+      "title": "创建支付微服务(ruoyi-pay)",
+      "status": "todo",
+      "kr_ids": ["S02-KR1", "S02-KR2", "S02-KR3"],
+      "steps": [
+        {
+          "step_id": "S02-T07-STEP01",
+          "title": "Create Maven module ruoyi-pay",
+          "status": "todo",
+          "depends_on": ["S02-T01-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-pay/pom.xml"
+          ],
+          "verification": [
+            "test -f ruoyi-vue-lgg-backend/ruoyi-pay/pom.xml"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP02",
+          "title": "Add ruoyi-pay to root POM modules",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/pom.xml"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-pay help:active-profiles"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP03",
+          "title": "Configure port 8085 and Nacos registry in ruoyi-pay",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/resources/application.yml",
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/resources/application-druid.yml"
+          ],
+          "verification": [
+            "grep -q 'port: 8085' ruoyi-vue-lgg-backend/ruoyi-pay/src/main/resources/application.yml",
+            "grep -q 'name: lgg-pay' ruoyi-vue-lgg-backend/ruoyi-pay/src/main/resources/application.yml"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP04",
+          "title": "Add Spring Boot Actuator & OpenFeign dependencies to ruoyi-pay",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP03"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-pay/pom.xml"
+          ],
+          "verification": [
+            "grep -q 'spring-boot-starter-actuator' ruoyi-vue-lgg-backend/ruoyi-pay/pom.xml",
+            "grep -q 'spring-cloud-starter-openfeign' ruoyi-vue-lgg-backend/ruoyi-pay/pom.xml"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP05",
+          "title": "Define Mock Pay API and Pay Controller in ruoyi-pay",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP04"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/java/com/ruoyi/pay/controller/MockPayController.java",
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/java/com/ruoyi/pay/service/MockPayService.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-pay compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP06",
+          "title": "Configure RabbitMQ connection and exchange in ruoyi-pay",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP05"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-pay/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/resources/application.yml",
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/java/com/ruoyi/pay/config/RabbitConfig.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-pay compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP07",
+          "title": "Implement RabbitMQ event publisher on pay success",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP06"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/java/com/ruoyi/pay/service/MockPayService.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-pay compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP08",
+          "title": "Build ruoyi-pay Jar and add PM2 configuration",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP07"],
+          "target_files": [
+            "ecosystem.config.cjs"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-pay -am package -DskipTests",
+            "pm2 start ecosystem.config.cjs --only lgg-pay",
+            "pm2 list | grep -q 'lgg-pay'"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T07-STEP09",
+          "title": "Verify Nacos registration and response of lgg-pay",
+          "status": "todo",
+          "depends_on": ["S02-T07-STEP08"],
+          "target_files": [],
+          "target_area": "runtime/nacos/pm2",
+          "verification": [
+            "curl -s http://127.0.0.1:8848/nacos/v1/ns/instance/list?serviceName=lgg-pay | grep -q 'lgg-pay'",
+            "curl -s http://127.0.0.1:8085/actuator/health | grep -q 'UP'"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T08",
+      "title": "创建通知与WebSocket微服务(ruoyi-notice)",
+      "status": "todo",
+      "kr_ids": ["S02-KR1", "S02-KR2", "S02-KR3"],
+      "steps": [
+        {
+          "step_id": "S02-T08-STEP01",
+          "title": "Create Maven module ruoyi-notice",
+          "status": "todo",
+          "depends_on": ["S02-T01-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-notice/pom.xml"
+          ],
+          "verification": [
+            "test -f ruoyi-vue-lgg-backend/ruoyi-notice/pom.xml"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP02",
+          "title": "Add ruoyi-notice to root POM modules",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/pom.xml"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-notice help:active-profiles"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP03",
+          "title": "Configure port 8086 and Nacos registry in ruoyi-notice",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-notice/src/main/resources/application.yml",
+            "ruoyi-vue-lgg-backend/ruoyi-notice/src/main/resources/application-druid.yml"
+          ],
+          "verification": [
+            "grep -q 'port: 8086' ruoyi-vue-lgg-backend/ruoyi-notice/src/main/resources/application.yml",
+            "grep -q 'name: lgg-notice' ruoyi-vue-lgg-backend/ruoyi-notice/src/main/resources/application.yml"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP04",
+          "title": "Add Spring Boot Actuator & WebSocket dependencies to ruoyi-notice",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP03"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-notice/pom.xml"
+          ],
+          "verification": [
+            "grep -q 'spring-boot-starter-actuator' ruoyi-vue-lgg-backend/ruoyi-notice/pom.xml",
+            "grep -q 'spring-boot-starter-websocket' ruoyi-vue-lgg-backend/ruoyi-notice/pom.xml"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP05",
+          "title": "Implement RabbitMQ queue consumer in ruoyi-notice",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP04", "S02-T07-STEP07"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-notice/pom.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-notice/src/main/java/com/ruoyi/notice/consumer/PaySuccessConsumer.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-notice compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP06",
+          "title": "Configure WebSocket server endpoint in ruoyi-notice direct connection (8086)",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP05"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-notice/src/main/java/com/ruoyi/notice/websocket/WebSocketServer.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-notice compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP07",
+          "title": "Add WebSocket notification trigger on RabbitMQ event",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP06"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-notice/src/main/java/com/ruoyi/notice/consumer/PaySuccessConsumer.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-notice compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP08",
+          "title": "Build ruoyi-notice Jar and add PM2 configuration",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP07"],
+          "target_files": [
+            "ecosystem.config.cjs"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-notice -am package -DskipTests",
+            "pm2 start ecosystem.config.cjs --only lgg-notice",
+            "pm2 list | grep -q 'lgg-notice'"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T08-STEP09",
+          "title": "Verify Nacos registration and response of lgg-notice",
+          "status": "todo",
+          "depends_on": ["S02-T08-STEP08"],
+          "target_files": [],
+          "target_area": "runtime/nacos/pm2",
+          "verification": [
+            "curl -s http://127.0.0.1:8848/nacos/v1/ns/instance/list?serviceName=lgg-notice | grep -q 'lgg-notice'",
+            "curl -s http://127.0.0.1:8086/actuator/health | grep -q 'UP'"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T09",
+      "title": "OpenFeign 跨服务接口集成与调用",
+      "status": "todo",
+      "kr_ids": ["S02-KR3"],
+      "steps": [
+        {
+          "step_id": "S02-T09-STEP01",
+          "title": "Define OpenFeign client in ruoyi-pay calling ruoyi-business to update order status",
+          "status": "todo",
+          "depends_on": ["S02-T05-STEP03", "S02-T07-STEP05"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-pay/src/main/java/com/ruoyi/pay/feign/OrderServiceClient.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-pay compile"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T09-STEP02",
+          "title": "Implement order payment status modification endpoint in ruoyi-business",
+          "status": "todo",
+          "depends_on": ["S02-T09-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/controller/OrderController.java"
+          ],
+          "verification": [
+            "mvn -pl ruoyi-business compile"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S02-T10",
+      "title": "自动化与端到端测试覆盖",
+      "status": "todo",
+      "kr_ids": ["S02-KR5"],
+      "steps": [
+        {
+          "step_id": "S02-T10-STEP01",
+          "title": "Configure and run Newman/Apifox CLI API collection tests",
+          "status": "todo",
+          "depends_on": ["S02-T04-STEP02", "S02-T09-STEP02"],
+          "target_files": [
+            "tests/apifox-collection.json"
+          ],
+          "verification": [
+            "newman run tests/apifox-collection.json"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T10-STEP02",
+          "title": "Write Playwright E2E test scripts",
+          "status": "todo",
+          "depends_on": ["S02-T10-STEP01"],
+          "target_files": [
+            "tests/playwright-e2e.spec.ts"
+          ],
+          "verification": [
+            "npx playwright test"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S02-T10-STEP03",
+          "title": "Execute E2E suite and generate reports/screenshots",
+          "status": "todo",
+          "depends_on": ["S02-T10-STEP02"],
+          "target_files": [
+            "tests/playwright-report/index.html"
+          ],
+          "verification": [
+            "test -d tests/playwright-report"
+          ],
+          "evidence": []
+        }
+      ]
+    }
+  ]
+}

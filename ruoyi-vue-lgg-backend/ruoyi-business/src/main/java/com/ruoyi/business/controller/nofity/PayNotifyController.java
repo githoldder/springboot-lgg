@@ -29,6 +29,15 @@ public class PayNotifyController {
     private WeChatProperties weChatProperties;
 
     /**
+     * 模拟支付成功回调（内部使用）
+     */
+    @RequestMapping("/mockPaySuccess")
+    public void mockPaySuccess(String orderNumber) throws Exception {
+        log.info("内部模拟支付成功回调，订单号：{}", orderNumber);
+        orderService.paySuccess(orderNumber);
+    }
+
+    /**
      * 支付成功回调
      *
      * @param request

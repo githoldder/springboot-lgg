@@ -1,0 +1,47 @@
+第五组项目设计报告纯文本母版
+
+使用说明：
+1、本文件作为 Word 报告正文粘贴母版。
+2、每次修改报告内容，优先修改 chapters 目录下的分章 txt。
+3、遇到 [截图占位符: Sxx-名称] 时，按 screenshot-checklist.txt 手动截图并粘贴到 Word。
+4、Word 中的封面、目录、页眉页脚、题注和页码由人工按模板调整。
+
+========================================================================
+
+课程名：分布式应用开发技术(Q)
+题目：基于 Spring Boot 与 Spring Cloud Alibaba 的绿果果生鲜分布式运营系统设计与实现
+二级学院：计算机信息工程学院
+专业：软件工程
+班级：23 软件一
+组别：第五组
+学号姓名：
+  23030301  曹磊
+  23030302  陈佳明
+  23030303  陈晓楠
+  23030304  程志阳
+指导教师：江亮
+日期：2026 年 6 月
+
+========================================================================
+
+摘 要
+
+本项目围绕生鲜水果零售与配送场景，设计并实现了一个基于 Spring Boot 与 Spring Cloud Alibaba 的绿果果生鲜分布式运营系统。系统采用前后端分离与轻量微服务架构，管理端基于 RuoYi Vue3 与 Element Plus 实现，后端以 Spring Boot 为基础，结合 Nacos、Gateway、OpenFeign、Redis、RabbitMQ、MinIO、WebSocket 等技术完成服务治理、统一网关、服务调用、缓存、异步通知、对象存储和实时提醒等功能。
+
+系统主要包括后台管理端、微信小程序端、统一网关、业务服务、支付服务和通知服务等模块。后台管理端支持水果分类管理、水果品种管理、订单管理和运营数据展示；微信小程序端支持用户浏览、下单与模拟支付；后端通过支付成功事件驱动订单状态更新和包装提醒推送，形成完整的业务闭环。系统本地演示采用 PM2 管理长运行进程，降低现场演示风险；同时保留 Docker Compose 分支作为后续一键部署和工程化扩展方案。
+
+通过本项目，能够展示 Spring Boot 单体业务开发能力、Spring Cloud 微服务治理能力、前后端分离开发能力以及分布式应用常见中间件的综合使用能力，满足分布式应用技术课程大作业的设计与实践要求。
+
+关键词：Spring Boot；Spring Cloud Alibaba；Nacos；Gateway；OpenFeign；Redis；RabbitMQ；MinIO；WebSocket；Vue3
+
+========================================================================
+
+Abstract
+
+This project designs and implements GreenFruit, a distributed fresh-fruit retail and delivery operation system based on Spring Boot and Spring Cloud Alibaba. The system adopts a front-end/back-end separated architecture and a lightweight microservice design. The management frontend is built with RuoYi Vue3 and Element Plus, while the backend integrates Nacos, Gateway, OpenFeign, Redis, RabbitMQ, MinIO, and WebSocket to support service governance, unified routing, inter-service calls, caching, asynchronous notification, object storage, and real-time order reminders.
+
+The system includes an admin management frontend, a WeChat mini-program client, a gateway service, a business service, a payment service, and a notification service. The admin frontend supports fruit category management, fruit item management, order management, and operation dashboard display. The mini-program supports browsing, ordering, and mock payment. After payment succeeds, the backend updates the order status and pushes packaging reminders, forming a complete business workflow. For local demonstration, PM2 is used to manage long-running processes, while a Docker Compose branch is reserved for one-click deployment and engineering extension.
+
+Keywords: Spring Boot; Spring Cloud Alibaba; Nacos; Gateway; OpenFeign; Redis; RabbitMQ; MinIO; WebSocket; Vue3
+
+========================================================================

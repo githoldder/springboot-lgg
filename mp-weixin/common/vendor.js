@@ -4197,7 +4197,7 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
   computed: {
     // 购物车信息列表
     orderListDataes: function orderListDataes() {
-      return this.orderListData || [];
+      var data = typeof this.orderListData === 'function' ? this.orderListData() : this.orderListData; return Array.isArray(data) ? data : [];
     },
     loaddingSt: function loaddingSt() {
       return this.lodding;
@@ -4495,7 +4495,7 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
     },
     // 去订单页面
     goOrder: function goOrder() {
-      uni.navigateTo({
+      uni.switchTab({
         url: '/pages/order/index' });
 
     },
@@ -4505,12 +4505,7 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
 
 
                 // 规格
-                if (!(_this11.openMoreNormPop && (!_this11.flavorDataes || _this11.flavorDataes.length <= 0))) {_context8.next = 4;break;}
-                uni.showToast({
-                  title: '请选择规格',
-                  icon: 'none' });return _context8.abrupt("return",
-
-                false);case 4:
+                // Bug fix: Removed incorrect specification check that blocked adding items directly from the list
 
                 // this.openDetailPop = false
                 _this11.openMoreNormPop = false;
@@ -21890,6 +21885,7 @@ var _default = {
       weeks: [],
       scrollTop: 0,
       addressList: [],
+      addressListLoading: false,
       isHandlePy: false };
 
   },
@@ -21901,7 +21897,7 @@ var _default = {
       return this.arrivals;
     },
     orderListDataes: function orderListDataes() {
-      return this.orderListData || [];
+      var data = typeof this.orderListData === 'function' ? this.orderListData() : this.orderListData; return Array.isArray(data) ? data : [];
     },
     orderDataes: function orderDataes() {
       var testList = [];
@@ -21971,6 +21967,25 @@ var _default = {
 
 
   },
+  onShow: function onShow() {
+    this.init(); // 每次显示页面时重新计算购物车金额和数据
+    // 存在options说明换地址了，或者从地址管理页返回
+    if (this.addressData() && this.addressData().detail) {
+      this.addressBookId = "";
+      var newAddress = this.addressData();
+      this.address = newAddress.provinceName + newAddress.cityName + newAddress.districtName + newAddress.detail;
+      this.phoneNumber = newAddress.phone;
+      this.nickName = newAddress.consignee;
+      this.gender = newAddress.sex;
+      this.addressBookId = newAddress.id;
+      this.addressLabel = newAddress.label ? newAddress.label.toString() === "公司" ? 0 : newAddress.label.toString() === "家" ? 1 : 2 : "";
+    } else {
+      // 默认地址查询
+      this.getAddressBookDefault();
+    }
+    // 每次显示时更新一下最新地址列表，防止地址列表被清空后仍停留在无地址状态
+    this.getAddressList();
+  },
   onReady: function onReady() {var _this2 = this;
     uni.getSystemInfo({
       success: function success(res) {
@@ -22025,18 +22040,20 @@ var _default = {
     },
     getAddressList: function getAddressList() {var _this4 = this;
       this.testValue = false;
+      this.addressListLoading = true;
       (0, _api.queryAddressBookList)().then(function (res) {
         if (res.code === 1) {
           _this4.testValue = true;
           _this4.addressList = res.data;
-
         }
+      }).finally(function () {
+        _this4.addressListLoading = false;
       });
     },
     // 默认地址查询
     getAddressBookDefault: function getAddressBookDefault() {var _this5 = this;
       (0, _api.getAddressBookDefault)().then(function (res) {
-        if (res.code === 1) {
+        if (res.code === 1 && res.data) {
           _this5.addressBookId = '';
           _this5.address = res.data.provinceName + res.data.cityName + res.data.districtName + res.data.
           detail;
@@ -22046,13 +22063,35 @@ var _default = {
           _this5.addressBookId = res.data.id;
           _this5.addressLabel = (0, _index.getLableVal)(res.data.label);
           _this5.tagLabel = res.data.label;
+        } else {
+          _this5.fillAddressFromList();
+        }
+      });
+    },
+    // 从地址列表回退填充地址（默认API无结果时使用）
+    fillAddressFromList: function fillAddressFromList() {var _this5b = this;
+      (0, _api.queryAddressBookList)().then(function (res) {
+        if (res.code === 1 && res.data && res.data.length > 0) {
+          var defaultAddr = res.data.find(function (a) { return a.isDefault === 1; }) || res.data[0];
+          _this5b.addressBookId = '';
+          _this5b.address = defaultAddr.provinceName + defaultAddr.cityName + defaultAddr.districtName + defaultAddr.detail;
+          _this5b.phoneNumber = defaultAddr.phone;
+          _this5b.nickName = defaultAddr.consignee;
+          _this5b.gender = defaultAddr.sex;
+          _this5b.addressBookId = defaultAddr.id;
+          _this5b.addressLabel = (0, _index.getLableVal)(defaultAddr.label);
+          _this5b.tagLabel = defaultAddr.label;
         }
       });
     },
     // 去地址页面
     goAddress: function goAddress() {
       this.setAddressBackUrl('/pages/order/index');
-      if (this.addressList.length === 0) {
+      if (this.addressListLoading) {
+        uni.showToast({ title: '地址加载中…', icon: 'none' });
+        return;
+      }
+      if (!this.addressList || this.addressList.length === 0) {
         uni.navigateTo({
           url: '/pages/addOrEditAddress/addOrEditAddress' });
 
@@ -22073,11 +22112,9 @@ var _default = {
       this.orderDishNumber = this.orderDishPrice = 0;
       this.orderDishPrice = 0;
       oriData.map(function (n, i) {
-        // this.orderDishPrice += n.number * n.price
         _this6.orderDishPrice += n.number * n.amount;
         _this6.orderDishNumber += n.number;
       });
-      this.orderDishPrice = this.orderDishPrice + 6 + this.orderDishNumber;
     },
     // 返回上一级
     goBack: function goBack() {
@@ -28482,7 +28519,7 @@ var _default = {
   },
   computed: {
     orderListDataes: function orderListDataes() {
-      return this.orderListData || [];
+      var data = typeof this.orderListData === 'function' ? this.orderListData() : this.orderListData; return Array.isArray(data) ? data : [];
     },
     phone: function phone() {
       return this.shopPhone;

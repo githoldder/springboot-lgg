@@ -19,12 +19,6 @@ public interface OrderMapper {
      */
     void insert(Orders orders);
 
-    /**
-     * 根据订单号和用户id查询订单
-     * @param orderNumber
-     * @param userId
-     */
-    @Select("select * from lgg_orders where number = #{orderNumber} and user_id= #{userId}")
     Orders getByNumberAndUserId(String orderNumber, Long userId);
 
     /**
@@ -39,27 +33,10 @@ public interface OrderMapper {
      */
     Page<Orders> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
 
-    /**
-     * 根据id查询订单
-     * @param id
-     */
-    @Select("select * from lgg_orders where id=#{id}")
     Orders getById(Long id);
 
-    /**
-     * 根据状态统计订单数量
-     * @param status
-     */
-    @Select("select count(id) from lgg_orders where status = #{status}")
     Integer countStatus(Integer status);
 
-    /**
-     * 根据订单状态和下单时间查询订单
-     * @param status
-     * @param orderTime
-     * @return
-     */
-    @Select("select * from lgg_orders where status = #{status} and order_time < #{orderTime}")
     List<Orders> getByStatusAndOrderTimeLT(Integer status, LocalDateTime orderTime);
 
     /**

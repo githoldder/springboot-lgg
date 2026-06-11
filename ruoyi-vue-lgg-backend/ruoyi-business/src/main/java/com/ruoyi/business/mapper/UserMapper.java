@@ -23,6 +23,12 @@ public interface UserMapper {
      */
     void insert(User user);
 
+    /**
+     * 更新用户信息
+     * @param user
+     */
+    void update(User user);
+
     @Select("select * from lgg_user where id = #{id}")
     User getById(Long userId);
 

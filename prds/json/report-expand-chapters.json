@@ -1,0 +1,220 @@
+{
+  "task_id": "REPORT-EXPAND-260606",
+  "title": "课程设计报告分章扩写任务清单",
+  "description": "将 docs/02-process/document/report-txt/chapters 下的 6 章报告正文进行大幅扩写，体现四人团队工作量",
+  "rules": {
+    "no_markdown_backticks": "严禁反单引号",
+    "no_markdown_lists": "严禁 - / * / 1. 列表语法，全部段落叙述体",
+    "placeholder_sync": "新增/删除占位符需同步 screenshot-checklist.txt",
+    "assemble_after_edit": "编辑后执行 assemble_report_txt.sh 合成母版"
+  },
+  "chapters": [
+    {
+      "chapter_id": "CH01",
+      "file": "chapters/01-introduction.txt",
+      "current_bytes": 4453,
+      "target_bytes": 10000,
+      "sections": [
+        {
+          "section": "1.1 项目背景",
+          "expand_focus": "扩写行业痛点分析、单体架构具体缺陷案例、市场趋势数据引用",
+          "screenshots": []
+        },
+        {
+          "section": "1.2 项目目标",
+          "expand_focus": "按微服务架构、业务闭环、质量工程三维度分段展开，增加技术选型理由",
+          "screenshots": []
+        },
+        {
+          "section": "1.3 团队分工与组织结构",
+          "expand_focus": "细化每人负责模块的具体工作内容、代码量估算、协作方式、代码审查流程",
+          "screenshots": []
+        },
+        {
+          "section": "1.4 本文组织结构",
+          "expand_focus": "扩展每章概述，增加各章之间的逻辑衔接说明",
+          "screenshots": []
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH02",
+      "file": "chapters/02-technology-overview.txt",
+      "current_bytes": 6613,
+      "target_bytes": 14000,
+      "sections": [
+        {
+          "section": "2.1 Spring Boot 3.2.5",
+          "expand_focus": "增加 Starter 自动装配原理、内嵌容器架构、条件装配注解等技术细节",
+          "screenshots": []
+        },
+        {
+          "section": "2.2 Spring Cloud Alibaba",
+          "expand_focus": "分别详述 Nacos Raft 协议、Gateway WebFlux 过滤器链、OpenFeign 负载均衡机制",
+          "screenshots": []
+        },
+        {
+          "section": "2.3 RuoYi Vue3",
+          "expand_focus": "增加 RBAC 权限模型详解、Vue3 Composition API 特性、Element Plus 组件体系",
+          "screenshots": []
+        },
+        {
+          "section": "2.4 MySQL 与 MyBatis-Plus",
+          "expand_focus": "扩展 InnoDB 存储引擎特性、MyBatis-Plus 条件构造器与分页插件机制",
+          "screenshots": []
+        },
+        {
+          "section": "2.5 Redis",
+          "expand_focus": "扩写数据结构类型在本系统中的应用映射、过期策略与内存淘汰机制",
+          "screenshots": []
+        },
+        {
+          "section": "2.6 RabbitMQ",
+          "expand_focus": "增加 Exchange 路由模式详解、消息确认与持久化机制、死信队列概念",
+          "screenshots": []
+        },
+        {
+          "section": "2.7 MinIO",
+          "expand_focus": "扩展 S3 API 兼容性说明、Bucket Policy 权限模型、纠删码存储原理概述",
+          "screenshots": []
+        },
+        {
+          "section": "2.8 WebSocket",
+          "expand_focus": "增加握手升级协议流程、心跳保活机制、与 SSE 对比分析",
+          "screenshots": []
+        },
+        {
+          "section": "2.9 PM2",
+          "expand_focus": "扩展 Cluster 模式、日志轮转、ecosystem 配置文件结构详解",
+          "screenshots": []
+        },
+        {
+          "section": "2.10 Newman 与 Playwright",
+          "expand_focus": "增加各工具的架构原理、与 Selenium/Cypress 对比、断言引擎机制",
+          "screenshots": []
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH03",
+      "file": "chapters/03-analysis-design.txt",
+      "current_bytes": 5026,
+      "target_bytes": 12000,
+      "sections": [
+        {
+          "section": "3.1 功能需求",
+          "expand_focus": "增加用例描述粒度，按角色分段叙述，增加业务规则约束说明",
+          "screenshots": []
+        },
+        {
+          "section": "3.2 非功能需求",
+          "expand_focus": "扩展可用性、可维护性、安全性、性能等维度的具体指标与验收标准",
+          "screenshots": []
+        },
+        {
+          "section": "3.3 系统架构设计",
+          "expand_focus": "详细叙述请求流转路径、网关过滤器链处理细节、服务发现交互过程",
+          "screenshots": ["S01-PM2服务运行状态", "S02-Nacos服务注册中心", "S03-Gateway接口动态路由转发"],
+          "uml": ["U01-系统架构图"]
+        },
+        {
+          "section": "3.4 服务模块设计",
+          "expand_focus": "逐服务详述职责边界、端口分配、依赖关系、启动顺序",
+          "screenshots": [],
+          "uml": ["U04-微服务模块依赖结构图"]
+        },
+        {
+          "section": "3.5 数据库设计",
+          "expand_focus": "增加表字段级别说明、索引设计思路、外键约束策略、数据初始化脚本说明",
+          "screenshots": []
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH04",
+      "file": "chapters/04-implementation.txt",
+      "current_bytes": 4703,
+      "target_bytes": 14000,
+      "sections": [
+        {
+          "section": "4.1 管理后台与运营数据大屏实现",
+          "expand_focus": "增加 ECharts 图表配置细节、数据聚合 SQL 逻辑、自动刷新定时器实现",
+          "screenshots": ["S10-核心运营多维统计图表"]
+        },
+        {
+          "section": "4.2 水果分类品种管理与 AOP",
+          "expand_focus": "增加 MinIO SDK 调用流程、AOP 切面反射获取参数的代码逻辑说明、AutoFill 注解设计思路",
+          "screenshots": []
+        },
+        {
+          "section": "4.3 订单与模拟支付闭环",
+          "expand_focus": "增加订单状态机流转说明、Feign 容错处理细节、支付回调安全校验",
+          "screenshots": ["S07-微信小程序商品结算UI", "S08-生鲜模拟支付成功界面", "S04-OpenFeign跨服务远程状态调用"],
+          "uml": ["U02-订单模拟支付与状态更新时序图"]
+        },
+        {
+          "section": "4.4 WebSocket 消息广播与 RabbitMQ 解耦",
+          "expand_focus": "增加消费者自动声明绑定策略、JSON 推送报文结构设计、前端 Notification API 调用",
+          "screenshots": ["S05-RabbitMQ消息事件队列绑定", "S06-WebSocket后台实时提醒推送", "S09-后台订单即时提醒卡片UI"],
+          "uml": ["U03-订单状态流转与消息通知流程图"]
+        },
+        {
+          "section": "4.5 本地 PM2 长运行进程托管",
+          "expand_focus": "增加 ecosystem.config.cjs 各字段含义、内存限制策略、日志路径重定向配置说明",
+          "screenshots": []
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH05",
+      "file": "chapters/05-testing.txt",
+      "current_bytes": 3010,
+      "target_bytes": 8000,
+      "sections": [
+        {
+          "section": "5.1 接口自动化测试与 Newman 验证",
+          "expand_focus": "增加测试用例设计方法、断言脚本编写细节、测试报告解读说明",
+          "screenshots": ["S11-Newman微服务接口测试报告"]
+        },
+        {
+          "section": "5.2 Playwright E2E 测试",
+          "expand_focus": "增加测试架构设计、Token 注入绕过流程、WebSocket 消息断言实现、数据库状态验证",
+          "screenshots": ["S12-Playwright端到端闭环测试结果"]
+        },
+        {
+          "section": "5.3 健康检查与微服务治理监控",
+          "expand_focus": "增加 Actuator 端点暴露配置、各服务健康检查返回内容描述",
+          "screenshots": []
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH06",
+      "file": "chapters/06-summary.txt",
+      "current_bytes": 3746,
+      "target_bytes": 8000,
+      "sections": [
+        {
+          "section": "6.1 项目总结",
+          "expand_focus": "增加量化成果（代码行数、接口数、测试覆盖率等），按团队成员回顾贡献",
+          "screenshots": []
+        },
+        {
+          "section": "6.2 技术挑战与解决策略",
+          "expand_focus": "增加每个问题的排查过程叙述、日志分析方法、解决方案对比",
+          "screenshots": []
+        },
+        {
+          "section": "6.3 系统局限性与不足",
+          "expand_focus": "增加更多维度的局限分析：安全、性能、可观测性",
+          "screenshots": []
+        },
+        {
+          "section": "6.4 后续展望",
+          "expand_focus": "增加具体技术路线图、各阶段预期目标",
+          "screenshots": []
+        }
+      ]
+    }
+  ]
+}

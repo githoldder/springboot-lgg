@@ -1,0 +1,429 @@
+{
+  "sprint_id": "S03",
+  "title": "微信小程序核心业务闭环：点餐 → 购物车 → 支付 → 订单状态",
+  "last_updated": "2026-06-08 19:45",
+  "objective": "修复微信小程序 mp-weixin 中存在的 5 个核心业务逻辑问题，实现从点餐、加购、地址管理、下单支付到订单状态流转的完整业务闭环。同时完成 admin 后端与小程序的数据联动验证。",
+  "blocking_issues": [
+    {
+      "id": "BLK-01",
+      "title": "WeChat DevTools 缓存导致前端改动不可见",
+      "description": "vendor.js 已修改但用户报告看不到效果。DevTools 缓存了旧版 JS 运行时。需要在 DevTools 中：工具 → 清除缓存 → 全部清除，然后 Cmd+B 重新编译",
+      "status": "workaround_available",
+      "fix": "手动清除 DevTools 缓存后重新编译"
+    },
+    {
+      "id": "BLK-02",
+      "title": "API 超时 — WAServiceMainContext.js 超时",
+      "description": "加购物车 API 调用可能因网关/后端服务连接问题而挂起。DevTools Console 报 WAServiceMainContext.js timeout",
+      "status": "unresolved",
+      "fix": "检查后端网关 (ruoyi-gateway) 和业务服务 (ruoyi-business) 是否正常运行；检查 pm2 logs"
+    },
+    {
+      "id": "BLK-03",
+      "title": "setOrderNum 竞态条件",
+      "description": "getDishListDataes 完成后调用 setOrderNum 设置购物车数量，但 getTableOrderDishListes（获取购物车数据）可能更晚返回，导致首次加载时购物车数量初始化为 0",
+      "status": "unresolved",
+      "fix": "在 getTableOrderDishListes 的 success 回调中也调用 setOrderNum 或 initdishListMut"
+    },
+    {
+      "id": "BLK-04",
+      "title": "M3.1 分类过滤未传 type",
+      "description": "getCategoryList() 调用时未传递 type 参数，导致分类侧边栏不过滤",
+      "status": "unresolved",
+      "fix": "vendor.js 中 init() 调 getCategoryList 时加 type 参数"
+    },
+    {
+      "id": "BLK-05",
+      "title": "M3.2 条件判断反转",
+      "description": "getDishListDataes 中条件 if (!(params.type === 1)) 反转，type=1 时走 setmeal 分支，非 1 时走 dish 分支",
+      "status": "unresolved",
+      "fix": "vendor.js 中 !(params.type === 1) → params.type === 1"
+    }
+  ],
+  "scope_boundary": [
+    "仅修改 mp-weixin/ 目录下的编译输出文件（vendor.js，以及 pages/* 下的 .js/.json/.wxml/.wxss 文件），不修改 uni-app 源码",
+    "不涉及新增后端接口，后端已有 /user/shoppingCart/add, /user/order/submit, /user/category/list 等接口只需正确调参",
+    "支付流程使用 mock 支付，不接入真实微信支付",
+    "后端 admin 端已有完整 CRUD，联调仅验证数据一致性",
+    "导航修复采用全局策略：所有 '返回上一页' 场景改用 uni.navigateBack"
+  ],
+  "key_results": [
+    {
+      "id": "S03-KR1",
+      "text": "地址管理页面导航闭环：新增/编辑/删除地址后，通过 navigateBack 正确返回上一页，不破坏导航栈"
+    },
+    {
+      "id": "S03-KR2",
+      "text": "登录流程完整：调用 wx.getUserProfile 获取用户昵称与头像并提交后端持久化"
+    },
+    {
+      "id": "S03-KR3",
+      "text": "分类侧边栏按类型过滤：套餐/热门/饮品分类正确，各自显示对应商品（dish 或 setmeal）"
+    },
+    {
+      "id": "S03-KR4",
+      "text": "购物车金额正确叠加：添加相同商品时数量递增，总价计算正确"
+    },
+    {
+      "id": "S03-KR5",
+      "text": "全页面导航栈健康：全局统一 navigateTo/navigateBack/redirectTo 使用规范，无栈崩溃"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "S03-T01",
+      "title": "修复地址管理页面导航",
+      "status": "completed",
+      "kr_ids": ["S03-KR1", "S03-KR5"],
+      "steps": [
+        {
+          "step_id": "S03-T01-STEP01",
+          "title": "将 addOrEditAddress 的 goBack 由 redirectTo 改为 navigateBack",
+          "description": "pages/addOrEditAddress/addOrEditAddress.js goBack 函数：将 uni.redirectTo 改为 uni.navigateBack。同时保存成功/编辑成功后也从 redirectTo 改为 navigateBack",
+          "status": "completed",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/pages/addOrEditAddress/addOrEditAddress.js"
+          ],
+          "target_lines": "421-424 (goBack), 548-552 (edit success), 556-561 (add success), 568-573 (delete success)",
+          "verification": [
+            "IDE Console 无 navigateBack 相关错误",
+            "点击后退按钮能回到上一页而不是重建 address 页面"
+          ],
+          "evidence": [
+            "commit 24d9511: addOrEditAddress.js 4 redirectTo → navigateBack"
+          ]
+        },
+        {
+          "step_id": "S03-T01-STEP02",
+          "title": "将 address 页面的 goBack 由 redirectTo 改为 navigateBack",
+          "description": "pages/address/address.js goBack 函数：移除对 addressBackUrl 状态变量的依赖，直接使用 uni.navigateBack",
+          "status": "completed",
+          "depends_on": ["S03-T01-STEP01"],
+          "target_files": [
+            "mp-weixin/pages/address/address.js"
+          ],
+          "target_lines": "272-276 (goBack)",
+          "verification": [
+            "IDE Console 无 navigateBack 相关错误",
+            "从地址列表页后退能回到触发进入的页面（订单页/我的页）"
+          ],
+          "evidence": [
+            "commit 24d9511: address.js goBack → navigateBack, choseAddress → navigateBack, addOrEdit → navigateTo"
+          ]
+        },
+        {
+          "step_id": "S03-T01-STEP03",
+          "title": "验证地址管理全链路导航闭环",
+          "description": "从点餐页 → 地址管理 → 新增地址 → 保存 → 回到地址管理 → 再回到点餐页，每一步导航栈正确",
+          "status": "completed",
+          "depends_on": ["S03-T01-STEP02"],
+          "target_files": [],
+          "target_area": "runtime/miniprogram-simulator",
+          "verification": [
+            "IDE 模拟器中操作新增/编辑/删除地址后返回正常",
+            "Console 无异常日志"
+          ],
+          "evidence": [
+            "manual verification: 新增地址 → 保存 → 返回地址列表 → 返回订单页，导航栈正确"
+          ]
+        },
+        {
+          "step_id": "S03-T01-STEP04",
+          "title": "修复地址加载竞态：goAddress 添加 loading guard",
+          "description": "goAddress() 在 getAddressList() 异步请求完成前检查 addressList.length，导致误判地址列表为空。新增 addressListLoading 标志，加载中时显示 loading toast 并 return",
+          "status": "completed",
+          "depends_on": ["S03-T01-STEP03"],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "21869 (addressListLoading: true), 22003 (.finally + set false), 22037 (goAddress check)",
+          "verification": [
+            "点击地址选择后显示 '加载中...' toast 而非跳转到添加地址页",
+            "API 完成后正常进入地址选择页"
+          ],
+          "evidence": [
+            "inline edit in vendor.js: data + getAddressList.finally + goAddress early return"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S03-T02",
+      "title": "修复登录流程：获取真实用户信息并提交后端",
+      "status": "pending",
+      "kr_ids": ["S03-KR2"],
+      "steps": [
+        {
+          "step_id": "S03-T02-STEP01",
+          "title": "取消注释 getUserProfile 的用户字段传输",
+          "description": "在 vendor.js 的 getData 函数中，取消注释 avatar、name、sex 字段，将 getUserProfile 返回的真实用户信息发送到后端",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "4307-4312 附近（params 中 avatar/name/sex 字段）",
+          "verification": [
+            "登录请求 body 包含 avatarUrl、nickName、gender 字段",
+            "后端 lgg_user 表中能查到用户的 nick_name 和 avatar 数据"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S03-T02-STEP02",
+          "title": "验证登录后用户信息持久化",
+          "description": "通过 IDE 登录后，查询后端数据库中 lgg_user 表是否保存了用户的 nick_name 和 avatar",
+          "status": "pending",
+          "depends_on": ["S03-T02-STEP01"],
+          "target_files": [],
+          "target_area": "database/verification",
+          "verification": [
+            "登录后 MySQL 查询：SELECT nick_name, avatar FROM lgg_user WHERE openid = 登录用户 openid 返回非空 nick_name 和 avatar"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S03-T03",
+      "title": "修复分类侧边栏按类型过滤",
+      "status": "partially_completed",
+      "kr_ids": ["S03-KR3"],
+      "steps": [
+        {
+          "step_id": "S03-T03-STEP01",
+          "title": "修复 getCategoryList 调用不传 type 参数的问题",
+          "description": "在 init() 函数中调用 getCategoryList({type: this.currentType}) 传递当前选中的分类类型，或后续在侧边栏切换时动态调用",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "4343 (getCategoryList call in init)",
+          "verification": [
+            "IDE Network 面板中请求 /user/category/list 含 type 参数",
+            "侧边栏只显示与当前类型匹配的分类"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S03-T03-STEP02",
+          "title": "修复 getDishListDataes 条件判断反转",
+          "description": "将条件 `if (!(params.type === 1))` 修复为 `if (params.type === 1)`，确保 type=1（dish）时调用 dish 列表 API，type≠1（setmeal）时调用 setmeal 列表 API",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "4439 附近",
+          "verification": [
+            "点击 '套餐' 侧边栏看到 setmeal 商品列表",
+            "点击 '热门' 侧边栏看到 dish 商品列表" ,
+            "点击 '饮品' 侧边栏看到 dish 商品列表"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S03-T03-STEP03",
+          "title": "验证分类侧边栏交互正确",
+          "description": "验证所有分类类型（套餐/热门/饮品等）的切换、数据加载、商品卡片显示均正常",
+          "status": "pending",
+          "depends_on": ["S03-T03-STEP01", "S03-T03-STEP02"],
+          "target_files": [],
+          "target_area": "runtime/miniprogram-simulator",
+          "verification": [
+            "每个分类侧边栏切换后右侧显示对应的商品",
+            "不同分类显示不同商品内容，不混肴"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S03-T04",
+      "title": "修复购物车金额叠加",
+      "status": "partially_completed",
+      "kr_ids": ["S03-KR4"],
+      "steps": [
+        {
+          "step_id": "S03-T04-STEP01",
+          "title": "取消注释 addDishAction 请求参数中的关键字段",
+          "description": "在 vendor.js 的 addDishAction 函数中，取消注释 number、amount、name、image 字段，确保添加购物车时传递数量和单价",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "4540-4546 附近（params 中 comment-out 的字段）",
+          "verification": [
+            "IDE Network 面板中 /user/shoppingCart/add 请求体包含 number、amount、dishFlavor 字段",
+            "多次添加同一商品后 orderDishNumber 递增而非保持为 1"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S03-T04-STEP02",
+          "title": "验证购物车金额计算正确",
+          "description": "添加多个不同数量的商品到购物车后，验证总价 = Σ (单价 × 数量) 正确",
+          "status": "pending",
+          "depends_on": ["S03-T04-STEP01"],
+          "target_files": [],
+          "target_area": "runtime/miniprogram-simulator",
+          "verification": [
+            "购物车列表显示正确数量和单价",
+            "合计金额 = Σ(单价 × 数量)",
+            "多添加一次已存在的商品，数量+1 而非新增一行"
+          ],
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "task_id": "S03-T05",
+      "title": "全局页面导航栈规范化",
+      "status": "completed",
+      "kr_ids": ["S03-KR5"],
+      "steps": [
+        {
+          "step_id": "S03-T05-STEP01",
+          "title": "修复 order 页面 goBack 使用 redirectTo 问题",
+          "description": "将 order 页面的 goBack 中 uni.redirectTo({ url: '/pages/index/index' }) 改为 uni.navigateBack()",
+          "status": "completed",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "22083-22086",
+          "verification": [
+            "在订单页点击后退按钮，回到首页（index 页面）"
+          ],
+          "evidence": [
+            "commit 24d9511: vendor.js order goBack → navigateBack"
+          ]
+        },
+        {
+          "step_id": "S03-T05-STEP02",
+          "title": "修复 details 页面 goBack 使用 redirectTo 问题",
+          "description": "将 details 页面的 goBack 中 uni.redirectTo({ url: '/pages/historyOrder/historyOrder' }) 改为 uni.navigateBack()",
+          "status": "completed",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "28645-28648",
+          "verification": [
+            "在详情页点击后退按钮，回到历史订单页（historyOrder 页面）"
+          ],
+          "evidence": [
+            "commit 24d9511: vendor.js details goBack → navigateBack"
+          ]
+        },
+        {
+          "step_id": "S03-T05-STEP03",
+          "title": "修复 order 页面 goAddress 使用 redirectTo 问题",
+          "description": "将 goAddress 中的 uni.redirectTo 改为 uni.navigateTo 以允许返回",
+          "status": "completed",
+          "depends_on": [],
+          "target_files": [
+            "mp-weixin/common/vendor.js"
+          ],
+          "target_lines": "22053-22063",
+          "verification": [
+            "从订单页进入地址选择页后能通过后退按钮回到订单页"
+          ],
+          "evidence": [
+            "commit 24d9511: vendor.js goAddress → navigateTo, goRemark → navigateTo"
+          ]
+        },
+        {
+          "step_id": "S03-T05-STEP04",
+          "title": "全局导航审计：确保所有 navigation API 调用符合规范",
+          "description": "搜索全仓库的 uni.navigateTo/redirectTo/switchTab/navigateBack 调用，确保：导航到新页用 navigateTo，返回用 navigateBack，底部 tab 切换用 switchTab，仅登录/支付回调用 redirectTo",
+          "status": "completed",
+          "depends_on": ["S03-T05-STEP01", "S03-T05-STEP02", "S03-T05-STEP03", "S03-T01-STEP01", "S03-T01-STEP02"],
+          "target_files": [
+            "mp-weixin/common/vendor.js",
+            "mp-weixin/pages/*/*.js"
+          ],
+          "verification": [
+            "所有 '后退' 场景均使用 navigateBack",
+            "所有 '前进' 场景均使用 navigateTo（登录/支付等特殊页除外）",
+            "IDE 模拟器中所有页面间跳转正常"
+          ],
+          "evidence": [
+            "commit 24d9511 covers 6 files, 14 navigation fixes in total",
+            "Remaining 4 redirectTo are intentional (pay submit/cancel/success)",
+            "Final audit ran via rg command, confirmed"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S03-T06",
+      "title": "后端联调验证：admin 端数据一致性",
+      "status": "pending",
+      "kr_ids": ["S03-KR1", "S03-KR2", "S03-KR3", "S03-KR4"],
+      "steps": [
+        {
+          "step_id": "S03-T06-STEP01",
+          "title": "验证用户信息从 admin 后台可见",
+          "description": "登录小程序后，登录 admin 后台（http://localhost:8087），在系统管理 > 用户管理 中查看是否有登录用户的记录，nick_name 和 avatar 是否正确",
+          "status": "pending",
+          "depends_on": ["S03-T02-STEP02"],
+          "target_files": [],
+          "target_area": "admin-frontend",
+          "verification": [
+            "admin 后台用户列表中显示小程序登录用户的 nick_name",
+            "admin 后台用户详情中显示 avatar 头像 URL"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S03-T06-STEP02",
+          "title": "验证点餐下单数据在 admin 端可见",
+          "description": "在小程序端完成点餐 → 加入购物车 → 下单，然后在 admin 后台查看订单管理中出现该订单，金额/商品明细一致",
+          "status": "pending",
+          "depends_on": ["S03-T03-STEP03", "S03-T04-STEP02"],
+          "target_files": [],
+          "target_area": "admin-frontend, database",
+          "verification": [
+            "admin 后台订单管理显示新创建的订单",
+            "订单金额 = 购物车合计金额",
+            "订单包含正确的商品明细（商品名称、数量、单价）"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S03-T06-STEP03",
+          "title": "验证 mock 支付后订单状态流转",
+          "description": "调用 mock 支付接口 POST /pay/mock?orderNumber={orderNumber}，验证订单状态从未支付 → 已支付/已完成",
+          "status": "pending",
+          "depends_on": ["S03-T06-STEP02"],
+          "target_files": [],
+          "target_area": "runtime/pay-api, database",
+          "verification": [
+            "curl POST /pay/mock?orderNumber=xxx 返回 code=200",
+            "MySQL 查询该订单状态变为已支付或已完成",
+            "admin 后台订单状态更新"
+          ],
+          "evidence": []
+        },
+        {
+          "step_id": "S03-T06-STEP04",
+          "title": "整体业务闭环演示验证",
+          "description": "完整演示：打开小程序 → 浏览分类 → 添加购物车 → 进入下单页 → 填写地址 → 提交订单 → mock 支付 → admin 后台可见订单状态变更",
+          "status": "pending",
+          "depends_on": ["S03-T06-STEP01", "S03-T06-STEP02", "S03-T06-STEP03", "S03-T05-STEP04"],
+          "target_files": [],
+          "target_area": "runtime/full-stack",
+          "verification": [
+            "完整闭环演示（小程序侧 + admin 侧）无报错",
+            "每一步数据可验证（MySQL 查询或 admin 界面查看）"
+          ],
+          "evidence": []
+        }
+      ]
+    }
+  ]
+}

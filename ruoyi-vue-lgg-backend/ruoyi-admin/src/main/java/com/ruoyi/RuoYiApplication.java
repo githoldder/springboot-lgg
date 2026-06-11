@@ -2,14 +2,16 @@ package com.ruoyi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
  * 启动程序
  * 
  * @author ruoyi
  */
-@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
+@EnableDiscoveryClient
+@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class }, excludeName = {"com.alibaba.cloud.nacos.endpoint.NacosDiscoveryEndpointAutoConfiguration"})
 public class RuoYiApplication
 {
     public static void main(String[] args)

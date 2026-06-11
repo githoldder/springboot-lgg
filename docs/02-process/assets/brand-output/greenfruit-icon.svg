@@ -1,0 +1,28 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">绿果果品牌图标</title>
+  <desc id="desc">A square lime slice and leaf brand icon for GreenFruit.</desc>
+  <defs>
+    <linearGradient id="bg" x1="78" y1="48" x2="456" y2="462" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F1FFD1"/>
+      <stop offset="1" stop-color="#E4FFF5"/>
+    </linearGradient>
+    <linearGradient id="lime" x1="96" y1="84" x2="380" y2="390" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E8FF74"/>
+      <stop offset="0.52" stop-color="#83D83C"/>
+      <stop offset="1" stop-color="#00A86B"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="270" y1="62" x2="430" y2="162" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C9FF67"/>
+      <stop offset="1" stop-color="#00A86B"/>
+    </linearGradient>
+  </defs>
+  <rect x="28" y="28" width="456" height="456" rx="112" fill="url(#bg)"/>
+  <circle cx="236" cy="270" r="158" fill="url(#lime)"/>
+  <circle cx="236" cy="270" r="126" fill="#F5FFE4" fill-opacity="0.9"/>
+  <circle cx="236" cy="270" r="108" fill="#9FE34B"/>
+  <path d="M236 164v212M130 270h212M160 194l152 152M312 194 160 346" stroke="#F8FFE8" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="236" cy="270" r="30" fill="#FBFFE9"/>
+  <circle cx="236" cy="270" r="150" stroke="#F7FFE8" stroke-width="18"/>
+  <path d="M312 122C354 54 426 62 466 88C438 150 370 190 318 166C308 161 305 135 312 122Z" fill="url(#leaf)"/>
+  <path d="M334 146C370 126 402 108 448 92" stroke="#F5FFE8" stroke-width="12" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,24 @@
+@startuml
+title 图3：支付成功与包装提醒时序图
+
+actor "小程序用户" as User
+participant "lgg-gateway" as Gateway
+participant "lgg-business" as Business
+participant "lgg-pay" as Pay
+queue "RabbitMQ" as RabbitMQ
+participant "lgg-notice" as Notice
+participant "管理端 WebSocket" as WebSocket
+
+User -> Gateway : 提交订单/发起支付
+Gateway -> Business : 创建订单
+Business --> Gateway : 返回订单号
+Gateway -> Pay : /pay/mock
+Pay -> Business : OpenFeign 更新订单状态
+Business --> Pay : 更新成功
+Pay -> RabbitMQ : publish pay.success
+RabbitMQ -> Notice : consume pay.success.queue
+Notice -> WebSocket : 推送包装提醒
+WebSocket --> User : 管理端看到新订单提醒
+
+@enduml
+

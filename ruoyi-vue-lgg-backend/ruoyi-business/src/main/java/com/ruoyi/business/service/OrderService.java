@@ -7,6 +7,8 @@ import com.ruoyi.business.vo.OrderStatisticsVO;
 import com.ruoyi.business.vo.OrderSubmitVO;
 import com.ruoyi.business.vo.OrderVO;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 public interface OrderService {
     /**
      * 用户下单
@@ -27,6 +29,12 @@ public interface OrderService {
      * @param outTradeNo
      */
     void paySuccess(String outTradeNo);
+
+    /**
+     * 用户端确认支付完成，模拟微信支付回调后的主动查询确认
+     * @param orderNumber
+     */
+    OrderVO confirmPayment(String orderNumber);
 
     /**
      * 用户端订单分页查询
@@ -98,6 +106,12 @@ public interface OrderService {
     void delivery(Long id);
 
     /**
+     * 指派骑手
+     * @param ordersAssignRiderDTO
+     */
+    void assignRider(OrdersAssignRiderDTO ordersAssignRiderDTO);
+
+    /**
      * 完成订单
      *
      * @param id
@@ -109,4 +123,18 @@ public interface OrderService {
      * @param id
      */
     void reminder(Long id);
+
+    /**
+     * 订单小票HTML
+     * @param id
+     * @return
+     */
+    String printReceipt(Long id);
+
+    /**
+     * 导出订单记录
+     * @param response
+     * @param ordersPageQueryDTO
+     */
+    void exportOrders(HttpServletResponse response, OrdersPageQueryDTO ordersPageQueryDTO);
 }

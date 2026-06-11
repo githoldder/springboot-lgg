@@ -51,9 +51,26 @@ public class UserServiceImpl implements UserService {
         if(user == null){
             user = User.builder()
                     .openid(openid)
+                    .name(userLoginDTO.getName())
+                    .avatar(userLoginDTO.getAvatar())
+                    .sex(userLoginDTO.getSex())
                     .createTime(LocalDateTime.now())
                     .build();
             userMapper.insert(user);
+        } else {
+            // 已存在用户，更新头像/昵称（可能首次登录时没有）
+            boolean needUpdate = false;
+            if (user.getName() == null && userLoginDTO.getName() != null) {
+                user.setName(userLoginDTO.getName());
+                needUpdate = true;
+            }
+            if (user.getAvatar() == null && userLoginDTO.getAvatar() != null) {
+                user.setAvatar(userLoginDTO.getAvatar());
+                needUpdate = true;
+            }
+            if (needUpdate) {
+                userMapper.update(user);
+            }
         }
 
         //返回这个用户对象

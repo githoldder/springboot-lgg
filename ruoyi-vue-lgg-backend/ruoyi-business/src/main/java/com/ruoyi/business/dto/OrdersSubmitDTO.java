@@ -20,6 +20,8 @@ public class OrdersSubmitDTO implements Serializable {
     private LocalDateTime estimatedDeliveryTime;
     //配送状态  1立即送出  0选择具体时间
     private Integer deliveryStatus;
+    //配送方式 DELIVERY配送到家 PICKUP到店自提
+    private String deliveryType;
     //餐具数量
     private Integer tablewareNumber;
     //餐具数量状态  1按餐量提供  0选择具体数量

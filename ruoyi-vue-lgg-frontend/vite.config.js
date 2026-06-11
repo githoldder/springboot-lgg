@@ -31,10 +31,32 @@ export default defineConfig(({ mode, command }) => {
       proxy: {
         // https://cn.vitejs.dev/config/#server-proxy
         '/dev-api': {
-          target: 'http://localhost:8081',
+          target: 'http://localhost:8090',
           // target: 'https://api.wzs.pub/mock/13',
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/dev-api/, '')
+        },
+        '/prod-api': {
+          target: 'http://localhost:8090',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/prod-api/, '')
+        }
+      }
+    },
+    preview: {
+      port: 8087,
+      strictPort: true,
+      host: true,
+      proxy: {
+        '/dev-api': {
+          target: 'http://localhost:8090',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/dev-api/, '')
+        },
+        '/prod-api': {
+          target: 'http://localhost:8090',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/prod-api/, '')
         }
       }
     },

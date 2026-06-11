@@ -1,6 +1,7 @@
 package com.ruoyi.business.controller.admin;
 
 import com.ruoyi.business.dto.OrdersCancelDTO;
+import com.ruoyi.business.dto.OrdersAssignRiderDTO;
 import com.ruoyi.business.dto.OrdersConfirmDTO;
 import com.ruoyi.business.dto.OrdersPageQueryDTO;
 import com.ruoyi.business.dto.OrdersRejectionDTO;
@@ -13,7 +14,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 订单管理
@@ -114,6 +118,18 @@ public class OrderController {
     }
 
     /**
+     * 指派骑手
+     *
+     * @return
+     */
+    @PutMapping("/assignRider")
+    @ApiOperation("指派骑手")
+    public Result assignRider(@RequestBody OrdersAssignRiderDTO ordersAssignRiderDTO) {
+        orderService.assignRider(ordersAssignRiderDTO);
+        return Result.success();
+    }
+
+    /**
      * 完成订单
      *
      * @return
@@ -123,5 +139,25 @@ public class OrderController {
     public Result complete(@PathVariable("id") Long id) {
         orderService.complete(id);
         return Result.success();
+    }
+
+    /**
+     * 订单小票打印页
+     *
+     * @return
+     */
+    @GetMapping(value = "/print/{id}", produces = MediaType.TEXT_HTML_VALUE)
+    @ApiOperation("订单小票打印页")
+    public String print(@PathVariable("id") Long id) {
+        return orderService.printReceipt(id);
+    }
+
+    /**
+     * 导出订单记录
+     */
+    @PostMapping("/export")
+    @ApiOperation("导出订单记录")
+    public void export(HttpServletResponse response, OrdersPageQueryDTO ordersPageQueryDTO) {
+        orderService.exportOrders(response, ordersPageQueryDTO);
     }
 }

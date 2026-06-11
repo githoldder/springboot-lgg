@@ -84,8 +84,8 @@ public interface SetmealMapper {
      * @return
      */
     @Select("select sd.name, sd.copies, d.image, d.description " +
-            "from lgg_fruit_box_item sd left join lgg_fruit d on sd.dish_id = d.id " +
-            "where sd.setmeal_id = #{setmealId}")
+            "from lgg_fruit_box_item sd left join lgg_fruit d on sd.fruit_id = d.id " +
+            "where sd.fruit_box_id = #{setmealId}")
     List<DishItemVO> getDishItemBySetmealId(Long setmealId);
 
     /**

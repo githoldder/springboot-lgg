@@ -32,7 +32,7 @@ public class CommonController
     private static final Logger log = LoggerFactory.getLogger(CommonController.class);
 
     @Autowired
-    private ServerConfig serverConfig;
+    private com.ruoyi.common.utils.file.MinioUtil minioUtil;
 
     private static final String FILE_DELIMITER = ",";
 
@@ -76,15 +76,12 @@ public class CommonController
     {
         try
         {
-            // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
-            // 上传并返回新文件名称
-            String fileName = FileUploadUtils.upload(filePath, file);
-            String url = serverConfig.getUrl() + fileName;
+            // 上传并返回 MinIO URL
+            String url = minioUtil.upload(file);
             AjaxResult ajax = AjaxResult.success();
             ajax.put("url", url);
-            ajax.put("fileName", fileName);
-            ajax.put("newFileName", FileUtils.getName(fileName));
+            ajax.put("fileName", FileUtils.getName(url));
+            ajax.put("newFileName", FileUtils.getName(url));
             ajax.put("originalFilename", file.getOriginalFilename());
             return ajax;
         }
@@ -102,20 +99,17 @@ public class CommonController
     {
         try
         {
-            // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
             List<String> urls = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();
             List<String> newFileNames = new ArrayList<String>();
             List<String> originalFilenames = new ArrayList<String>();
             for (MultipartFile file : files)
             {
-                // 上传并返回新文件名称
-                String fileName = FileUploadUtils.upload(filePath, file);
-                String url = serverConfig.getUrl() + fileName;
+                String url = minioUtil.upload(file);
                 urls.add(url);
+                String fileName = FileUtils.getName(url);
                 fileNames.add(fileName);
-                newFileNames.add(FileUtils.getName(fileName));
+                newFileNames.add(fileName);
                 originalFilenames.add(file.getOriginalFilename());
             }
             AjaxResult ajax = AjaxResult.success();

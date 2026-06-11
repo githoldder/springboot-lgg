@@ -4,39 +4,51 @@
 1. 每张截图先在 txt 正文中以 [截图占位符: Sxx-名称] 标记。
 2. 手动粘贴 Word 时，先粘贴占位符所在段落，再粘贴对应截图。
 3. 截图下方使用“图 x-x 名称”的 Word 题注。
+4. 正式报告只使用 docs/02-process/Figure/screenshots-real 中的真实工具截图。
+5. docs/02-process/Figure/screenshots 中的旧版模板图不得用于正式报告，只能作为版式草稿。
 
-[截图占位符: S01-PM2服务状态]
-建议截图内容：终端执行 pm2 status，展示 lgg 后端、前端、后续 Nacos/Gateway 等服务在线。
+[截图占位符: S01-PM2服务运行状态]
+建议截图内容：终端执行 pm2 status，展示后台、网关、Redis、Nacos等服务状态均在线。
 
-[截图占位符: S02-Nacos服务注册]
-建议截图内容：Nacos 控制台服务列表，展示 lgg-gateway、lgg-admin、lgg-business、lgg-pay、lgg-notice。
+[截图占位符: S02-Nacos服务注册中心]
+建议截图内容：Nacos控制台服务列表，展示 Gateway, Admin, Business, Pay, Notice 等微服务均成功注册。
 
-[截图占位符: S03-绿果果管理端登录]
-建议截图内容：浏览器打开 http://localhost:8082，显示绿果果管理系统登录页。
+[截图占位符: S03-Gateway接口动态路由转发]
+建议截图内容：通过 8090 网关端口调用接口（如获取验证码或登录），显示 Gateway 成功反向代理并路由到对应微服务的响应。
+当前真实证据：screenshots-real/S03-gateway-route-real.png。
 
-[截图占位符: S04-运营数据大屏]
-建议截图内容：登录后首页展示生鲜运营数据大屏。
+[截图占位符: S04-OpenFeign跨服务远程状态调用]
+建议截图内容：微服务控制台日志，展示 pay 支付成功后通过 OpenFeign 强类型远程调用 business 接口并得到 200 状态码返回。
+当前真实证据：screenshots-real/S04-feign-call-real.png。
 
-[截图占位符: S05-水果分类管理]
-建议截图内容：分类管理页面，菜单路径显示绿果果业务/分类管理。
+[截图占位符: S05-RabbitMQ消息事件队列绑定]
+建议截图内容：RabbitMQ 管理后台，展示 pay.success.queue、Consumers = 1、消息 Ready/Unacked/Total 为 0 或消息速率曲线，证明通知服务消费者在线且消息已消费。
+当前真实证据：screenshots-real/S05-rabbitmq-bindings-real.png。
 
-[截图占位符: S06-水果品种管理]
-建议截图内容：水果品种管理页面列表或新增弹窗。
+[截图占位符: S06-WebSocket后台实时提醒推送]
+建议截图内容：浏览器控制台的网络面板，展示 WebSocket 成功建立 ws 长连接并接收到来单提醒的二进制或文本帧数据。
+当前真实证据：screenshots-real/S06-websocket-frames-real.png。
 
-[截图占位符: S07-订单管理]
-建议截图内容：订单列表、订单状态或订单详情。
+[截图占位符: S07-微信小程序商品结算UI]
+建议截图内容：微信小程序或模拟器中，展示购物车结算订单、显示收货人地址和应付总额的商品结算页面。
+当前阻塞：微信开发者工具可打开 mp-weixin 项目，但模拟器出现 Foundation.onLoad is not a function 与 timeout 渲染层错误，支付页尚未形成有效真实截图。项目现有支付方式为“微信支付”模拟页，未接入真实支付宝收银台。
 
-[截图占位符: S08-微信小程序首页]
-建议截图内容：微信开发者工具中打开 mp-weixin，展示绿果果小程序首页。
+[截图占位符: S08-生鲜模拟支付成功界面]
+建议截图内容：调用模拟支付 mockPay 接口后，返回支付处理成功（code = 200）的 JSON 响应或客户端成功提示屏。
+当前真实证据：screenshots-real/S08-mock-pay-success-real.png。
 
-[截图占位符: S09-模拟支付闭环]
-建议截图内容：小程序或接口触发支付，后台订单状态变化。
+[截图占位符: S09-后台订单即时提醒卡片UI]
+建议截图内容：管理端后台右上角弹出“您有新的绿果果订单，请及时包装！”的 Element Plus 浮动全局通知通知卡片。
+当前真实证据：screenshots-real/S09-admin-notification-real.png。
 
-[截图占位符: S10-WebSocket包装提醒]
-建议截图内容：管理端收到“新订单请及时包装”提醒或后端日志。
+[截图占位符: S10-核心运营多维统计图表]
+建议截图内容：管理端首页展示销售额、今日订单、新增会员、在售商品、订单状态和热销商品 TOP5 等运营看板。
+当前真实证据：screenshots-real/S10-dashboard-real.png。
 
-[截图占位符: S11-接口测试报告]
-建议截图内容：Apifox CLI/Newman 运行结果或 HTML 报告。
+[截图占位符: S11-Newman微服务接口测试报告]
+建议截图内容：Newman 或 Apifox 命令行自动生成的 HTML 测试套件报告，展示分布式微服务接口全量通过。
+当前真实证据：screenshots-real/S11-newman-cli-real.png。
 
-[截图占位符: S12-Playwright端到端测试]
-建议截图内容：Playwright 测试通过结果或浏览器截图。
+[截图占位符: S12-Playwright端到端闭环测试结果]
+建议截图内容：Playwright 运行 terminal 输出，展示 should complete order pay and receive websocket alert 绿灯通过的输出。
+当前真实证据：screenshots-real/S12-playwright-cli-real.png。

@@ -3,14 +3,46 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.ruoyi.business.mapper.OrderMapper">
 
+    <resultMap id="OrderResultMap" type="com.ruoyi.business.entity.Orders">
+        <id property="id" column="id"/>
+        <result property="number" column="number"/>
+        <result property="status" column="status"/>
+        <result property="userId" column="user_id"/>
+        <result property="addressBookId" column="address_book_id"/>
+        <result property="orderTime" column="order_time"/>
+        <result property="checkoutTime" column="checkout_time"/>
+        <result property="payMethod" column="pay_method"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="amount" column="amount"/>
+        <result property="remark" column="remark"/>
+        <result property="userName" column="user_name"/>
+        <result property="phone" column="phone"/>
+        <result property="address" column="address"/>
+        <result property="consignee" column="consignee"/>
+        <result property="cancelReason" column="cancel_reason"/>
+        <result property="rejectionReason" column="rejection_reason"/>
+        <result property="cancelTime" column="cancel_time"/>
+        <result property="estimatedDeliveryTime" column="estimated_delivery_time"/>
+        <result property="deliveryStatus" column="delivery_status"/>
+        <result property="deliveryType" column="delivery_type"/>
+        <result property="riderId" column="rider_id"/>
+        <result property="riderName" column="rider_name"/>
+        <result property="riderPhone" column="rider_phone"/>
+        <result property="deliveryTime" column="delivery_time"/>
+        <result property="packAmount" column="pack_amount"/>
+        <result property="tablewareNumber" column="tableware_number"/>
+        <result property="tablewareStatus" column="tableware_status"/>
+    </resultMap>
+
     <insert id="insert" parameterType="Orders" useGeneratedKeys="true" keyProperty="id">
         insert into lgg_orders (number, status, user_id, address_book_id, order_time, checkout_time, pay_method, pay_status,
-                            amount, remark, phone, address, consignee, estimated_delivery_time, delivery_status,
-                            pack_amount, tableware_number, tableware_status)
+                            amount, remark, phone, address, user_name, consignee, estimated_delivery_time, delivery_status,
+                            delivery_type, rider_id, rider_name, rider_phone, pack_amount, tableware_number, tableware_status)
         values
                (#{number}, #{status}, #{userId}, #{addressBookId}, #{orderTime}, #{checkoutTime}, #{payMethod},
-                #{payStatus},#{amount}, #{remark}, #{phone}, #{address}, #{consignee}, #{estimatedDeliveryTime},
-                #{deliveryStatus},#{packAmount}, #{tablewareNumber}, #{tablewareStatus})
+                #{payStatus},#{amount}, #{remark}, #{phone}, #{address}, #{userName}, #{consignee}, #{estimatedDeliveryTime},
+                #{deliveryStatus}, #{deliveryType}, #{riderId}, #{riderName}, #{riderPhone}, #{packAmount},
+                #{tablewareNumber}, #{tablewareStatus})
     </insert>
 
     <update id="update" parameterType="com.ruoyi.business.entity.Orders">
@@ -38,13 +70,25 @@
                 status = #{status},
             </if>
             <if test="deliveryTime != null">
-                delivery_time = #{deliveryTime}
+                delivery_time = #{deliveryTime},
+            </if>
+            <if test="deliveryType != null and deliveryType!=''">
+                delivery_type = #{deliveryType},
+            </if>
+            <if test="riderId != null">
+                rider_id = #{riderId},
+            </if>
+            <if test="riderName != null and riderName!=''">
+                rider_name = #{riderName},
+            </if>
+            <if test="riderPhone != null and riderPhone!=''">
+                rider_phone = #{riderPhone},
             </if>
         </set>
         where id = #{id}
     </update>
 
-    <select id="pageQuery" resultType="Orders">
+    <select id="pageQuery" resultMap="OrderResultMap">
         select * from lgg_orders
         <where>
             <if test="number != null and number!=''">
@@ -67,6 +111,22 @@
             </if>
         </where>
         order by order_time desc
+    </select>
+
+    <select id="getByNumberAndUserId" resultMap="OrderResultMap">
+        select * from lgg_orders where number = #{orderNumber} and user_id = #{userId}
+    </select>
+
+    <select id="getById" resultMap="OrderResultMap">
+        select * from lgg_orders where id = #{id}
+    </select>
+
+    <select id="countStatus" resultType="java.lang.Integer">
+        select count(id) from lgg_orders where status = #{status}
+    </select>
+
+    <select id="getByStatusAndOrderTimeLT" resultMap="OrderResultMap">
+        select * from lgg_orders where status = #{status} and order_time &lt; #{orderTime}
     </select>
 
     <select id="sumByMap" resultType="java.lang.Double">

@@ -25,7 +25,7 @@ public class AutoFillAspect {
     /**
      * 切入点
      */
-    @Pointcut("execution(* com.sky.mapper.*.*(..)) && @annotation(com.sky.annotation.AutoFill)")
+    @Pointcut("execution(* com.ruoyi.business.mapper.*.*(..)) && @annotation(com.ruoyi.business.annotation.AutoFill)")
     public void autoFillPointCut(){}
 
     /**

@@ -8,7 +8,7 @@ spring:
             master:
                 url: jdbc:mysql://localhost:3306/lgg_ruoyi?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
                 username: ${LGG_DB_USERNAME:root}
-                password: ${LGG_DB_PASSWORD:}
+                password: ${LGG_DB_PASSWORD:123456}
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭

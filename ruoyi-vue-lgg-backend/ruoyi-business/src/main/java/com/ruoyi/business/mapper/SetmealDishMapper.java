@@ -29,6 +29,6 @@ public interface SetmealDishMapper {
      *
      * @param setmealId
      */
-    @Delete("delete from lgg_fruit_box_item where setmeal_id = #{setmealId}")
+    @Delete("delete from lgg_fruit_box_item where fruit_box_id = #{setmealId}")
     void deleteBySetmealId(Long setmealId);
 }

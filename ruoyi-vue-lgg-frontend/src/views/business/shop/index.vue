@@ -3,7 +3,7 @@
     <el-card style="max-width: 600px; margin: 20px auto; text-align: center;">
       <template #header>
         <div class="card-header">
-          <span>绿果果店铺营业状态设置</span>
+          <span>常工鲜生店铺营业状态设置</span>
         </div>
       </template>
       <div style="padding: 40px 0;">

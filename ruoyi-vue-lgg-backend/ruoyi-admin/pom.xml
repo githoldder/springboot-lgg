@@ -54,11 +54,22 @@
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
 
-        <!-- 绿果果业务模块 -->
+        <!-- Nacos 服务注册与发现 -->
         <dependency>
-            <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-business</artifactId>
-            <version>${ruoyi.version}</version>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+
+        <!-- LoadBalancer 负载均衡 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
+        <!-- Actuator 监控 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
     </dependencies>

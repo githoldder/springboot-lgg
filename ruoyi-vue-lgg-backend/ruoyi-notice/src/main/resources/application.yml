@@ -1,0 +1,28 @@
+server:
+  port: 8086
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: lgg-notice
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        ip: 127.0.0.1
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+logging:
+  level:
+    com.ruoyi: debug
+    org.springframework: warn
+
+# 开启 actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health'

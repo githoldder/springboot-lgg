@@ -3,7 +3,7 @@
     <el-row :gutter="20">
       <el-col :span="24">
         <el-card class="welcome-card" style="margin-bottom: 20px; background: linear-gradient(135deg, #00b894, #55efc4); color: white;">
-          <h2 style="margin: 0 0 10px 0;">欢迎使用 绿果果水果零售配送管理系统</h2>
+          <h2 style="margin: 0 0 10px 0;">欢迎使用 常工鲜生水果零售配送管理系统</h2>
           <p style="margin: 0; font-size: 14px; opacity: 0.9;">
             基于 Spring Boot 与 Vue3 + Element Plus 的新一代生鲜水果零售配送平台。
           </p>
@@ -118,11 +118,11 @@
         <el-card shadow="hover">
           <template #header>
             <div class="card-header">
-              <span style="font-weight: bold; color: #2d3436;">关于 绿果果水果零售配送系统</span>
+              <span style="font-weight: bold; color: #2d3436;">关于 常工鲜生水果零售配送系统</span>
             </div>
           </template>
           <p style="font-size: 14px; line-height: 1.8; color: #2d3436; margin: 0;">
-            “绿果果生鲜零售配送系统”是针对现代生鲜水果零售市场打造的高效、轻量、高可用业务运营平台。系统采用最新的 Spring Boot + Vue3/Vite + Element Plus 架构，底层业务数据库全面融入若依权限与安全机制。小程序端与管理端利用 WebSocket、沙箱模拟收银台无缝打通了从“用户选购”、“模拟支付”到“后台语音播报”、“商家精细包装”、“骑手快速送达”的全链路闭环流转，实现生鲜水果的极速配送与精细化运营。
+            “常工鲜生生鲜零售配送系统”是针对现代生鲜水果零售市场打造的高效、轻量、高可用业务运营平台。系统采用最新的 Spring Boot + Vue3/Vite + Element Plus 架构，底层业务数据库全面融入统一权限与安全机制。小程序端与管理端利用 WebSocket、沙箱模拟收银台无缝打通了从“用户选购”、“模拟支付”到“后台语音播报”、“商家精细包装”、“骑手快速送达”的全链路闭环流转，实现生鲜水果的极速配送与精细化运营。
           </p>
         </el-card>
       </el-col>
@@ -131,6 +131,9 @@
 </template>
 
 <script setup>
+import { ElNotification } from 'element-plus'
+import { onBeforeUnmount, onMounted } from 'vue'
+
 const hotFruits = [
   { name: '泰国金枕榴莲(约2.5kg)', sales: '1,580.00', unit: '10箱' },
   { name: '智利进口车厘子(500g)', sales: '998.00', unit: '20份' },
@@ -157,6 +160,67 @@ function getRankStyle(index) {
   if (index === 2) return { ...base, backgroundColor: '#f1c40f' }
   return { ...base, backgroundColor: '#bdc3c7' }
 }
+
+let orderNoticeSocket
+let paySuccessSocket
+
+function connectOrderNoticeSocket() {
+  if (orderNoticeSocket && orderNoticeSocket.readyState <= WebSocket.OPEN) {
+    return
+  }
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+  const wsHost = window.location.hostname + ':8090';
+  orderNoticeSocket = new WebSocket(`${wsProtocol}${wsHost}/ws/admin-dashboard`)
+  orderNoticeSocket.onmessage = handleWebSocketMessage
+  orderNoticeSocket.onerror = () => {
+    if (orderNoticeSocket) orderNoticeSocket.close()
+  }
+}
+
+function connectPaySuccessSocket() {
+  if (paySuccessSocket && paySuccessSocket.readyState <= WebSocket.OPEN) {
+    return
+  }
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+  const wsHost = window.location.hostname + ':8090';
+  paySuccessSocket = new WebSocket(`${wsProtocol}${wsHost}/websocket/admin-dashboard`)
+  paySuccessSocket.onmessage = handleWebSocketMessage
+  paySuccessSocket.onerror = () => {
+    if (paySuccessSocket) paySuccessSocket.close()
+  }
+}
+
+function handleWebSocketMessage(event) {
+  let content = event.data
+  try {
+    const payload = JSON.parse(event.data)
+    content = payload.content || event.data
+  } catch (error) {
+    content = event.data
+  }
+  ElNotification({
+    title: '新订单提醒',
+    message: content,
+    type: 'success',
+    duration: 9000
+  })
+}
+
+onMounted(() => {
+  connectOrderNoticeSocket()
+  connectPaySuccessSocket()
+})
+
+onBeforeUnmount(() => {
+  if (orderNoticeSocket) {
+    orderNoticeSocket.close()
+    orderNoticeSocket = undefined
+  }
+  if (paySuccessSocket) {
+    paySuccessSocket.close()
+    paySuccessSocket = undefined
+  }
+})
 </script>
 
 <style scoped>

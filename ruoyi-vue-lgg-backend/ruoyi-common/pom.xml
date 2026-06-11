@@ -55,7 +55,7 @@
   
         <!-- JSON工具类 -->
         <dependency>
-            <groupId>tools.jackson.core</groupId>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
         
@@ -118,6 +118,19 @@
             <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
 
+        <!-- 引入 jspecify 以避免降级后 @Nullable 编译报错 -->
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- MinIO SDK -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.10</version>
+        </dependency>
     </dependencies>
 
 </project>

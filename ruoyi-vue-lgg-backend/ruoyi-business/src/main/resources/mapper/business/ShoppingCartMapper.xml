@@ -4,25 +4,35 @@
 <mapper namespace="com.ruoyi.business.mapper.ShoppingCartMapper">
 
     <select id="list" resultType="com.ruoyi.business.entity.ShoppingCart">
-        select * from lgg_shopping_cart
+        select id,
+               name,
+               image,
+               user_id,
+               fruit_id as dish_id,
+               fruit_box_id as setmeal_id,
+               fruit_flavor as dish_flavor,
+               number,
+               amount,
+               create_time
+        from lgg_shopping_cart
         <where>
             <if test="userId != null">
                 and user_id = #{userId}
             </if>
             <if test="setmealId != null">
-                and setmeal_id = #{setmealId}
+                and fruit_box_id = #{setmealId}
             </if>
             <if test="dishId != null">
-                and dish_id = #{dishId}
+                and fruit_id = #{dishId}
             </if>
             <if test="dishFlavor != null">
-                and lgg_fruit_flavor = #{dishFlavor}
+                and fruit_flavor = #{dishFlavor}
             </if>
         </where>
     </select>
 
     <insert id="insertBatch" parameterType="list">
-        insert into lgg_shopping_cart (name, image, user_id, dish_id, setmeal_id, dish_flavor, number, amount, create_time)
+        insert into lgg_shopping_cart (name, image, user_id, fruit_id, fruit_box_id, fruit_flavor, number, amount, create_time)
         values
         <foreach collection="shoppingCartList" item="sc" separator=",">
             (#{sc.name},#{sc.image},#{sc.userId},#{sc.dishId},#{sc.setmealId},#{sc.dishFlavor},#{sc.number},#{sc.amount},#{sc.createTime})

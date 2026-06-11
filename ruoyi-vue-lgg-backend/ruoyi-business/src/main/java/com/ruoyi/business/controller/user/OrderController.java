@@ -45,12 +45,22 @@ public class OrderController {
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
         log.info("生成预支付交易单：{}", orderPaymentVO);
 
-        //业务处理,修改订单状态、来单状态
-        //因为无法调用微信支付接口,所以模拟一下
-        orderService.paySuccess(ordersPaymentDTO.getOrderNumber());
-        log.info("模拟交易成功:{}",ordersPaymentDTO.getOrderNumber());
-
         return Result.success(orderPaymentVO);
+    }
+
+    /**
+     * 支付结果确认
+     */
+    @PutMapping("/payment/confirm")
+    @ApiOperation("支付结果确认")
+    public Result<OrderVO> confirmPayment(@RequestBody(required = false) OrdersPaymentDTO ordersPaymentDTO, String orderNumber) {
+        if (ordersPaymentDTO == null) {
+            ordersPaymentDTO = new OrdersPaymentDTO();
+            ordersPaymentDTO.setOrderNumber(orderNumber);
+        }
+        log.info("确认支付结果：{}", ordersPaymentDTO);
+        OrderVO orderVO = orderService.confirmPayment(ordersPaymentDTO.getOrderNumber());
+        return Result.success(orderVO);
     }
     /**
      * 历史订单查询

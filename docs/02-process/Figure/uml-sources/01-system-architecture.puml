@@ -1,0 +1,44 @@
+@startuml
+title 图1：系统总体架构图
+
+actor "管理端用户" as AdminUser
+actor "小程序用户" as MiniUser
+
+node "Vue3 管理端\nlgg-frontend:8082" as Frontend
+node "微信小程序\nmp-weixin" as MiniProgram
+node "Spring Cloud Gateway\nlgg-gateway:8090" as Gateway
+node "系统管理服务\nlgg-admin:8081" as Admin
+node "业务服务\nlgg-business:8088" as Business
+node "支付服务\nlgg-pay:8085" as Pay
+node "通知服务\nlgg-notice:8086" as Notice
+database "MySQL\nlgg_ruoyi" as MySQL
+queue "RabbitMQ\npay.success.queue" as RabbitMQ
+cloud "Nacos\n服务注册发现" as Nacos
+cloud "MinIO\n对象存储" as MinIO
+node "Redis\n缓存/验证码" as Redis
+
+AdminUser --> Frontend
+MiniUser --> MiniProgram
+Frontend --> Gateway
+MiniProgram --> Gateway
+Gateway --> Admin
+Gateway --> Business
+Gateway --> Pay
+Gateway --> Notice
+Admin --> MySQL
+Business --> MySQL
+Pay --> Business : OpenFeign 更新订单状态
+Pay --> RabbitMQ : 发布支付成功事件
+RabbitMQ --> Notice : 消费包装提醒事件
+Notice --> Frontend : WebSocket 推送提醒
+Admin --> Redis
+Business --> Redis
+Admin --> MinIO
+Admin ..> Nacos
+Business ..> Nacos
+Pay ..> Nacos
+Notice ..> Nacos
+Gateway ..> Nacos
+
+@enduml
+

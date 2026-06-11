@@ -16,14 +16,19 @@ import com.ruoyi.business.result.PageResult;
 import com.ruoyi.business.service.OrderService;
 import com.ruoyi.business.vo.*;
 import com.ruoyi.business.websocket.WebSocketServer;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +36,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 绿果果订单业务层实现
+ * 常工鲜生订单业务层实现
  */
 @Service
 @Slf4j
@@ -74,7 +79,12 @@ public class OrderServiceImpl implements OrderService {
             throw new ShoppingCartBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
         }
 
-        // 2. 创建订单主表数据并插入
+        // 2. 计算购物车总金额
+        BigDecimal total = cartList.stream()
+                .map(item -> item.getAmount().multiply(BigDecimal.valueOf(item.getNumber())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // 创建订单主表数据并插入
         Orders orders = new Orders();
         BeanUtils.copyProperties(ordersSubmitDTO, orders);
         orders.setOrderTime(LocalDateTime.now());
@@ -84,7 +94,21 @@ public class OrderServiceImpl implements OrderService {
         orders.setPhone(addressBook.getPhone());
         orders.setConsignee(addressBook.getConsignee());
         orders.setUserId(userId);
-        orders.setAddress(addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
+        orders.setAddress(safe(addressBook.getProvinceName()) + safe(addressBook.getCityName())
+                + safe(addressBook.getDistrictName()) + safe(addressBook.getDetail()));
+        orders.setDeliveryType(ordersSubmitDTO.getDeliveryType() == null || ordersSubmitDTO.getDeliveryType().isEmpty()
+                ? "DELIVERY"
+                : ordersSubmitDTO.getDeliveryType());
+        orders.setUserName(addressBook.getConsignee());
+        // 设置默认值：配送状态、打包费、餐具数量、餐具服务状态
+        if (orders.getDeliveryStatus() == null) orders.setDeliveryStatus(1);
+        if (orders.getPackAmount() == null) orders.setPackAmount(0);
+        if (orders.getTablewareNumber() == null) orders.setTablewareNumber(0);
+        if (orders.getTablewareStatus() == null) orders.setTablewareStatus(1);
+        // 如果前端未传金额，则使用购物车计算的总金额
+        if (orders.getAmount() == null) {
+            orders.setAmount(total);
+        }
         
         orderMapper.insert(orders);
 
@@ -132,6 +156,21 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
+     * 支付确认：演示环境由前端支付成功后调用；真实环境应由微信支付回调驱动。
+     */
+    public OrderVO confirmPayment(String orderNumber) {
+        paySuccess(orderNumber);
+
+        OrdersPageQueryDTO query = new OrdersPageQueryDTO();
+        query.setNumber(orderNumber);
+        List<Orders> ordersList = orderMapper.pageQuery(query);
+        if (ordersList == null || ordersList.isEmpty()) {
+            return null;
+        }
+        return details(ordersList.get(0).getId());
+    }
+
+    /**
      * 支付成功，修改订单状态并向后台推送消息
      */
     public void paySuccess(String outTradeNo) {
@@ -141,7 +180,9 @@ public class OrderServiceImpl implements OrderService {
         Orders orders = orderMapper.getByNumberAndUserId(outTradeNo, userId);
         if (orders == null) {
             // 支持微信异步回调(不含当前用户线程上下文)的查询
-            orders = orderMapper.getById(Long.valueOf(outTradeNo)); // 兼容ID查询
+            if (outTradeNo != null && outTradeNo.matches("\\d+")) {
+                orders = orderMapper.getById(Long.valueOf(outTradeNo)); // 兼容ID查询
+            }
             if (orders == null) {
                 // 如果实在找不到，查最新的一单
                 OrdersPageQueryDTO query = new OrdersPageQueryDTO();
@@ -164,7 +205,7 @@ public class OrderServiceImpl implements OrderService {
             Map<String, Object> map = new HashMap<>();
             map.put("type", 1); // 1表示来单提醒，2表示催单提醒
             map.put("orderId", orders.getId());
-            map.put("content", "您有新的绿果果订单，请及时包装！订单号：" + orders.getNumber());
+            map.put("content", "您有新的常工鲜生订单，请及时接单！订单号：" + orders.getNumber());
             
             String json = JSON.toJSONString(map);
             webSocketServer.sendToAllClient(json);
@@ -332,11 +373,30 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
+     * 指派骑手并进入配送中
+     */
+    public void assignRider(OrdersAssignRiderDTO ordersAssignRiderDTO) {
+        Orders orders = orderMapper.getById(ordersAssignRiderDTO.getOrderId());
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        if (!Orders.CONFIRMED.equals(orders.getStatus()) && !Orders.TO_BE_CONFIRMED.equals(orders.getStatus())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        orders.setRiderId(ordersAssignRiderDTO.getRiderId());
+        orders.setRiderName(ordersAssignRiderDTO.getRiderName());
+        orders.setRiderPhone(ordersAssignRiderDTO.getRiderPhone());
+        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        orderMapper.update(orders);
+    }
+
+    /**
      * 完成订单
      */
     public void complete(Long id) {
         Orders orders = orderMapper.getById(id);
-        if (orders != null && orders.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
+        if (orders != null && (orders.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)
+                || ("PICKUP".equals(orders.getDeliveryType()) && orders.getStatus().equals(Orders.CONFIRMED)))) {
             orders.setStatus(Orders.COMPLETED);
             orders.setDeliveryTime(LocalDateTime.now());
             orderMapper.update(orders);
@@ -361,5 +421,102 @@ public class OrderServiceImpl implements OrderService {
         String json = JSON.toJSONString(map);
         webSocketServer.sendToAllClient(json);
         log.info("已通过 WebSocket 推送催单语音播报提醒：{}", json);
+    }
+
+    public String printReceipt(Long id) {
+        OrderVO order = details(id);
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        StringBuilder items = new StringBuilder();
+        if (order.getOrderDetailList() != null) {
+            for (OrderDetail detail : order.getOrderDetailList()) {
+                items.append("<tr><td>")
+                        .append(escape(detail.getName()))
+                        .append("</td><td>x")
+                        .append(detail.getNumber())
+                        .append("</td><td>￥")
+                        .append(detail.getAmount())
+                        .append("</td></tr>");
+            }
+        }
+        return "<!doctype html><html><head><meta charset=\"utf-8\"><title>订单小票</title>"
+                + "<style>body{font-family:Arial,'Microsoft YaHei',sans-serif;width:280px;margin:0 auto;color:#111}"
+                + "h1{font-size:20px;text-align:center;margin:16px 0 8px}.muted{color:#666;font-size:12px}"
+                + "table{width:100%;border-collapse:collapse;font-size:13px}td{padding:4px 0;border-bottom:1px dashed #ddd}"
+                + ".total{font-size:18px;font-weight:bold;text-align:right;margin-top:10px}.line{border-top:1px dashed #111;margin:10px 0}"
+                + ".btn{position:fixed;right:16px;top:16px} @media print{.btn{display:none}body{width:58mm}}</style></head><body>"
+                + "<button class=\"btn\" onclick=\"window.print()\">打印小票</button>"
+                + "<h1>常工鲜生</h1><div class=\"muted\">订单号：" + escape(order.getNumber()) + "</div>"
+                + "<div class=\"muted\">下单时间：" + order.getOrderTime() + "</div><div class=\"line\"></div>"
+                + "<table>" + items + "</table>"
+                + "<div class=\"total\">合计 ￥" + order.getAmount() + "</div><div class=\"line\"></div>"
+                + "<div>配送方式：" + ("PICKUP".equals(order.getDeliveryType()) ? "到店自提" : "配送到家") + "</div>"
+                + "<div>收货人：" + escape(order.getConsignee()) + " " + escape(order.getPhone()) + "</div>"
+                + "<div>地址：" + escape(order.getAddress()) + "</div>"
+                + "<div>骑手：" + escape(order.getRiderName()) + " " + escape(order.getRiderPhone()) + "</div>"
+                + "<div class=\"muted\">请核对商品后出库，祝您生意兴隆。</div></body></html>";
+    }
+
+    public void exportOrders(HttpServletResponse response, OrdersPageQueryDTO ordersPageQueryDTO) {
+        List<Orders> ordersList = orderMapper.pageQuery(ordersPageQueryDTO);
+        StringBuilder builder = new StringBuilder("\uFEFF");
+        builder.append("订单号,收货人,手机号,配送方式,骑手,金额,状态,下单时间\n");
+        if (ordersList != null) {
+            for (Orders order : ordersList) {
+                builder.append(csv(order.getNumber())).append(',')
+                        .append(csv(order.getConsignee())).append(',')
+                        .append(csv(order.getPhone())).append(',')
+                        .append(csv("PICKUP".equals(order.getDeliveryType()) ? "到店自提" : "配送到家")).append(',')
+                        .append(csv(order.getRiderName())).append(',')
+                        .append(order.getAmount()).append(',')
+                        .append(csv(statusText(order.getStatus()))).append(',')
+                        .append(csv(formatTime(order.getOrderTime()))).append('\n');
+            }
+        }
+        try {
+            String fileName = URLEncoder.encode("常工鲜生订单记录.xls", StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/vnd.ms-excel;charset=utf-8");
+            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
+            response.getOutputStream().write(builder.toString().getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException("导出订单记录失败", e);
+        }
+    }
+
+    private String statusText(Integer status) {
+        if (Orders.PENDING_PAYMENT.equals(status)) return "待付款";
+        if (Orders.TO_BE_CONFIRMED.equals(status)) return "待接单";
+        if (Orders.CONFIRMED.equals(status)) return "已接单";
+        if (Orders.DELIVERY_IN_PROGRESS.equals(status)) return "派送中";
+        if (Orders.COMPLETED.equals(status)) return "已完成";
+        if (Orders.CANCELLED.equals(status)) return "已取消";
+        return "未知";
+    }
+
+    private String formatTime(LocalDateTime time) {
+        return time == null ? "" : time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    private String csv(String value) {
+        if (value == null) {
+            return "";
+        }
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
+    private String escape(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 }

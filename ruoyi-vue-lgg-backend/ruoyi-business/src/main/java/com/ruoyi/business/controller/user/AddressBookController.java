@@ -103,11 +103,11 @@ public class AddressBookController {
         addressBook.setUserId(BaseContext.getCurrentId());
         List<AddressBook> list = addressBookService.list(addressBook);
 
-        if (list != null && list.size() == 1) {
+        if (list != null && !list.isEmpty()) {
             return Result.success(list.get(0));
         }
 
-        return Result.error("没有查询到默认地址");
+        return Result.success(null);
     }
 
 }

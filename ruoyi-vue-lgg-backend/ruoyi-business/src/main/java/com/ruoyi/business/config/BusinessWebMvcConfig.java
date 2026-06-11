@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 绿果果业务模块 Web MVC 拦截器配置
+ * 常工鲜生业务模块 Web MVC 拦截器配置
  */
 @Configuration
 @Slf4j
@@ -33,7 +33,7 @@ public class BusinessWebMvcConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        log.info("开始注册绿果果业务拦截器...");
+        log.info("开始注册常工鲜生业务拦截器...");
         
         // 1. 后台管理员拦截器 (排除登录路径)
         registry.addInterceptor(jwtTokenAdminInterceptor)
@@ -53,7 +53,7 @@ public class BusinessWebMvcConfig implements WebMvcConfigurer {
      */
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        log.info("扩展绿果果业务消息转换器...");
+        log.info("扩展常工鲜生业务消息转换器...");
         // 创建一个消息转换器对象
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         // 需要为消息转换器设置一个对象转换器，对象转换器可以将Java对象序列化为json数据

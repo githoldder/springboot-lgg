@@ -6,6 +6,21 @@
 
     <div class="right-menu">
       <template v-if="appStore.device !== 'mobile'">
+        <div class="shop-status right-menu-item">
+          <span class="shop-status-label">店铺</span>
+          <el-switch
+            v-model="shopStatus"
+            :active-value="1"
+            :inactive-value="0"
+            inline-prompt
+            active-text="开"
+            inactive-text="关"
+            :loading="shopStatusLoading"
+            style="--el-switch-on-color: #10b981"
+            @change="handleShopStatusChange"
+          />
+        </div>
+
         <header-search id="header-search" class="right-menu-item" />
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
@@ -40,7 +55,8 @@
 </template>
 
 <script setup>
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, ref } from 'vue'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import Hamburger from '@/components/Hamburger'
@@ -50,13 +66,33 @@ import HeaderSearch from '@/components/HeaderSearch'
 import useAppStore from '@/store/modules/app'
 import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
+import { getShopStatus, updateShopStatus } from '@/api/business/shop'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
 const settingsStore = useSettingsStore()
+const shopStatus = ref(1)
+const shopStatusLoading = ref(false)
 
 function toggleSideBar() {
   appStore.toggleSideBar()
+}
+
+function loadShopStatus() {
+  getShopStatus().then(res => {
+    shopStatus.value = res.data ?? 1
+  })
+}
+
+function handleShopStatusChange(value) {
+  shopStatusLoading.value = true
+  updateShopStatus(value).then(() => {
+    ElMessage.success(value === 1 ? '店铺已开启营业' : '店铺已切换为打烊')
+  }).catch(() => {
+    shopStatus.value = value === 1 ? 0 : 1
+  }).finally(() => {
+    shopStatusLoading.value = false
+  })
 }
 
 function handleCommand(command) {
@@ -88,6 +124,8 @@ const emits = defineEmits(['setLayout'])
 function setLayout() {
   emits('setLayout');
 }
+
+onMounted(loadShopStatus)
 </script>
 
 <style lang='scss' scoped>
@@ -150,6 +188,19 @@ function setLayout() {
         &:hover {
           background: rgba(0, 0, 0, 0.025);
         }
+      }
+    }
+
+    .shop-status {
+      align-items: center;
+      display: flex;
+      font-size: 13px;
+      gap: 8px;
+      line-height: 50px;
+
+      .shop-status-label {
+        color: #344054;
+        font-weight: 600;
       }
     }
 

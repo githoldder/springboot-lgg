@@ -1,0 +1,39 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: lgg-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        ip: 127.0.0.1
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: lgg-admin
+          uri: lb://lgg-admin
+          predicates:
+            - Path=/login, /captchaImage, /getInfo, /getRouters, /logout, /system/**, /monitor/**, /tool/**, /druid/**
+        - id: lgg-business
+          uri: lb://lgg-business
+          predicates:
+            - Path=/admin/**, /user/**, /notify/**, /ws/**
+        - id: lgg-pay
+          uri: lb://lgg-pay
+          predicates:
+            - Path=/pay/**
+        - id: lgg-notice
+          uri: lb://lgg-notice
+          predicates:
+            - Path=/notice/**, /websocket/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health'

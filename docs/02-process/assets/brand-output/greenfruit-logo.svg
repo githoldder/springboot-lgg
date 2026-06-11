@@ -1,0 +1,38 @@
+<svg width="960" height="320" viewBox="0 0 960 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">绿果果 GreenFruit 品牌 Logo</title>
+  <desc id="desc">A fresh lime slice, leaf and delivery motion mark for the GreenFruit fresh produce delivery system.</desc>
+  <defs>
+    <linearGradient id="limeFill" x1="86" y1="56" x2="240" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#DDFB76"/>
+      <stop offset="0.45" stop-color="#78D83E"/>
+      <stop offset="1" stop-color="#16A765"/>
+    </linearGradient>
+    <linearGradient id="leafFill" x1="190" y1="36" x2="286" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B7F55A"/>
+      <stop offset="1" stop-color="#00A86B"/>
+    </linearGradient>
+    <filter id="softShadow" x="18" y="12" width="292" height="292" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#08724F" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <circle cx="154" cy="158" r="104" fill="url(#limeFill)"/>
+    <circle cx="154" cy="158" r="82" fill="#ECFFD2" fill-opacity="0.86"/>
+    <circle cx="154" cy="158" r="71" fill="#AAEA52"/>
+    <path d="M154 88v140M84 158h140M104 108l100 100M204 108 104 208" stroke="#F7FFE7" stroke-width="11" stroke-linecap="round"/>
+    <circle cx="154" cy="158" r="18" fill="#F8FFE3"/>
+    <circle cx="154" cy="158" r="100" stroke="#F7FFE7" stroke-width="10"/>
+  </g>
+
+  <path d="M210 76C236 34 282 34 306 52C288 89 246 113 212 98C207 95 206 84 210 76Z" fill="url(#leafFill)"/>
+  <path d="M222 88C244 76 266 65 294 56" stroke="#F1FFE5" stroke-width="6" stroke-linecap="round"/>
+
+  <path d="M58 250C90 274 144 286 206 272" stroke="#00A86B" stroke-width="12" stroke-linecap="round"/>
+  <path d="M214 270 190 250M214 270 186 286" stroke="#00A86B" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="346" y="142" font-family="PingFang SC, Microsoft YaHei, Arial, sans-serif" font-size="76" font-weight="800" fill="#12352B">绿果果</text>
+  <text x="350" y="204" font-family="Inter, Arial, sans-serif" font-size="33" font-weight="700" letter-spacing="5" fill="#00A86B">GREENFRUIT</text>
+  <path d="M350 226H772" stroke="#D9F4B5" stroke-width="6" stroke-linecap="round"/>
+  <text x="350" y="267" font-family="PingFang SC, Microsoft YaHei, Arial, sans-serif" font-size="28" font-weight="500" fill="#52645E">鲜果零售 · 即时配送 · 轻量运营</text>
+</svg>

@@ -4,7 +4,7 @@
 <mapper namespace="com.ruoyi.business.mapper.DishFlavorMapper">
 
     <insert id="insertBatch">
-        insert into lgg_fruit_flavor (dish_id, name, value) VALUES
+        insert into lgg_fruit_flavor (fruit_id, name, value) VALUES
         <foreach collection="flavors" item="df" separator=",">
             (#{df.dishId},#{df.name},#{df.value})
         </foreach>

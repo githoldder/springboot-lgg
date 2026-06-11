@@ -56,8 +56,11 @@ const sideTheme = computed(() => settingsStore.sideTheme);
     & .sidebar-logo {
       width: 32px;
       height: 32px;
+      object-fit: contain;
       vertical-align: middle;
       margin-right: 12px;
+      border-radius: 6px;
+      background: #fff;
     }
 
     & .sidebar-title {

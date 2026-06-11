@@ -53,9 +53,25 @@ export function deliverOrder(id) {
   })
 }
 
+export function assignRider(data) {
+  return request({
+    url: '/admin/order/assignRider',
+    method: 'put',
+    data
+  })
+}
+
 export function completeOrder(id) {
   return request({
     url: `/admin/order/complete/${id}`,
     method: 'put'
+  })
+}
+
+export function getOrderPrint(id) {
+  return request({
+    url: `/admin/order/print/${id}`,
+    method: 'get',
+    responseType: 'text'
   })
 }

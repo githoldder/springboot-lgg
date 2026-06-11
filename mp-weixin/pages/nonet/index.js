@@ -166,7 +166,7 @@ var _vuex = __webpack_require__(/*! vuex */ 13);function ownKeys(object, enumera
   methods: _objectSpread(_objectSpread({},
   (0, _vuex.mapState)(['shopInfo'])), {}, {
     goIndex: function goIndex() {
-      uni.navigateTo({ url: '/pages/index/index' });
+      uni.switchTab({ url: '/pages/index/index' });
     } }) };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 

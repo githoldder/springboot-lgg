@@ -45,7 +45,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         //如果已经存在了，只需要将数量加一
         if(list != null && list.size() > 0){
             ShoppingCart cart = list.get(0);
-            cart.setNumber(cart.getNumber() + 1);//update lgg_shopping_cart set number = ? where id = ?
+            int added = shoppingCartDTO.getNumber() != null && shoppingCartDTO.getNumber() > 0
+                    ? shoppingCartDTO.getNumber() : 1;
+            cart.setNumber(cart.getNumber() + added);
             shoppingCartMapper.updateNumberById(cart);
         }else {
             //如果不存在，需要插入一条购物车数据
@@ -65,7 +67,18 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 shoppingCart.setImage(setmeal.getImage());
                 shoppingCart.setAmount(setmeal.getPrice());
             }
-            shoppingCart.setNumber(1);
+            // 如果前端提供了 name/image/amount/number，优先使用前端值
+            if (shoppingCartDTO.getName() != null) {
+                shoppingCart.setName(shoppingCartDTO.getName());
+            }
+            if (shoppingCartDTO.getImage() != null) {
+                shoppingCart.setImage(shoppingCartDTO.getImage());
+            }
+            if (shoppingCartDTO.getAmount() != null) {
+                shoppingCart.setAmount(shoppingCartDTO.getAmount());
+            }
+            shoppingCart.setNumber(shoppingCartDTO.getNumber() != null && shoppingCartDTO.getNumber() > 0
+                    ? shoppingCartDTO.getNumber() : 1);
             shoppingCart.setCreateTime(LocalDateTime.now());
             shoppingCartMapper.insert(shoppingCart);
         }
