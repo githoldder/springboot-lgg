@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'lgg-redis',
       script: 'redis-server',
-      args: '--port 6379',
+      args: '--port 6380',
       exec_mode: 'fork',
       instances: 1,
       watch: false
@@ -11,7 +11,7 @@ module.exports = {
     {
       name: 'lgg-minio',
       script: './bin/minio',
-      args: 'server ./data --console-address :9001',
+      args: 'server ./data --address :9020 --console-address :9021',
       exec_mode: 'fork',
       instances: 1,
       watch: false
