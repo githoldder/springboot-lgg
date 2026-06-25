@@ -1,0 +1,49 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/order/index",
+    "pages/details/index",
+    "pages/pay/index",
+    "pages/success/index",
+    "pages/nonet/index",
+    "pages/address/address",
+    "pages/remark/index",
+    "pages/my/my",
+    "pages/addOrEditAddress/addOrEditAddress",
+    "pages/historyOrder/historyOrder"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "常工鲜生",
+    "navigationBarBackgroundColor": "#00b894",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#009E81",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/brand-icon.png",
+        "selectedIconPath": "static/brand-icon.png",
+        "text": "常工鲜生"
+      },
+      {
+        "pagePath": "pages/order/index",
+        "iconPath": "static/order_tab.png",
+        "selectedIconPath": "static/order_tab_active.png",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "iconPath": "static/brand-logo.png",
+        "selectedIconPath": "static/brand-logo.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "sitemapLocation": "sitemap.json"
+}

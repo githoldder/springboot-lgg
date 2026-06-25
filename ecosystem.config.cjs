@@ -64,8 +64,9 @@ module.exports = {
     {
       name: 'lgg-ruoyi-frontend',
       cwd: './ruoyi-vue-lgg-frontend',
-      script: 'npx',
-      args: 'vite preview --port 8087 --host 127.0.0.1',
+      script: '/opt/homebrew/bin/npm',
+      args: 'run preview -- --port 8087 --host 127.0.0.1',
+      interpreter: 'none',
       exec_mode: 'fork',
       instances: 1,
       watch: false,
