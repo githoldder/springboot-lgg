@@ -1,0 +1,47 @@
+@startuml U03-status-flow
+skinparam backgroundColor #FEFEFE
+skinparam state {
+  BackgroundColor #E8F5E9
+  BorderColor #388E3C
+  FontSize 14
+  FontColor #212121
+  ArrowColor #1565C0
+  ArrowFontSize 12
+  ArrowFontColor #1565C0
+}
+skinparam defaultFontName "Noto Sans CJK SC,WenQuanYi Micro Hei,SimHei,sans-serif"
+
+title 订单状态流转图
+
+[*] --> 待付款 : 用户提交订单
+
+state "待付款\nPENDING_PAY" as 待付款 #FFF9C4
+state "已支付 / 待接单\nPAID" as 已支付 #C8E6C9
+state "已接单 / 待包装\nACCEPTED" as 已接单 #B3E5FC
+state "已包装 / 配送中\nDELIVERING" as 配送中 #D1C4E9
+state "已交付 / 已完成\nCOMPLETED" as 已完成 #A5D6A7
+state "已取消\nCANCELLED" as 已取消 #FFCDD2
+
+待付款 --> 已支付 : 微信支付回调
+待付款 --> 已取消 : 超时未支付 / 用户取消
+
+已支付 --> 已接单 : 商家接单
+
+已接单 --> 配送中 : 包装完成\n开始配送
+
+配送中 --> 已完成 : 确认收货
+
+已完成 --> [*]
+已取消 --> [*]
+
+note right of 已支付
+  支付成功后通过
+  RabbitMQ 通知商家
+end note
+
+note right of 配送中
+  WebSocket 实时
+  推送配送状态
+end note
+
+@enduml

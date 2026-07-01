@@ -1,0 +1,10 @@
+  import pandas as pd
+
+  # 读取数据文件
+  df = pd.read_csv("data/raw/housing.csv")
+
+  print(df.info())
+  print(df.describe())
+
+  missing = df.isna().mean().sort_values(ascending=False)
+  print(missing)

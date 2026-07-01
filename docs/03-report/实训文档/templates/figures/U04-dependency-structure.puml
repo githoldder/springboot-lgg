@@ -1,0 +1,80 @@
+@startuml U04-dependency-structure
+skinparam backgroundColor #FEFEFE
+skinparam component {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  FontSize 13
+  FontColor #212121
+}
+skinparam node {
+  BackgroundColor #FFF3E0
+  BorderColor #E65100
+  FontSize 13
+}
+skinparam database {
+  BackgroundColor #F3E5F5
+  BorderColor #6A1B9A
+  FontSize 13
+}
+skinparam queue {
+  BackgroundColor #FFF9C4
+  BorderColor #F57F17
+  FontSize 13
+}
+skinparam cloud {
+  BackgroundColor #E8F5E9
+  BorderColor #2E7D32
+  FontSize 13
+}
+skinparam ArrowColor #37474F
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #546E7A
+skinparam defaultFontName "Noto Sans CJK SC,WenQuanYi Micro Hei,SimHei,sans-serif"
+
+title 微服务模块依赖结构图
+
+cloud "Nacos\n注册/配置中心" as nacos #E8F5E9
+
+node "前端" {
+  component "lgg-frontend\n(Vue3 + Vite)" as frontend #BBDEFB
+  component "mp-weixin\n(微信小程序)" as mpwx #BBDEFB
+}
+
+component "lgg-gateway\n(Spring Cloud Gateway)" as gateway #90CAF9
+
+component "lgg-admin\n(后台管理服务)" as admin #C8E6C9
+component "lgg-business\n(核心业务服务)" as business #C8E6C9
+component "lgg-pay\n(支付服务)" as pay #C8E6C9
+component "lgg-notice\n(通知服务)" as notice #C8E6C9
+
+database "MySQL" as mysql #E1BEE7
+database "Redis" as redis #F8BBD0
+database "MinIO\n(对象存储)" as minio #D1C4E9
+queue "RabbitMQ" as mq #FFF59D
+
+frontend --> gateway : HTTP
+mpwx --> gateway : HTTP
+
+gateway --> admin : 路由
+gateway --> business : 路由
+gateway --> pay : 路由
+gateway --> notice : 路由
+
+pay --> business : OpenFeign\n(查询订单)
+pay --> mq : 发布支付事件
+mq --> notice : 消费通知事件
+
+admin --> mysql
+admin --> redis
+admin --> minio : 文件上传
+
+business --> mysql
+business --> redis
+
+admin ..> nacos : 注册/发现
+business ..> nacos : 注册/发现
+pay ..> nacos : 注册/发现
+notice ..> nacos : 注册/发现
+gateway ..> nacos : 注册/发现
+
+@enduml
