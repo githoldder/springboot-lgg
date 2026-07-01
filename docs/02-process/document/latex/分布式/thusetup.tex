@@ -4,42 +4,20 @@
 
 % 技术方案基本信息配置（简化版）
 
-% 载入所需的宏包
+% 修复 TimesNewRoman 不支持小型大写字母 (small caps) 的警告
+% fontspec 加载 Times New Roman 后内部族名为 TimesNewRoman(0)
+% 声明 sc 字形回退到 n，消除 NFSS undefined shape 警告
+\AtEndPreamble{%
+  \DeclareFontShape{TU}{TimesNewRoman(0)}{m}{sc}{<->ssub*TimesNewRoman(0)/m/n}{}%
+  \DeclareFontShape{TU}{TimesNewRoman(0)}{bx}{sc}{<->ssub*TimesNewRoman(0)/bx/n}{}%
+  \DeclareFontShape{TU}{SongtiSC(0)}{m}{scit}{<->ssub*SongtiSC(0)/m/it}{}%
+  \DeclareFontShape{TU}{SongtiSC(0)}{bx}{scit}{<->ssub*SongtiSC(0)/bx/it}{}%
+  \DeclareFontShape{TU}{SongtiSC(0)}{b}{scit}{<->ssub*SongtiSC(0)/b/it}{}%
+  \DeclareFontShape{TU}{SongtiSC(0)}{m}{sc}{<->ssub*SongtiSC(0)/m/n}{}%
+  \DeclareFontShape{TU}{SongtiSC(0)}{bx}{sc}{<->ssub*SongtiSC(0)/bx/n}{}%
+}
 
-% 使用项目内字体，避免依赖系统字体名称和外部模板路径。
-\newcommand{\reportfontdir}{fonts/}
-\setmainfont[
-  Path=\reportfontdir,
-  BoldFont=times.ttf,
-  ItalicFont=times.ttf,
-  BoldItalicFont=times.ttf
-]{times.ttf}
-\setsansfont[Path=\reportfontdir, BoldFont=arialbd.ttf]{arial.ttf}
-\setmonofont[Path=\reportfontdir]{times.ttf}
-\setCJKmainfont[
-  Path=\reportfontdir,
-  AutoFakeBold=3,
-  ItalicFont=Kaiti.ttf
-]{Simsun.ttc}
-\setCJKsansfont[
-  Path=\reportfontdir,
-  AutoFakeBold=3
-]{SimHei.ttf}
-\setCJKmonofont[Path=\reportfontdir]{STZHONGS.ttf}
-\setCJKfamilyfont{zhsong}[
-  Path=\reportfontdir,
-  AutoFakeBold=3
-]{Simsun.ttc}
-\setCJKfamilyfont{zhhei}[
-  Path=\reportfontdir,
-  AutoFakeBold=3
-]{SimHei.ttf}
-\setCJKfamilyfont{zhkai}[Path=\reportfontdir]{Kaiti.ttf}
-\setCJKfamilyfont{zhfs}[Path=\reportfontdir]{STZHONGS.ttf}
-\providecommand{\songti}{\CJKfamily{zhsong}}
-\providecommand{\heiti}{\CJKfamily{zhhei}}
-\providecommand{\kaishu}{\CJKfamily{zhkai}}
-\providecommand{\fangsong}{\CJKfamily{zhfs}}
+% 载入所需的宏包
 
 % 定理类环境宏包
 \usepackage{amsthm}
@@ -111,23 +89,22 @@
   {0pt}{3.25ex plus 1ex minus .2ex}{1ex plus .2ex}
 \usepackage{indentfirst}  % 首行缩进
 \usepackage{fancyhdr}
-\usepackage{tikz}
 
 \AtBeginDocument{%
   \pagestyle{fancy}%
   \fancyhf{}%
-  \fancyhead[C]{\songti\zihao{-5} 计算机信息工程学院课程设计报告}%
+  \fancyhead[C]{\songti\zihao{-5} 计算机信息工程学院大作业报告}%
   \fancyfoot[C]{\thepage}%
   \renewcommand{\headrulewidth}{0.4pt}%
   \fancypagestyle{plain}{%
     \fancyhf{}%
-    \fancyhead[C]{\songti\zihao{-5} 计算机信息工程学院课程设计报告}%
+    \fancyhead[C]{\songti\zihao{-5} 计算机信息工程学院大作业报告}%
     \fancyfoot[C]{\thepage}%
     \renewcommand{\headrulewidth}{0.4pt}%
   }%
   \fancypagestyle{abstractcn}{%
     \fancyhf{}%
-    \fancyhead[C]{\songti\zihao{-5} 计算机信息工程学院课程设计报告}%
+    \fancyhead[C]{\songti\zihao{-5} 计算机信息工程学院大作业报告}%
     \renewcommand{\headrulewidth}{0.4pt}%
   }%
   \fancypagestyle{abstracten}{%

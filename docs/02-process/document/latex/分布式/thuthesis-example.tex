@@ -1,47 +1,64 @@
 % !TeX encoding = UTF-8
 % !TeX spellcheck = en_US
 
-\documentclass[fontset=none,font=none,cjk-font=none]{thuthesis}
+\documentclass[fontset=mac]{thuthesis}
  
 \input{thusetup}
 \begin{document}
 \begin{titlepage}
-  \thispagestyle{empty}
-  \newcommand\coverfield[3]{#1\underline{\makebox[#2][c]{#3}}}
-  \begin{tikzpicture}[remember picture,overlay]
-    \node[anchor=north] at ([yshift=-35.5mm]current page.north)
-      {\includegraphics[width=81mm,trim=0 7.8mm -2mm 0,clip]{assets/cit-name.pdf}};
-    \node[anchor=north] at ([yshift=-58.2mm]current page.north)
-      {\rmfamily\fontsize{12.8pt}{15pt}\selectfont CHANGZHOU\quad INSTITUTE\quad OF\quad TECHNOLOGY};
-    \node[anchor=north] at ([yshift=-77.5mm]current page.north)
-      {\scalebox{1}[0.88]{\heiti\bfseries\fontsize{30pt}{36pt}\selectfont 课程设计报告}};
+\newgeometry{top=1.85cm,bottom=2.1cm,left=2.55cm,right=2.55cm}
+\thispagestyle{empty}
 
-    \node[anchor=west] at ([xshift=41.4mm,yshift=-124.9mm]current page.north west)
-      {\songti\selectfont{\bfseries\fontsize{18pt}{34pt}\selectfont 课程名称：}%
-        \underline{\makebox[94mm][c]{\fontsize{18pt}{30pt}\selectfont 专业方向课程设计}}};
+\begin{flushright}
+  {\fontsize{14pt}{16pt}\selectfont\fbox{\rule{0pt}{0.78cm}\makebox[2.65cm]{KC021-1}}}
+\end{flushright}
 
-    \node[anchor=west] at ([xshift=52.6mm,yshift=-161.8mm]current page.north west)
-      {\songti\fontsize{15pt}{18pt}\selectfont
-        \coverfield{二级学院：\ }{82mm}{计\hspace{0.55em}算\hspace{0.55em}机\hspace{0.55em}信\hspace{0.55em}息\hspace{0.55em}工\hspace{0.55em}程\hspace{0.55em}学\hspace{0.55em}院}};
+\vspace{1.05cm}
 
-    \node[anchor=west] at ([xshift=52.6mm,yshift=-175.0mm]current page.north west)
-      {\songti\fontsize{15pt}{19pt}\selectfont
-        \coverfield{课题名称：\ }{82mm}{水果生鲜运营平台}};
-    \node[anchor=west] at ([xshift=52.6mm,yshift=-188.2mm]current page.north west)
-      {\songti\fontsize{15pt}{18pt}\selectfont \coverfield{班\hspace{2em}级：\ }{82mm}{23 软件一}};
+\begin{center}
+  \includegraphics[width=7.15cm]{cover/cit-cover-template.png}
 
-    \node[anchor=west] at ([xshift=52.6mm,yshift=-201.4mm]current page.north west)
-      {\songti\fontsize{15pt}{18pt}\selectfont \coverfield{学\hspace{2em}号：\ }{82mm}{23030301}};
+  \vspace{1.12cm}
 
-    \node[anchor=west] at ([xshift=52.6mm,yshift=-214.6mm]current page.north west)
-      {\songti\fontsize{15pt}{18pt}\selectfont \coverfield{姓\hspace{2em}名：\ }{82mm}{曹磊}};
+  {\rmfamily\fontsize{16pt}{20pt}\selectfont
+  CHANGZHOU\quad INSTITUTE\quad OF\quad TECHNOLOGY\par}
 
-    \node[anchor=west] at ([xshift=52.6mm,yshift=-227.8mm]current page.north west)
-      {\songti\fontsize{15pt}{18pt}\selectfont \coverfield{指导教师：\ }{82mm}{蒋巍}};
-    \node[anchor=north] at ([xshift=1.3mm,yshift=-248.5mm]current page.north)
-      {\songti\fontsize{15pt}{18pt}\selectfont 2026 年 7 月};
-  \end{tikzpicture}
-  \null
+  \vspace{1.55cm}
+
+  {\heiti\bfseries\fontsize{30pt}{36pt}\selectfont 课程大作业说明书\par}
+\end{center}
+
+\vspace{1.35cm}
+
+\begingroup
+\setlength{\parindent}{0pt}
+\fontsize{18pt}{24pt}\selectfont
+\newcommand{\coverlabel}[1]{\makebox[3.55cm][l]{\heiti\bfseries #1}}
+\newcommand{\coverlabelfour}[1]{\coverlabel{\makebox[4em][s]{#1}：}}
+\newcommand{\coverline}[1]{\underline{\makebox[7.9cm][c]{#1}}}
+\begin{center}
+\begin{minipage}{11.8cm}
+  \coverlabelfour{课程名}\coverline{分布式应用开发技术（Q）}\par\vspace{0.62cm}
+  \coverlabelfour{题目}\coverline{\fontsize{14pt}{24pt}\selectfont 基于 Spring Boot 与 Spring Cloud 的}\par\vspace{0.3cm}
+  \hspace*{3.55cm}\coverline{\fontsize{14pt}{24pt}\selectfont 生鲜分布式运营系统设计与实现}\par\vspace{1.08cm}
+  \coverlabelfour{二级学院}\coverline{计算机信息工程学院}\par\vspace{0.3cm}
+  \coverlabelfour{专业}\coverline{软件工程}\par\vspace{0.3cm}
+  \coverlabelfour{班级}\coverline{23 软件一}\par\vspace{0.3cm}
+  \coverlabelfour{学号姓名}\coverline{23030301\quad 曹\quad 磊}\par\vspace{0.3cm}
+  \hspace*{3.55cm}\coverline{23030302\quad 陈佳明}\par\vspace{0.3cm}
+  \hspace*{3.55cm}\coverline{23030303\quad 陈晓楠}\par\vspace{0.3cm}
+  \hspace*{3.55cm}\coverline{23030304\quad 程志阳}\par\vspace{0.3cm}
+  \coverlabelfour{指导教师}\coverline{江亮}\par
+\end{minipage}
+\end{center}
+\endgroup
+
+\vfill
+
+\begin{center}
+  {\songti\fontsize{16pt}{20pt}\selectfont 2026 年 6 月\par}
+\end{center}
+\restoregeometry
 \end{titlepage}
 
 
