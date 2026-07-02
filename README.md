@@ -31,7 +31,8 @@ springboot-lgg
 │   ├── ruoyi-pay                  # 模拟支付微服务 [8085]
 │   ├── ruoyi-notice               # 消息通知与 WebSocket 推送服务 [8086]
 │   ├── ruoyi-common               # 通用工具与 MinIO 集成模块
-│   └── ruoyi-framework            # 系统安全与核心配置模块
+│   ├── ruoyi-framework            # 系统安全与核心配置模块
+│   └── sql                        # 数据库 DDL 与 Sprint 迁移脚本
 ├── ruoyi-vue-lgg-frontend         # 前端 Vue3 管理后台 [8087]
 ├── prds                           # 需求规格书双板同步 (md/json)
 └── docs                           # 实训文档、答辩记录与报告文本
