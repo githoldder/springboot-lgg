@@ -20,8 +20,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.concurrent.TimeUnit;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -59,6 +61,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private WebSocketServer webSocketServer;
+
+    @Autowired
+    private DishMapper dishMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 用户提交订单
@@ -105,10 +113,11 @@ public class OrderServiceImpl implements OrderService {
         if (orders.getPackAmount() == null) orders.setPackAmount(0);
         if (orders.getTablewareNumber() == null) orders.setTablewareNumber(0);
         if (orders.getTablewareStatus() == null) orders.setTablewareStatus(1);
-        // 如果前端未传金额，则使用购物车计算的总金额
-        if (orders.getAmount() == null) {
-            orders.setAmount(total);
-        }
+        // 强行使用后端购物车实算总金额覆盖外部传入值，防御金额篡改漏洞
+        orders.setAmount(total);
+        // 设定预计送达时间为下单时间往后推 60 分钟
+        orders.setEstimatedDeliveryTime(orders.getOrderTime().plusMinutes(60));
+        orders.setOvertimeStatus(0); // 初始化超时标记为 正常(0)
         
         orderMapper.insert(orders);
 
@@ -158,47 +167,61 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 支付确认：演示环境由前端支付成功后调用；真实环境应由微信支付回调驱动。
      */
+    @Transactional
     public OrderVO confirmPayment(String orderNumber) {
-        paySuccess(orderNumber);
-
-        OrdersPageQueryDTO query = new OrdersPageQueryDTO();
-        query.setNumber(orderNumber);
-        List<Orders> ordersList = orderMapper.pageQuery(query);
-        if (ordersList == null || ordersList.isEmpty()) {
-            return null;
+        Long userId = BaseContext.getCurrentId();
+        Orders orders = orderMapper.getByNumberAndUserId(orderNumber, userId);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
-        return details(ordersList.get(0).getId());
+        if (!orders.getStatus().equals(Orders.PENDING_PAYMENT)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        paySuccessWithValidatedOrder(orders);
+
+        return details(orders.getId());
     }
 
     /**
      * 支付成功，修改订单状态并向后台推送消息
      */
+    @Transactional
     public void paySuccess(String outTradeNo) {
-        // 1. 查询订单
-        // 微信端回调时不带UserId，我们需要直接按订单号查询
-        Long userId = BaseContext.getCurrentId();
-        Orders orders = orderMapper.getByNumberAndUserId(outTradeNo, userId);
+        // 只按精确订单号查询，决不进行 ID 的 fallback 模糊降级，防主键碰撞
+        OrdersPageQueryDTO query = new OrdersPageQueryDTO();
+        query.setNumber(outTradeNo);
+        List<Orders> list = orderMapper.pageQuery(query);
+        Orders orders = null;
+        if (list != null && !list.isEmpty()) {
+            orders = list.get(0);
+        }
         if (orders == null) {
-            // 支持微信异步回调(不含当前用户线程上下文)的查询
-            if (outTradeNo != null && outTradeNo.matches("\\d+")) {
-                orders = orderMapper.getById(Long.valueOf(outTradeNo)); // 兼容ID查询
-            }
-            if (orders == null) {
-                // 如果实在找不到，查最新的一单
-                OrdersPageQueryDTO query = new OrdersPageQueryDTO();
-                query.setNumber(outTradeNo);
-                List<Orders> list = orderMapper.pageQuery(query);
-                if (list != null && !list.isEmpty()) {
-                    orders = list.get(0);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        paySuccessWithValidatedOrder(orders);
+    }
+
+    /**
+     * 精确封装已校验订单的支付成功处理逻辑，包括库存扣减、状态修改与 WebSocket 广播
+     */
+    private void paySuccessWithValidatedOrder(Orders orders) {
+        if (orders != null && orders.getStatus().equals(Orders.PENDING_PAYMENT)) {
+            // 批量条件扣减库存，防超卖
+            List<OrderDetail> details = orderDetailMapper.getByOrderId(orders.getId());
+            if (details != null) {
+                for (OrderDetail detail : details) {
+                    int rows = dishMapper.decreaseStock(detail.getDishId(), detail.getNumber());
+                    if (rows == 0) {
+                        throw new OrderBusinessException("商品库存不足，支付回调失败！商品ID：" + detail.getDishId());
+                    }
                 }
             }
-        }
 
-        if (orders != null && orders.getStatus().equals(Orders.PENDING_PAYMENT)) {
             // 2. 修改订单状态 (流转为 待接单/待包装，已支付)
             orders.setStatus(Orders.TO_BE_CONFIRMED);
             orders.setPayStatus(Orders.PAID);
             orders.setCheckoutTime(LocalDateTime.now());
+            orders.setStockRollbackStatus(0); // 初始化回滚标记为 0
             orderMapper.update(orders);
 
             // 3. 微信小程序来单提醒：通过 WebSocket 向后台推送语音播报提醒
@@ -258,15 +281,26 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 用户取消订单
      */
+    @Transactional
     public void userCancelById(Long id) throws Exception {
         Orders orders = orderMapper.getById(id);
         if (orders == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
+        // 校验归属权，防止平行越权取消他人订单
+        if (!orders.getUserId().equals(BaseContext.getCurrentId())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
         // 如果处于派送或已完成等状态不能取消
         if (orders.getStatus() > 2) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
+        
+        // 若已付款或处于待接单状态，自动回补商品库存
+        if (orders.getPayStatus().equals(Orders.PAID) || orders.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            rollbackStock(orders.getId());
+        }
+        
         orders.setStatus(Orders.CANCELLED);
         orders.setCancelReason("用户主动取消订单");
         orders.setCancelTime(LocalDateTime.now());
@@ -277,6 +311,14 @@ public class OrderServiceImpl implements OrderService {
      * 再来一单 (复制过去明细到购物车)
      */
     public void repetition(Long id) {
+        Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        // 校验归属权，防止平行越权读取他人订单商品明细
+        if (!orders.getUserId().equals(BaseContext.getCurrentId())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
         List<OrderDetail> details = orderDetailMapper.getByOrderId(id);
         if (details != null && !details.isEmpty()) {
             Long userId = BaseContext.getCurrentId();
@@ -302,6 +344,13 @@ public class OrderServiceImpl implements OrderService {
             for (Orders orders : p) {
                 OrderVO orderVO = new OrderVO();
                 BeanUtils.copyProperties(orders, orderVO);
+                
+                // 动态判定未送达且已超时的订单
+                if (orders.getEstimatedDeliveryTime() != null && orders.getActualDeliveryTime() == null) {
+                    if (LocalDateTime.now().isAfter(orders.getEstimatedDeliveryTime())) {
+                        orderVO.setOvertimeStatus(1);
+                    }
+                }
                 
                 // 组装水果明细拼装字串输出给表格显示
                 List<OrderDetail> details = orderDetailMapper.getByOrderId(orders.getId());
@@ -338,9 +387,13 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 商家拒单
      */
+    @Transactional
     public void rejection(OrdersRejectionDTO ordersRejectionDTO) throws Exception {
         Orders orders = orderMapper.getById(ordersRejectionDTO.getId());
         if (orders != null) {
+            // 商家拒单，回补库存
+            rollbackStock(orders.getId());
+
             orders.setStatus(Orders.CANCELLED);
             orders.setCancelReason(ordersRejectionDTO.getRejectionReason());
             orders.setCancelTime(LocalDateTime.now());
@@ -351,9 +404,15 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 商家取消订单
      */
+    @Transactional
     public void cancel(OrdersCancelDTO ordersCancelDTO) throws Exception {
         Orders orders = orderMapper.getById(ordersCancelDTO.getId());
         if (orders != null) {
+            // 商家取消订单，若是已支付订单，回补库存
+            if (orders.getPayStatus().equals(Orders.PAID)) {
+                rollbackStock(orders.getId());
+            }
+
             orders.setStatus(Orders.CANCELLED);
             orders.setCancelReason(ordersCancelDTO.getCancelReason());
             orders.setCancelTime(LocalDateTime.now());
@@ -399,6 +458,13 @@ public class OrderServiceImpl implements OrderService {
                 || ("PICKUP".equals(orders.getDeliveryType()) && orders.getStatus().equals(Orders.CONFIRMED)))) {
             orders.setStatus(Orders.COMPLETED);
             orders.setDeliveryTime(LocalDateTime.now());
+            orders.setActualDeliveryTime(LocalDateTime.now());
+            // 如果实际送达时间超过预计送达时间，则标记为超时状态 1，否则为 0
+            if (orders.getEstimatedDeliveryTime() != null && orders.getActualDeliveryTime().isAfter(orders.getEstimatedDeliveryTime())) {
+                orders.setOvertimeStatus(1);
+            } else {
+                orders.setOvertimeStatus(0);
+            }
             orderMapper.update(orders);
         }
     }
@@ -410,6 +476,23 @@ public class OrderServiceImpl implements OrderService {
         Orders orders = orderMapper.getById(id);
         if (orders == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 校验催单归属权，防横向平行越权
+        if (!orders.getUserId().equals(BaseContext.getCurrentId())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 状态校验：只有已支付且处于 2待接单 3已接单 4派送中 状态的订单才能催单
+        if (!orders.getPayStatus().equals(Orders.PAID) || orders.getStatus() < 2 || orders.getStatus() > 4) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // Redis 限流防刷锁，TTL 60 秒
+        String redisKey = "lgg:order:reminder:lock:" + id;
+        Boolean success = redisTemplate.opsForValue().setIfAbsent(redisKey, "locked", 60, TimeUnit.SECONDS);
+        if (success == null || !success) {
+            throw new OrderBusinessException("催单过于频繁，请60秒后再试！");
         }
 
         // 催单提醒：通过 WebSocket 向后台推送提示和语音播报
@@ -518,5 +601,20 @@ public class OrderServiceImpl implements OrderService {
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private void rollbackStock(Long orderId) {
+        Orders orders = orderMapper.getById(orderId);
+        if (orders != null && orders.getPayStatus().equals(Orders.PAID) && (orders.getStockRollbackStatus() == null || orders.getStockRollbackStatus() == 0)) {
+            List<OrderDetail> details = orderDetailMapper.getByOrderId(orderId);
+            if (details != null) {
+                for (OrderDetail detail : details) {
+                    dishMapper.increaseStock(detail.getDishId(), detail.getNumber());
+                }
+            }
+            // 标记库存已回补，确保幂等防御
+            orders.setStockRollbackStatus(1);
+            orderMapper.update(orders);
+        }
     }
 }

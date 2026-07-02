@@ -60,4 +60,13 @@ public interface OrderMapper {
      * @return
      */
     List<GoodsSalesDTO> getSalesTop10(LocalDateTime begin,LocalDateTime end);
+
+    /**
+     * 定时任务乐观锁条件更新订单状态
+     */
+    int updateStatusWithLock(@org.apache.ibatis.annotations.Param("id") Long id, 
+                             @org.apache.ibatis.annotations.Param("fromStatus") Integer fromStatus, 
+                             @org.apache.ibatis.annotations.Param("toStatus") Integer toStatus, 
+                             @org.apache.ibatis.annotations.Param("cancelReason") String cancelReason, 
+                             @org.apache.ibatis.annotations.Param("cancelTime") LocalDateTime cancelTime);
 }

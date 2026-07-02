@@ -68,4 +68,16 @@
             </if>
         </where>
     </select>
+
+    <update id="decreaseStock">
+        update lgg_fruit
+        set stock = stock - #{number}
+        where id = #{id} and stock >= #{number}
+    </update>
+
+    <update id="increaseStock">
+        update lgg_fruit
+        set stock = stock + #{number}
+        where id = #{id}
+    </update>
 </mapper>

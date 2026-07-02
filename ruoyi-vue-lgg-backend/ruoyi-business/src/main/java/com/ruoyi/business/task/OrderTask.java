@@ -33,10 +33,16 @@ public class OrderTask {
 
         if(ordersList != null && ordersList.size() > 0){
             for (Orders orders : ordersList) {
-                orders.setStatus(Orders.CANCELLED);
-                orders.setCancelReason("订单超时，自动取消");
-                orders.setCancelTime(LocalDateTime.now());
-                orderMapper.update(orders);
+                int rows = orderMapper.updateStatusWithLock(
+                    orders.getId(), 
+                    Orders.PENDING_PAYMENT, 
+                    Orders.CANCELLED, 
+                    "订单超时，自动取消", 
+                    LocalDateTime.now()
+                );
+                if (rows == 1) {
+                    log.info("超时未支付订单自动关单成功，订单ID：{}", orders.getId());
+                }
             }
         }
     }

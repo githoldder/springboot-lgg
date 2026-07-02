@@ -117,4 +117,13 @@ public class Orders implements Serializable {
 
     //餐具数量状态  1按餐量提供  0选择具体数量
     private Integer tablewareStatus;
+
+    // 超时标记 0-正常，1-已超时
+    private Integer overtimeStatus;
+
+    // 实际送达完成时间
+    private LocalDateTime actualDeliveryTime;
+
+    // 库存回滚标记 0-未回滚，1-已回滚
+    private Integer stockRollbackStatus;
 }

@@ -47,4 +47,7 @@ public class Dish implements Serializable {
 
     private Long updateUser;
 
+    // 商品库存数量
+    private Integer stock;
+
 }

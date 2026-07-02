@@ -88,4 +88,14 @@ public interface DishMapper {
      * @return
      */
     Integer countByMap(Map map);
+
+    /**
+     * 减少商品库存数量 (带条件控制以防止超卖)
+     */
+    int decreaseStock(@org.apache.ibatis.annotations.Param("id") Long id, @org.apache.ibatis.annotations.Param("number") Integer number);
+
+    /**
+     * 增加/回补商品库存数量
+     */
+    int increaseStock(@org.apache.ibatis.annotations.Param("id") Long id, @org.apache.ibatis.annotations.Param("number") Integer number);
 }
