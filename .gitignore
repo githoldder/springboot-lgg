@@ -59,3 +59,11 @@ bin/minio
 bin/nacos/logPath_IS_UNDEFINED/
 bin/nacos/logs/
 bin/nacos/data/
+
+# Temporary MinIO data, Redis dump, and test results
+data/
+dump.rdb
+test-results/
+bin/nacos.tar.gz
+officecli_materials.zip
+

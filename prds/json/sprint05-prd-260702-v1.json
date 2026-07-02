@@ -1,0 +1,535 @@
+{
+  "sprint_id": "S05",
+  "title": "订单安全加固与异常生命周期治理",
+  "last_updated": "2026-07-02 00:00",
+  "objective": "针对 issue.md 末尾暴露的催单防刷、订单超时、配送时效规范以及 4 大后端核心高危漏洞，建立以订单资金安全、用户越权防护、库存一致性、异常自动流转为核心的新迭代计划。优先修复可被直接利用的金额篡改和平行越权问题，再补齐库存扣减、催单限流、超时高亮、自动关单和退款补偿闭环。",
+  "source_documents": [
+    {
+      "path": "docs/02-process/document/issue.md",
+      "section": "订单生命周期管理：催单防刷与超时机制设计"
+    },
+    {
+      "path": "docs/02-process/document/issue.md",
+      "section": "后端核心源码高危漏洞审计报告"
+    },
+    {
+      "path": "docs/02-process/document/issue.md",
+      "section": "订单异常场景流转与防御决策树"
+    }
+  ],
+  "blocking_issues": [
+    {
+      "id": "S05-BLK-01",
+      "title": "订单金额防篡改验证缺失",
+      "severity": "P0",
+      "description": "submitOrder 使用 BeanUtils 拷贝前端 OrdersSubmitDTO.amount，若抓包篡改 amount，后端在 amount 非空时可能跳过购物车实算金额覆盖。",
+      "status": "unresolved",
+      "fix": "后端强制执行 orders.setAmount(total)，任何前端金额仅作为展示参考，不参与入库和支付金额计算。"
+    },
+    {
+      "id": "S05-BLK-02",
+      "title": "用户取消订单存在平行越权",
+      "severity": "P0",
+      "description": "userCancelById 仅按订单 ID 查询并取消，未校验订单 userId 是否等于当前登录用户。",
+      "status": "unresolved",
+      "fix": "取消前校验 orders.getUserId().equals(BaseContext.getCurrentId())，不匹配则抛出业务异常。"
+    },
+    {
+      "id": "S05-BLK-03",
+      "title": "再来一单接口存在平行越权和隐私泄漏",
+      "severity": "P0",
+      "description": "repetition 直接按订单 ID 读取订单明细并写入购物车，未校验当前用户是否为订单所有人。",
+      "status": "unresolved",
+      "fix": "读取订单明细前先查询订单并执行 userId 归属校验。"
+    },
+    {
+      "id": "S05-BLK-04",
+      "title": "库存无扣减与并发保护导致超卖",
+      "severity": "P0",
+      "description": "下单与支付回调链路未执行商品库存扣减，也没有 stock >= num 条件扣减或乐观锁保护。",
+      "status": "unresolved",
+      "fix": "支付成功或确认节点执行批量条件扣减，影响行数不匹配时阻断状态流转并进入补偿流程。"
+    },
+    {
+      "id": "S05-BLK-05",
+      "title": "催单接口缺少防刷限流",
+      "severity": "P1",
+      "description": "同一订单可高频触发催单 WebSocket，造成后台消息爆炸和运营干扰。",
+      "status": "unresolved",
+      "fix": "使用 Redis SET EX 60 NX 建立订单级催单锁，并按订单状态决定是否允许催单。"
+    },
+    {
+      "id": "S05-BLK-06",
+      "title": "缺少预计送达时间和超时高亮",
+      "severity": "P1",
+      "description": "订单模型缺少 estimated_delivery_time、overtime_status、actual_delivery_time，后台无法识别超时履约风险。",
+      "status": "unresolved",
+      "fix": "新增字段和 VO 动态计算，管理端对超时订单红色高亮并播放预警。"
+    },
+    {
+      "id": "S05-BLK-07",
+      "title": "未支付订单缺少自动关单退库机制",
+      "severity": "P1",
+      "description": "未支付订单长期挂起会占用库存和运营视图，缺少 15 分钟超时自动取消。",
+      "status": "unresolved",
+      "fix": "基于 RabbitMQ 延迟队列或 Redis 过期监听触发统一关单服务，并回补库存。"
+    }
+  ],
+  "scope_boundary": [
+    "优先处理订单域：OrderServiceImpl、订单 Mapper、订单 DTO/VO、订单数据库迁移、管理端订单列表、小程序催单入口。",
+    "真实微信支付仍可继续使用 mock 支付演示，但回调幂等、金额一致性和补偿设计必须按真实支付标准实现。",
+    "本轮不重构完整骑手系统，只实现指派并发保护与配送超时预警。",
+    "本轮不把 WebSocket 离线消息做成持久化 IM 系统，管理员离线后的兜底仍依赖订单列表条件查询。"
+  ],
+  "key_results": [
+    {
+      "id": "S05-KR1",
+      "text": "金额篡改被后端强制覆盖，数据库订单金额和支付金额均来自购物车实算。"
+    },
+    {
+      "id": "S05-KR2",
+      "text": "用户取消订单和再来一单接口完成订单归属权校验，阻断平行越权。"
+    },
+    {
+      "id": "S05-KR3",
+      "text": "库存扣减具备条件更新和并发保护，不会出现负库存和超卖。"
+    },
+    {
+      "id": "S05-KR4",
+      "text": "催单具备前后端双层限流，同一订单 60 秒内只触发一次有效提醒。"
+    },
+    {
+      "id": "S05-KR5",
+      "text": "订单具备预计送达时间、实际送达时间和超时状态，后台能高亮展示履约风险。"
+    },
+    {
+      "id": "S05-KR6",
+      "text": "未支付订单 15 分钟自动关单并退库，退款失败进入人工补偿通道。"
+    },
+    {
+      "id": "S05-KR7",
+      "text": "P0/P1 异常场景具备 API、并发和 E2E 回归测试证据。"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "S05-T01",
+      "title": "P0 安全止血：金额防篡改与平行越权",
+      "status": "pending",
+      "priority": "P0",
+      "kr_ids": ["S05-KR1", "S05-KR2", "S05-KR7"],
+      "steps": [
+        {
+          "step_id": "S05-T01-STEP01",
+          "title": "submitOrder 强制覆盖订单金额",
+          "description": "在购物车明细计算 total 后，无条件执行 orders.setAmount(total)，避免前端 OrdersSubmitDTO.amount 被直接入库。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "抓包传入 amount=0.01，订单入库金额仍等于购物车实算金额。",
+            "支付参数金额与订单实算金额一致。"
+          ]
+        },
+        {
+          "step_id": "S05-T01-STEP02",
+          "title": "userCancelById 增加订单归属校验",
+          "description": "查询订单后校验 orders.userId 与 BaseContext.getCurrentId() 一致，不一致直接抛出业务异常。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "用户 A 取消用户 B 的订单返回业务异常。",
+            "被攻击订单状态保持不变。"
+          ]
+        },
+        {
+          "step_id": "S05-T01-STEP03",
+          "title": "repetition 增加订单归属校验",
+          "description": "读取订单明细前先加载订单并校验订单所有人，避免通过订单 ID 读取他人消费隐私。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "用户 A 对用户 B 的订单执行再来一单返回业务异常。",
+            "用户 A 购物车不新增用户 B 的订单明细。"
+          ]
+        },
+        {
+          "step_id": "S05-T01-STEP04",
+          "title": "补充 P0 接口回归测试",
+          "description": "覆盖金额篡改、越权取消、越权再来一单三类高危场景。",
+          "status": "pending",
+          "depends_on": ["S05-T01-STEP01", "S05-T01-STEP02", "S05-T01-STEP03"],
+          "target_files": [],
+          "verification": [
+            "API 回归测试全部通过，关键断言写入测试报告。"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S05-T02",
+      "title": "库存一致性与并发防超卖",
+      "status": "pending",
+      "priority": "P0",
+      "kr_ids": ["S05-KR3", "S05-KR6", "S05-KR7"],
+      "steps": [
+        {
+          "step_id": "S05-T02-STEP01",
+          "title": "确认或新增库存字段",
+          "description": "梳理 lgg_fruit 是否已有 stock 字段；若没有，新增数据库迁移、实体字段、Mapper 映射和后台编辑入口。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "sql",
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/domain/Fruit.java"
+          ],
+          "verification": [
+            "商品库存可被数据库查询和后台维护。"
+          ]
+        },
+        {
+          "step_id": "S05-T02-STEP02",
+          "title": "实现条件扣减库存 SQL",
+          "description": "为每个订单明细执行 stock = stock - num 且 stock >= num 的条件更新，并校验影响行数。",
+          "status": "pending",
+          "depends_on": ["S05-T02-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/resources/mapper/business/FruitMapper.xml",
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/mapper/FruitMapper.java"
+          ],
+          "verification": [
+            "库存不足时扣减失败并返回明确错误。",
+            "库存不会扣成负数。"
+          ]
+        },
+        {
+          "step_id": "S05-T02-STEP03",
+          "title": "接入支付成功或确认节点",
+          "description": "在支付成功状态流转前执行库存扣减，并保证重复支付回调幂等。",
+          "status": "pending",
+          "depends_on": ["S05-T02-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "重复支付回调不会重复扣库存。",
+            "库存不足订单不会进入待接单状态。"
+          ]
+        },
+        {
+          "step_id": "S05-T02-STEP04",
+          "title": "取消/退款/关单库存回补",
+          "description": "取消订单、支付超时关单、退款成功后统一执行库存回滚。",
+          "status": "pending",
+          "depends_on": ["S05-T02-STEP03"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "取消订单后库存恢复。",
+            "退款成功后库存恢复且日志可追踪。"
+          ]
+        },
+        {
+          "step_id": "S05-T02-STEP05",
+          "title": "并发压测验证防超卖",
+          "description": "构造多线程同时购买同一商品，验证成功订单数不超过库存。",
+          "status": "pending",
+          "depends_on": ["S05-T02-STEP04"],
+          "target_files": [],
+          "verification": [
+            "并发压测后库存不为负。",
+            "成功订单总购买量不超过初始库存。"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S05-T03",
+      "title": "催单防刷与状态化提醒",
+      "status": "pending",
+      "priority": "P1",
+      "kr_ids": ["S05-KR4", "S05-KR7"],
+      "steps": [
+        {
+          "step_id": "S05-T03-STEP01",
+          "title": "reminder 接入 Redis 订单级限流锁",
+          "description": "使用 lgg:order:reminder:lock:{orderId}，TTL 60 秒，NX 原子写入；写入失败直接返回频率过快。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "同一订单 60 秒内重复催单只成功一次。"
+          ]
+        },
+        {
+          "step_id": "S05-T03-STEP02",
+          "title": "催单状态白名单校验",
+          "description": "仅允许待包装、待派送、配送中等有效状态催单；待支付、已完成、已取消直接拒绝。",
+          "status": "pending",
+          "depends_on": ["S05-T03-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "禁用状态订单不发送 WebSocket。",
+            "不同状态返回不同业务提示。"
+          ]
+        },
+        {
+          "step_id": "S05-T03-STEP03",
+          "title": "小程序催单按钮倒计时",
+          "description": "催单成功后按钮置灰 60 秒，倒计时期间禁止重复点击。",
+          "status": "pending",
+          "depends_on": ["S05-T03-STEP02"],
+          "target_files": [
+            "mp-weixin"
+          ],
+          "verification": [
+            "按钮倒计时展示正常。",
+            "倒计时期间不会重复发请求。"
+          ]
+        },
+        {
+          "step_id": "S05-T03-STEP04",
+          "title": "管理端区分催单提醒",
+          "description": "WebSocket 消息 type 区分来单和催单，管理端播放不同提示文案或声音。",
+          "status": "pending",
+          "depends_on": ["S05-T03-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend"
+          ],
+          "verification": [
+            "催单提醒不会被展示为新订单。",
+            "后台能清晰识别订单号和催单状态。"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S05-T04",
+      "title": "配送时效、超时高亮与后台可观测",
+      "status": "pending",
+      "priority": "P1",
+      "kr_ids": ["S05-KR5", "S05-KR7"],
+      "steps": [
+        {
+          "step_id": "S05-T04-STEP01",
+          "title": "订单表新增配送时效字段",
+          "description": "新增 estimated_delivery_time、overtime_status、actual_delivery_time 字段及实体/VO/Mapper 映射。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "sql",
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/domain/Orders.java"
+          ],
+          "verification": [
+            "字段可写入、可查询、可序列化到管理端接口。"
+          ]
+        },
+        {
+          "step_id": "S05-T04-STEP02",
+          "title": "下单默认写入预计送达时间",
+          "description": "无用户指定配送时间时，estimated_delivery_time 默认为 order_time + 30 分钟。",
+          "status": "pending",
+          "depends_on": ["S05-T04-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "新订单入库后 estimated_delivery_time 非空。"
+          ]
+        },
+        {
+          "step_id": "S05-T04-STEP03",
+          "title": "订单列表动态计算超时状态",
+          "description": "conditionSearch 返回 VO 时，若当前时间超过预计送达时间且订单未完结，则 overtime_status 动态置 1。",
+          "status": "pending",
+          "depends_on": ["S05-T04-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "超时未完成订单返回 overtime_status=1。",
+            "已完成或已取消订单不再显示超时。"
+          ]
+        },
+        {
+          "step_id": "S05-T04-STEP04",
+          "title": "管理端超时高亮和预警",
+          "description": "订单列表和详情页对 overtime_status=1 的订单进行红色高亮并播放独立预警。",
+          "status": "pending",
+          "depends_on": ["S05-T04-STEP03"],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend"
+          ],
+          "verification": [
+            "超时订单视觉高亮明显。",
+            "预警提示不与普通来单提醒混淆。"
+          ]
+        },
+        {
+          "step_id": "S05-T04-STEP05",
+          "title": "订单完成写入实际送达时间",
+          "description": "订单完成状态流转时记录 actual_delivery_time，用于后续履约分析。",
+          "status": "pending",
+          "depends_on": ["S05-T04-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "完成订单后 actual_delivery_time 非空。"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S05-T05",
+      "title": "自动关单、退库与补偿通道",
+      "status": "pending",
+      "priority": "P1",
+      "kr_ids": ["S05-KR6", "S05-KR7"],
+      "steps": [
+        {
+          "step_id": "S05-T05-STEP01",
+          "title": "选型并实现 15 分钟自动关单触发器",
+          "description": "优先评估 RabbitMQ 延迟队列；若本地环境不稳定，则采用 Redis Key 过期监听或定时扫描兜底。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend"
+          ],
+          "verification": [
+            "未支付订单 15 分钟后自动触发关单。"
+          ]
+        },
+        {
+          "step_id": "S05-T05-STEP02",
+          "title": "统一自动关单服务",
+          "description": "自动关单复用统一取消逻辑，校验订单仍为待支付后再取消并回补库存。",
+          "status": "pending",
+          "depends_on": ["S05-T05-STEP01", "S05-T02-STEP04"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend/ruoyi-business/src/main/java/com/ruoyi/business/service/impl/OrderServiceImpl.java"
+          ],
+          "verification": [
+            "已支付订单不会被延迟消息误取消。",
+            "待支付订单自动取消后库存回补。"
+          ]
+        },
+        {
+          "step_id": "S05-T05-STEP03",
+          "title": "配送 24 小时未完成预警",
+          "description": "配送中订单超过 24 小时未完成时生成运营预警记录，不直接强制完成。",
+          "status": "pending",
+          "depends_on": ["S05-T04-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend"
+          ],
+          "verification": [
+            "超 24 小时配送中订单可被后台查询到预警。"
+          ]
+        },
+        {
+          "step_id": "S05-T05-STEP04",
+          "title": "退款失败人工补偿记录",
+          "description": "原路退款失败时记录订单号、支付单号、失败原因、处理状态，供运营人工补偿。",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-backend"
+          ],
+          "verification": [
+            "退款失败不会静默丢失。",
+            "后台或数据库可查询补偿记录。"
+          ]
+        },
+        {
+          "step_id": "S05-T05-STEP05",
+          "title": "异常流转日志与追踪",
+          "description": "为自动关单、退库、退款、补偿动作写入统一日志，支持按订单号追踪。",
+          "status": "pending",
+          "depends_on": ["S05-T05-STEP02", "S05-T05-STEP04"],
+          "target_files": [
+            "ruoyi-vue-lgg-backend"
+          ],
+          "verification": [
+            "可按订单号查到完整异常处理链路。"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S05-T06",
+      "title": "回归测试与验收演示",
+      "status": "pending",
+      "priority": "P1",
+      "kr_ids": ["S05-KR7"],
+      "steps": [
+        {
+          "step_id": "S05-T06-STEP01",
+          "title": "API 安全回归测试",
+          "description": "覆盖金额篡改、越权取消、越权再来一单、重复催单、自动关单。",
+          "status": "pending",
+          "depends_on": ["S05-T01-STEP04", "S05-T03-STEP02", "S05-T05-STEP02"],
+          "target_files": [],
+          "verification": [
+            "所有 P0/P1 API 安全断言通过。"
+          ]
+        },
+        {
+          "step_id": "S05-T06-STEP02",
+          "title": "并发一致性测试",
+          "description": "覆盖库存扣减、双管理员指派骑手、重复支付回调幂等。",
+          "status": "pending",
+          "depends_on": ["S05-T02-STEP05"],
+          "target_files": [],
+          "verification": [
+            "并发场景无负库存、无重复扣减、无重复指派。"
+          ]
+        },
+        {
+          "step_id": "S05-T06-STEP03",
+          "title": "E2E 演示脚本",
+          "description": "覆盖下单、支付、催单、超时高亮、完成或取消的完整演示链路。",
+          "status": "pending",
+          "depends_on": ["S05-T03-STEP04", "S05-T04-STEP04", "S05-T05-STEP02"],
+          "target_files": [],
+          "verification": [
+            "演示脚本稳定复现业务防御效果。"
+          ]
+        },
+        {
+          "step_id": "S05-T06-STEP04",
+          "title": "同步 issue.md 执行状态",
+          "description": "把设计项标注为已落地、待验证或阻塞，保持文档与代码真实状态一致。",
+          "status": "pending",
+          "depends_on": ["S05-T06-STEP01", "S05-T06-STEP02", "S05-T06-STEP03"],
+          "target_files": [
+            "docs/02-process/document/issue.md"
+          ],
+          "verification": [
+            "issue.md 状态与代码和测试证据一致。"
+          ]
+        }
+      ]
+    }
+  ],
+  "revision_history": [
+    {
+      "date": "2026-07-02",
+      "version": "v1",
+      "description": "基于 issue.md 追加的高危漏洞审计、催单防刷、配送超时和异常决策树，新增 Sprint05 安全治理迭代计划。"
+    }
+  ]
+}

@@ -13,11 +13,11 @@
 - 后端支付服务 (pay)：`8085`
 - 后端通知服务 (notice)：`8086`
 - 微信小程序：`mp-weixin`
-- 一键启动：`./start-all-services.sh`
+- 一键启动：`pm2 start ecosystem.config.cjs`
 
 ## 课程交付目录
 
-课程设计报告、个人答辩记录和源码打包清单统一放在 `docs/03-reports/第五组`。
+课程设计报告、个人答辩记录和源码打包清单统一放在 `docs/03-report/第五组`。
 
 ## 项目微服务结构目录树
 
@@ -32,5 +32,7 @@ springboot-lgg
 │   ├── ruoyi-notice               # 消息通知与 WebSocket 推送服务 [8086]
 │   ├── ruoyi-common               # 通用工具与 MinIO 集成模块
 │   └── ruoyi-framework            # 系统安全与核心配置模块
-└── ruoyi-vue-lgg-frontend         # 前端 Vue3 管理后台 [8082]
+├── ruoyi-vue-lgg-frontend         # 前端 Vue3 管理后台 [8087]
+├── prds                           # 需求规格书双板同步 (md/json)
+└── docs                           # 实训文档、答辩记录与报告文本
 ```

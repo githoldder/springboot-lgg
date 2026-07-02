@@ -1,0 +1,160 @@
+{
+  "sprint_id": "S04",
+  "title": "管理端首页真实数据对接与商业可视化图表设计",
+  "last_updated": "2026-07-01 23:18",
+  "objective": "将管理端前端首页的硬编码 Mock 数据完全替换为后端的真实运营统计接口数据，引入商业级 ECharts 动态图表（折线图、柱状图、饼图），并完成自动化部署与全链路测试验证。",
+  "blocking_issues": [
+    {
+      "id": "BLK-06",
+      "title": "前端首页硬编码数据",
+      "description": "首页数据全部为 Mock 数据，缺乏真实的业务展示",
+      "status": "unresolved",
+      "fix": "对接后端统计接口"
+    },
+    {
+      "id": "BLK-07",
+      "title": "缺少可视化图表",
+      "description": "系统无折线图、柱状图、饼图等商业报表展示",
+      "status": "unresolved",
+      "fix": "引入 ECharts 可视化图表"
+    }
+  ],
+  "scope_boundary": [
+    "不修改后端现有接口，完全对接 ReportController 与 WorkSpaceController 自带的 API",
+    "使用 PM2 作为服务容器管理本地所有后端微服务和前端预览端",
+    "自动化测试包括 Newman 接口测试与 Playwright E2E 功能测试"
+  ],
+  "key_results": [
+    {
+      "id": "S04-KR1",
+      "text": "首页卡片数据完全来自真实后台接口，反映数据库即时状态"
+    },
+    {
+      "id": "S04-KR2",
+      "text": "集成 ECharts 动态折线图展示7天营业额走势"
+    },
+    {
+      "id": "S04-KR3",
+      "text": "集成 ECharts 动态柱状图排行热销水果 Top 10"
+    },
+    {
+      "id": "S04-KR4",
+      "text": "集成 ECharts 动态饼图监控订单状态分布"
+    },
+    {
+      "id": "S04-KR5",
+      "text": "所有微服务及前端在 PM2 ecosystem 下一键托管运行无错误"
+    },
+    {
+      "id": "S04-KR6",
+      "text": "冒烟测试与 E2E 自动化测试用例全量执行通过"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "S04-T01",
+      "title": "首页 ECharts 可视化与真实数据对接",
+      "status": "pending",
+      "kr_ids": ["S04-KR1", "S04-KR2", "S04-KR3", "S04-KR4"],
+      "steps": [
+        {
+          "step_id": "S04-T01-STEP01",
+          "title": "引入 Api 接口与 ECharts 组件",
+          "description": "在 index.vue 中引入 @/api/business/dashboard.js 中的业务方法，并导入 echarts",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend/src/views/index.vue"
+          ],
+          "target_lines": "",
+          "verification": [
+            "编译无报错，正确引入模块"
+          ]
+        },
+        {
+          "step_id": "S04-T01-STEP02",
+          "title": "首页卡片数据对接",
+          "description": "对接今日营业额、有效订单、新增会员和商品数量",
+          "status": "pending",
+          "depends_on": ["S04-T01-STEP01"],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend/src/views/index.vue"
+          ],
+          "target_lines": "",
+          "verification": [
+            "卡片数值正确渲染，刷新后能实时同步"
+          ]
+        },
+        {
+          "step_id": "S04-T01-STEP03",
+          "title": "渲染营业额走势折线图与Top10销量柱状图",
+          "description": "在页面上初始化折线图和柱状图，加载后台统计的 7 天数据",
+          "status": "pending",
+          "depends_on": ["S04-T01-STEP02"],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend/src/views/index.vue"
+          ],
+          "target_lines": "",
+          "verification": [
+            "图表渲染正常，X轴、Y轴无重合或溢出"
+          ]
+        },
+        {
+          "step_id": "S04-T01-STEP04",
+          "title": "渲染订单占比饼图与自适应缩放",
+          "description": "绘制环形订单状态分布饼图，并在 window resize 时触发 resize 方法自适应缩放",
+          "status": "pending",
+          "depends_on": ["S04-T01-STEP03"],
+          "target_files": [
+            "ruoyi-vue-lgg-frontend/src/views/index.vue"
+          ],
+          "target_lines": "",
+          "verification": [
+            "饼图占比显示正确，缩放窗口时图表能够自适应拉伸"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "S04-T02",
+      "title": "PM2 多服务托管与测试验证",
+      "status": "pending",
+      "kr_ids": ["S04-KR5", "S04-KR6"],
+      "steps": [
+        {
+          "step_id": "S04-T02-STEP01",
+          "title": "PM2 容器托管启动",
+          "description": "执行 pm2 start ecosystem.config.cjs",
+          "status": "pending",
+          "depends_on": [],
+          "target_files": [],
+          "verification": [
+            "pm2 status 列表中 9 个服务全为 online"
+          ]
+        },
+        {
+          "step_id": "S04-T02-STEP02",
+          "title": "Newman API 冒烟测试",
+          "description": "执行 Newman 接口测试脚本",
+          "status": "pending",
+          "depends_on": ["S04-T02-STEP01"],
+          "target_files": [],
+          "verification": [
+            "接口断言全部通过，没有 4xx/5xx 错误"
+          ]
+        },
+        {
+          "step_id": "S04-T02-STEP03",
+          "title": "Playwright 核心 E2E 测试",
+          "description": "执行 npx playwright test",
+          "status": "pending",
+          "depends_on": ["S04-T02-STEP02"],
+          "target_files": [],
+          "verification": [
+            "E2E 测试完成，WebSocket 广播触发正常，DB 状态校验正确"
+          ]
+        }
+      ]
+    }
+  ]
+}

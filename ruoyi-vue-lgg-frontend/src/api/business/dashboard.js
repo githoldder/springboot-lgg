@@ -52,3 +52,11 @@ export function getSalesTop10(params) {
     params
   })
 }
+
+export function getUserStatistics(params) {
+  return request({
+    url: '/admin/report/userStatistics',
+    method: 'get',
+    params
+  })
+}
