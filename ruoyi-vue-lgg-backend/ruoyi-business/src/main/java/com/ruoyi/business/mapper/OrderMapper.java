@@ -69,4 +69,17 @@ public interface OrderMapper {
                              @org.apache.ibatis.annotations.Param("toStatus") Integer toStatus, 
                              @org.apache.ibatis.annotations.Param("cancelReason") String cancelReason, 
                              @org.apache.ibatis.annotations.Param("cancelTime") LocalDateTime cancelTime);
+
+    /**
+     * 根据订单号精确查询订单，用于支付回调，杜绝 LIKE 模糊匹配碰撞
+     */
+    @Select("select * from lgg_orders where number = #{number}")
+    Orders getByNumber(@org.apache.ibatis.annotations.Param("number") String number);
+
+    /**
+     * 原子锁将订单的库存回滚状态由 fromStatus 修改为 toStatus，提供数据库行锁级并发防护
+     */
+    int updateStockRollbackStatusWithLock(@org.apache.ibatis.annotations.Param("id") Long id,
+                                          @org.apache.ibatis.annotations.Param("fromStatus") Integer fromStatus,
+                                          @org.apache.ibatis.annotations.Param("toStatus") Integer toStatus);
 }

@@ -192,4 +192,10 @@
         set status = #{toStatus}, cancel_reason = #{cancelReason}, cancel_time = #{cancelTime}
         where id = #{id} and status = #{fromStatus}
     </update>
+
+    <update id="updateStockRollbackStatusWithLock">
+        update lgg_orders
+        set stock_rollback_status = #{toStatus}
+        where id = #{id} and pay_status = 1 and (stock_rollback_status = #{fromStatus} or stock_rollback_status is null)
+    </update>
 </mapper>

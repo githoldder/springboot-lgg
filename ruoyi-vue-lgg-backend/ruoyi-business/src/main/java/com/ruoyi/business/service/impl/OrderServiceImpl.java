@@ -187,14 +187,8 @@ public class OrderServiceImpl implements OrderService {
      */
     @Transactional
     public void paySuccess(String outTradeNo) {
-        // 只按精确订单号查询，决不进行 ID 的 fallback 模糊降级，防主键碰撞
-        OrdersPageQueryDTO query = new OrdersPageQueryDTO();
-        query.setNumber(outTradeNo);
-        List<Orders> list = orderMapper.pageQuery(query);
-        Orders orders = null;
-        if (list != null && !list.isEmpty()) {
-            orders = list.get(0);
-        }
+        // 只按精确订单号查询，决不使用 LIKE 模糊匹配（杜绝 pageQuery LIKE 查询导致的碰撞隐患）
+        Orders orders = orderMapper.getByNumber(outTradeNo);
         if (orders == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
@@ -344,9 +338,11 @@ public class OrderServiceImpl implements OrderService {
             for (Orders orders : p) {
                 OrderVO orderVO = new OrderVO();
                 BeanUtils.copyProperties(orders, orderVO);
+                orderVO.setOvertimeStatus(0);
                 
-                // 动态判定未送达且已超时的订单
-                if (orders.getEstimatedDeliveryTime() != null && orders.getActualDeliveryTime() == null) {
+                // 动态判定未送达且已超时的有效订单（只对待接单2、已接单3、派送中4生效，排除已取消6、已完成5、待付款1等）
+                if (orders.getEstimatedDeliveryTime() != null && orders.getActualDeliveryTime() == null
+                        && orders.getStatus() != null && orders.getStatus() >= Orders.TO_BE_CONFIRMED && orders.getStatus() <= Orders.DELIVERY_IN_PROGRESS) {
                     if (LocalDateTime.now().isAfter(orders.getEstimatedDeliveryTime())) {
                         orderVO.setOvertimeStatus(1);
                     }
@@ -606,15 +602,16 @@ public class OrderServiceImpl implements OrderService {
     private void rollbackStock(Long orderId) {
         Orders orders = orderMapper.getById(orderId);
         if (orders != null && orders.getPayStatus().equals(Orders.PAID) && (orders.getStockRollbackStatus() == null || orders.getStockRollbackStatus() == 0)) {
-            List<OrderDetail> details = orderDetailMapper.getByOrderId(orderId);
-            if (details != null) {
-                for (OrderDetail detail : details) {
-                    dishMapper.increaseStock(detail.getDishId(), detail.getNumber());
+            // 利用数据库行级锁，原子自旋标记 stock_rollback_status
+            int rows = orderMapper.updateStockRollbackStatusWithLock(orderId, 0, 1);
+            if (rows == 1) {
+                List<OrderDetail> details = orderDetailMapper.getByOrderId(orderId);
+                if (details != null) {
+                    for (OrderDetail detail : details) {
+                        dishMapper.increaseStock(detail.getDishId(), detail.getNumber());
+                    }
                 }
             }
-            // 标记库存已回补，确保幂等防御
-            orders.setStockRollbackStatus(1);
-            orderMapper.update(orders);
         }
     }
 }

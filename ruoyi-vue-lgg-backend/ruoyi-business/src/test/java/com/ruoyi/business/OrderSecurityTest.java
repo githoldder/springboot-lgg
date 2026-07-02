@@ -236,7 +236,7 @@ public class OrderSecurityTest {
     }
 
     /**
-     * S05-T02: 校验回调接口精确按订单号 pageQuery 查询
+     * S05-T02-PATCH: 校验回调接口精确按订单号 getByNumber 查询
      */
     @Test
     public void testPaySuccessCallbackQueryPrecisely() {
@@ -251,17 +251,14 @@ public class OrderSecurityTest {
         List<OrderDetail> details = new ArrayList<>();
         details.add(detail);
 
-        com.github.pagehelper.Page<Orders> ordersList = new com.github.pagehelper.Page<>();
-        ordersList.add(orders);
-
-        when(orderMapper.pageQuery(any())).thenReturn(ordersList);
+        when(orderMapper.getByNumber("O108")).thenReturn(orders);
         when(orderDetailMapper.getByOrderId(108L)).thenReturn(details);
         when(dishMapper.decreaseStock(9L, 1)).thenReturn(1);
 
         orderService.paySuccess("O108");
 
         assertEquals(Orders.TO_BE_CONFIRMED, orders.getStatus());
-        verify(orderMapper).pageQuery(argThat(query -> "O108".equals(query.getNumber())));
+        verify(orderMapper).getByNumber("O108");
     }
 
     /**
@@ -283,6 +280,7 @@ public class OrderSecurityTest {
 
         when(orderMapper.getById(103L)).thenReturn(orders);
         when(orderDetailMapper.getByOrderId(103L)).thenReturn(details);
+        when(orderMapper.updateStockRollbackStatusWithLock(eq(103L), eq(0), eq(1))).thenReturn(1);
 
         orderService.userCancelById(103L);
 
@@ -394,19 +392,20 @@ public class OrderSecurityTest {
         List<OrderDetail> details = new ArrayList<>();
         details.add(detail);
 
-        // 第一次取消动作，应该会触发 increaseStock 并将 stockRollbackStatus 修改为 1
+        // 第一次取消动作，乐观锁更新成功，返回 1
         when(orderMapper.getById(106L)).thenReturn(orders);
         when(orderDetailMapper.getByOrderId(106L)).thenReturn(details);
+        when(orderMapper.updateStockRollbackStatusWithLock(106L, 0, 1)).thenReturn(1);
 
         orderService.userCancelById(106L);
 
-        // 校验库存已回补，且标记变更为 1
+        // 校验库存已回补
         verify(dishMapper, times(1)).increaseStock(8L, 2);
-        assertEquals(1, orders.getStockRollbackStatus());
 
-        // 模拟第二次取消（或者拒单），直接调用 rollbackStock 动作
-        // 由于 orders 状态已更新，所以我们再次重设 mock 并再次调用 cancel 方法
-        orders.setStatus(Orders.TO_BE_CONFIRMED); // 再次设回可取消状态做模拟，但保持 stockRollbackStatus=1
+        // 模拟第二次并发重入动作
+        orders.setStatus(Orders.TO_BE_CONFIRMED); // 再次设回可取消状态做模拟
+        orders.setStockRollbackStatus(1); // 模拟状态已被锁定为 1
+
         orderService.userCancelById(106L);
 
         // 校验虽然再次取消，但 increaseStock 没有被执行第二次（依旧是 times(1)）
@@ -474,6 +473,7 @@ public class OrderSecurityTest {
     public void testConditionSearchDynamicOvertimeCalculation() {
         Orders mockOrder = new Orders();
         mockOrder.setId(201L);
+        mockOrder.setStatus(Orders.TO_BE_CONFIRMED);
         mockOrder.setEstimatedDeliveryTime(LocalDateTime.now().minusMinutes(10)); // 预计送达是 10分钟前 (已超时)
         mockOrder.setActualDeliveryTime(null); // 尚未送达
 
@@ -552,5 +552,67 @@ public class OrderSecurityTest {
 
         // 验证乐观锁更新被正常执行
         verify(orderMapper).updateStatusWithLock(eq(301L), eq(Orders.PENDING_PAYMENT), eq(Orders.CANCELLED), anyString(), any());
+    }
+
+    /**
+     * S05-T04-PATCH: 校验动态超时列表高亮排除非有效订单 (如 CANCELLED/PENDING_PAYMENT)
+     */
+    @Test
+    public void testConditionSearchExcludeInactiveOrders() {
+        Orders mockOrder = new Orders();
+        mockOrder.setId(203L);
+        mockOrder.setStatus(Orders.CANCELLED); // 已取消订单
+        mockOrder.setEstimatedDeliveryTime(LocalDateTime.now().minusMinutes(10)); // 已超时
+        mockOrder.setActualDeliveryTime(null);
+
+        com.github.pagehelper.Page<Orders> pageList = new com.github.pagehelper.Page<>();
+        pageList.add(mockOrder);
+        pageList.setTotal(1);
+
+        OrdersPageQueryDTO queryDTO = new OrdersPageQueryDTO();
+        queryDTO.setPage(1);
+        queryDTO.setPageSize(10);
+
+        when(orderMapper.pageQuery(queryDTO)).thenReturn(pageList);
+        when(orderDetailMapper.getByOrderId(203L)).thenReturn(new ArrayList<>());
+
+        PageResult result = orderService.conditionSearch(queryDTO);
+
+        assertNotNull(result);
+        List<OrderVO> list = (List<OrderVO>) result.getRecords();
+        assertEquals(1, list.size());
+        // 核心验证：由于已取消，不应当设红高亮为 1，应为 0 (被排除)
+        assertEquals(0, list.get(0).getOvertimeStatus());
+    }
+
+    /**
+     * S05-T06-PATCH: 校验超时派送订单每天凌晨定时器仅输出日志，不强制修改状态
+     */
+    @Test
+    public void testProcessDeliveryOrderOvertimeOnlyWarning() {
+        Orders orders = new Orders();
+        orders.setId(401L);
+        orders.setNumber("O401");
+        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+
+        List<Orders> list = new ArrayList<>();
+        list.add(orders);
+
+        when(orderMapper.getByStatusAndOrderTimeLT(eq(Orders.DELIVERY_IN_PROGRESS), any())).thenReturn(list);
+
+        com.ruoyi.business.task.OrderTask orderTask = new com.ruoyi.business.task.OrderTask();
+        try {
+            java.lang.reflect.Field mapperField = com.ruoyi.business.task.OrderTask.class.getDeclaredField("orderMapper");
+            mapperField.setAccessible(true);
+            mapperField.set(orderTask, orderMapper);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+
+        orderTask.processDeliveryOrder();
+
+        // 验证没有触发任何 orders 状态的修改或 update 行为
+        assertEquals(Orders.DELIVERY_IN_PROGRESS, orders.getStatus());
+        verify(orderMapper, never()).update(any());
     }
 }

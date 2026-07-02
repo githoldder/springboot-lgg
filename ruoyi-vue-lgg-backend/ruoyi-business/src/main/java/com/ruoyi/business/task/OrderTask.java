@@ -48,20 +48,21 @@ public class OrderTask {
     }
 
     /**
-     * 处理一直处于派送中状态的订单
+     * 定时处理派送超时订单预警，配送超过 24 小时只记录警告日志，不再强行流转为已完成
      */
     @Scheduled(cron = "0 0 1 * * ?") //每天凌晨1点触发一次
     public void processDeliveryOrder(){
-        log.info("定时处理处于派送中的订单：{}",LocalDateTime.now());
+        log.info("定时扫描配送中的超时订单：{}", LocalDateTime.now());
 
-        LocalDateTime time = LocalDateTime.now().plusMinutes(-60);
+        // 基于 24 小时（1440 分钟）进行超时预警过滤
+        LocalDateTime time = LocalDateTime.now().plusMinutes(-1440);
 
         List<Orders> ordersList = orderMapper.getByStatusAndOrderTimeLT(Orders.DELIVERY_IN_PROGRESS, time);
 
         if(ordersList != null && ordersList.size() > 0){
             for (Orders orders : ordersList) {
-                orders.setStatus(Orders.COMPLETED);
-                orderMapper.update(orders);
+                log.warn("发现配送超时的订单，已持续处于派送中状态超过24小时，进行预警！订单ID：{}，订单号：{}", 
+                         orders.getId(), orders.getNumber());
             }
         }
     }
