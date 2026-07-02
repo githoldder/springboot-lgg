@@ -194,12 +194,16 @@ public class OrderSecurityTest {
         when(orderDetailMapper.getByOrderId(101L)).thenReturn(details);
         // 模拟库存扣减成功，返回影响行数 1
         when(dishMapper.decreaseStock(5L, 2)).thenReturn(1);
+        when(orderMapper.markPaymentSuccessWithLock(eq(101L), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(), eq(0))).thenReturn(1);
 
         orderService.confirmPayment("O101");
 
         // 验证状态成功变更为待接单
         assertEquals(Orders.TO_BE_CONFIRMED, orders.getStatus());
         assertEquals(Orders.PAID, orders.getPayStatus());
+        verify(orderMapper).markPaymentSuccessWithLock(eq(101L), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(), eq(0));
         verify(dishMapper).decreaseStock(5L, 2);
     }
 
@@ -224,6 +228,8 @@ public class OrderSecurityTest {
         when(orderDetailMapper.getByOrderId(102L)).thenReturn(details);
         // 模拟库存不足，返回影响行数 0
         when(dishMapper.decreaseStock(6L, 3)).thenReturn(0);
+        when(orderMapper.markPaymentSuccessWithLock(eq(102L), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(), eq(0))).thenReturn(1);
 
         // 验证抛出业务异常
         assertThrows(OrderBusinessException.class, () -> {
@@ -254,11 +260,34 @@ public class OrderSecurityTest {
         when(orderMapper.getByNumber("O108")).thenReturn(orders);
         when(orderDetailMapper.getByOrderId(108L)).thenReturn(details);
         when(dishMapper.decreaseStock(9L, 1)).thenReturn(1);
+        when(orderMapper.markPaymentSuccessWithLock(eq(108L), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(), eq(0))).thenReturn(1);
 
         orderService.paySuccess("O108");
 
         assertEquals(Orders.TO_BE_CONFIRMED, orders.getStatus());
         verify(orderMapper).getByNumber("O108");
+    }
+
+    /**
+     * S05-T02-PATCH: 校验重复支付回调抢不到状态锁时不会二次扣减库存
+     */
+    @Test
+    public void testPaySuccessDuplicateCallbackDoesNotDecreaseStockAgain() {
+        Orders orders = new Orders();
+        orders.setId(111L);
+        orders.setNumber("O111");
+        orders.setStatus(Orders.PENDING_PAYMENT);
+
+        when(orderMapper.getByNumber("O111")).thenReturn(orders);
+        when(orderMapper.markPaymentSuccessWithLock(eq(111L), eq(Orders.PENDING_PAYMENT), eq(Orders.UN_PAID),
+                eq(Orders.TO_BE_CONFIRMED), eq(Orders.PAID), any(), eq(0))).thenReturn(0);
+
+        orderService.paySuccess("O111");
+
+        verify(orderDetailMapper, never()).getByOrderId(any());
+        verify(dishMapper, never()).decreaseStock(any(), any());
+        verify(webSocketServer, never()).sendToAllClient(any());
     }
 
     /**
@@ -286,6 +315,7 @@ public class OrderSecurityTest {
 
         // 验证订单成功取消
         assertEquals(Orders.CANCELLED, orders.getStatus());
+        verify(orderMapper).update(argThat(updated -> updated.getStockRollbackStatus() == null));
         // 验证库存回补接口被触发
         verify(dishMapper).increaseStock(7L, 1);
     }
@@ -598,7 +628,7 @@ public class OrderSecurityTest {
         List<Orders> list = new ArrayList<>();
         list.add(orders);
 
-        when(orderMapper.getByStatusAndOrderTimeLT(eq(Orders.DELIVERY_IN_PROGRESS), any())).thenReturn(list);
+        when(orderMapper.getDeliveryTimeoutOrders(any())).thenReturn(list);
 
         com.ruoyi.business.task.OrderTask orderTask = new com.ruoyi.business.task.OrderTask();
         try {
@@ -613,6 +643,7 @@ public class OrderSecurityTest {
 
         // 验证没有触发任何 orders 状态的修改或 update 行为
         assertEquals(Orders.DELIVERY_IN_PROGRESS, orders.getStatus());
+        verify(orderMapper).getDeliveryTimeoutOrders(any());
         verify(orderMapper, never()).update(any());
     }
 }

@@ -50,3 +50,20 @@ END //
 DELIMITER ;
 CALL AddOrderColumns();
 DROP PROCEDURE AddOrderColumns;
+
+-- 3. 订单号精确查询必须有唯一索引兜底，防止重复订单号导致支付回调命中多行
+DELIMITER //
+CREATE PROCEDURE AddOrderNumberUniqueIndex()
+BEGIN
+    IF NOT EXISTS (
+        SELECT * FROM information_schema.statistics
+        WHERE table_schema = 'lgg_ruoyi'
+          AND table_name = 'lgg_orders'
+          AND index_name = 'uk_lgg_orders_number'
+    ) THEN
+        ALTER TABLE lgg_orders ADD UNIQUE KEY uk_lgg_orders_number (number);
+    END IF;
+END //
+DELIMITER ;
+CALL AddOrderNumberUniqueIndex();
+DROP PROCEDURE AddOrderNumberUniqueIndex;

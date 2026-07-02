@@ -39,6 +39,8 @@ public interface OrderMapper {
 
     List<Orders> getByStatusAndOrderTimeLT(Integer status, LocalDateTime orderTime);
 
+    List<Orders> getDeliveryTimeoutOrders(@org.apache.ibatis.annotations.Param("deliveryTime") LocalDateTime deliveryTime);
+
     /**
      * 根据动态条件统计营业额数据
      * @param map
@@ -69,6 +71,17 @@ public interface OrderMapper {
                              @org.apache.ibatis.annotations.Param("toStatus") Integer toStatus, 
                              @org.apache.ibatis.annotations.Param("cancelReason") String cancelReason, 
                              @org.apache.ibatis.annotations.Param("cancelTime") LocalDateTime cancelTime);
+
+    /**
+     * 支付成功时按订单状态和支付状态进行原子流转，防止重复回调并发扣库存
+     */
+    int markPaymentSuccessWithLock(@org.apache.ibatis.annotations.Param("id") Long id,
+                                   @org.apache.ibatis.annotations.Param("fromStatus") Integer fromStatus,
+                                   @org.apache.ibatis.annotations.Param("fromPayStatus") Integer fromPayStatus,
+                                   @org.apache.ibatis.annotations.Param("toStatus") Integer toStatus,
+                                   @org.apache.ibatis.annotations.Param("toPayStatus") Integer toPayStatus,
+                                   @org.apache.ibatis.annotations.Param("checkoutTime") LocalDateTime checkoutTime,
+                                   @org.apache.ibatis.annotations.Param("stockRollbackStatus") Integer stockRollbackStatus);
 
     /**
      * 根据订单号精确查询订单，用于支付回调，杜绝 LIKE 模糊匹配碰撞

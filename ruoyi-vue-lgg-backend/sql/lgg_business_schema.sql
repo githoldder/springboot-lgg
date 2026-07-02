@@ -178,7 +178,11 @@ CREATE TABLE `lgg_orders` (
   `pack_amount` int DEFAULT NULL COMMENT '包装费',
   `tableware_number` int DEFAULT NULL COMMENT '果叉纸巾数量',
   `tableware_status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '包装服务状态 1默认提供 0特殊要求',
-  PRIMARY KEY (`id`)
+  `overtime_status` tinyint NOT NULL DEFAULT '0' COMMENT '超时标记 0正常 1已超时',
+  `actual_delivery_time` datetime DEFAULT NULL COMMENT '实际送达完成时间',
+  `stock_rollback_status` tinyint NOT NULL DEFAULT '0' COMMENT '库存回滚标记 0未回滚 1已回滚',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_lgg_orders_number` (`number`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 
 -- 9. 订单明细表

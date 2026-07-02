@@ -54,10 +54,10 @@ public class OrderTask {
     public void processDeliveryOrder(){
         log.info("定时扫描配送中的超时订单：{}", LocalDateTime.now());
 
-        // 基于 24 小时（1440 分钟）进行超时预警过滤
+        // 基于进入派送中的时间超过 24 小时（1440 分钟）进行超时预警过滤
         LocalDateTime time = LocalDateTime.now().plusMinutes(-1440);
 
-        List<Orders> ordersList = orderMapper.getByStatusAndOrderTimeLT(Orders.DELIVERY_IN_PROGRESS, time);
+        List<Orders> ordersList = orderMapper.getDeliveryTimeoutOrders(time);
 
         if(ordersList != null && ordersList.size() > 0){
             for (Orders orders : ordersList) {

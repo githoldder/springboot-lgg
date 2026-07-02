@@ -113,6 +113,7 @@ public class OrderServiceImpl implements OrderService {
         if (orders.getPackAmount() == null) orders.setPackAmount(0);
         if (orders.getTablewareNumber() == null) orders.setTablewareNumber(0);
         if (orders.getTablewareStatus() == null) orders.setTablewareStatus(1);
+        if (orders.getStockRollbackStatus() == null) orders.setStockRollbackStatus(0);
         // 强行使用后端购物车实算总金额覆盖外部传入值，防御金额篡改漏洞
         orders.setAmount(total);
         // 设定预计送达时间为下单时间往后推 60 分钟
@@ -200,7 +201,22 @@ public class OrderServiceImpl implements OrderService {
      */
     private void paySuccessWithValidatedOrder(Orders orders) {
         if (orders != null && orders.getStatus().equals(Orders.PENDING_PAYMENT)) {
-            // 批量条件扣减库存，防超卖
+            LocalDateTime checkoutTime = LocalDateTime.now();
+            int lockRows = orderMapper.markPaymentSuccessWithLock(
+                    orders.getId(),
+                    Orders.PENDING_PAYMENT,
+                    Orders.UN_PAID,
+                    Orders.TO_BE_CONFIRMED,
+                    Orders.PAID,
+                    checkoutTime,
+                    0
+            );
+            if (lockRows != 1) {
+                log.info("支付成功回调重复或订单状态已流转，跳过库存扣减，订单ID：{}", orders.getId());
+                return;
+            }
+
+            // 批量条件扣减库存，防超卖；异常会回滚上面的订单状态占锁
             List<OrderDetail> details = orderDetailMapper.getByOrderId(orders.getId());
             if (details != null) {
                 for (OrderDetail detail : details) {
@@ -211,12 +227,11 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
 
-            // 2. 修改订单状态 (流转为 待接单/待包装，已支付)
+            // 2. 同步内存对象状态，供 confirmPayment 返回详情前保持一致
             orders.setStatus(Orders.TO_BE_CONFIRMED);
             orders.setPayStatus(Orders.PAID);
-            orders.setCheckoutTime(LocalDateTime.now());
-            orders.setStockRollbackStatus(0); // 初始化回滚标记为 0
-            orderMapper.update(orders);
+            orders.setCheckoutTime(checkoutTime);
+            orders.setStockRollbackStatus(0);
 
             // 3. 微信小程序来单提醒：通过 WebSocket 向后台推送语音播报提醒
             Map<String, Object> map = new HashMap<>();
@@ -298,6 +313,7 @@ public class OrderServiceImpl implements OrderService {
         orders.setStatus(Orders.CANCELLED);
         orders.setCancelReason("用户主动取消订单");
         orders.setCancelTime(LocalDateTime.now());
+        orders.setStockRollbackStatus(null);
         orderMapper.update(orders);
     }
 
@@ -393,6 +409,7 @@ public class OrderServiceImpl implements OrderService {
             orders.setStatus(Orders.CANCELLED);
             orders.setCancelReason(ordersRejectionDTO.getRejectionReason());
             orders.setCancelTime(LocalDateTime.now());
+            orders.setStockRollbackStatus(null);
             orderMapper.update(orders);
         }
     }
@@ -412,6 +429,7 @@ public class OrderServiceImpl implements OrderService {
             orders.setStatus(Orders.CANCELLED);
             orders.setCancelReason(ordersCancelDTO.getCancelReason());
             orders.setCancelTime(LocalDateTime.now());
+            orders.setStockRollbackStatus(null);
             orderMapper.update(orders);
         }
     }
@@ -423,6 +441,7 @@ public class OrderServiceImpl implements OrderService {
         Orders orders = orderMapper.getById(id);
         if (orders != null && orders.getStatus().equals(Orders.CONFIRMED)) {
             orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+            orders.setDeliveryTime(LocalDateTime.now());
             orderMapper.update(orders);
         }
     }
@@ -442,6 +461,7 @@ public class OrderServiceImpl implements OrderService {
         orders.setRiderName(ordersAssignRiderDTO.getRiderName());
         orders.setRiderPhone(ordersAssignRiderDTO.getRiderPhone());
         orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        orders.setDeliveryTime(LocalDateTime.now());
         orderMapper.update(orders);
     }
 

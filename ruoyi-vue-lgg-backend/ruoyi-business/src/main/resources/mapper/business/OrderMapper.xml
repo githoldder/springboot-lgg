@@ -144,6 +144,13 @@
         select * from lgg_orders where status = #{status} and order_time &lt; #{orderTime}
     </select>
 
+    <select id="getDeliveryTimeoutOrders" resultMap="OrderResultMap">
+        select * from lgg_orders
+        where status = 4
+          and delivery_time is not null
+          and delivery_time &lt; #{deliveryTime}
+    </select>
+
     <select id="sumByMap" resultType="java.lang.Double">
         select sum(amount) from lgg_orders
         <where>
@@ -191,6 +198,17 @@
         update lgg_orders
         set status = #{toStatus}, cancel_reason = #{cancelReason}, cancel_time = #{cancelTime}
         where id = #{id} and status = #{fromStatus}
+    </update>
+
+    <update id="markPaymentSuccessWithLock">
+        update lgg_orders
+        set status = #{toStatus},
+            pay_status = #{toPayStatus},
+            checkout_time = #{checkoutTime},
+            stock_rollback_status = #{stockRollbackStatus}
+        where id = #{id}
+          and status = #{fromStatus}
+          and pay_status = #{fromPayStatus}
     </update>
 
     <update id="updateStockRollbackStatusWithLock">
