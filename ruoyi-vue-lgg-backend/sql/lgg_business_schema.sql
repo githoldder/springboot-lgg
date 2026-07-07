@@ -211,5 +211,6 @@ CREATE TABLE `lgg_user` (
   `id_number` varchar(30) DEFAULT NULL COMMENT '身份证号',
   `avatar` varchar(500) DEFAULT NULL COMMENT '头像',
   `create_time` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_lgg_user_openid` (`openid`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='微信C端用户信息表';

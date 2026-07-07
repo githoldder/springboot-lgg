@@ -2632,7 +2632,32 @@ var _vuex = _interopRequireDefault(__webpack_require__(/*! vuex */ 13));function
 
 _vue.default.use(_vuex.default);
 
-var store = new _vuex.default.Store({
+	var LGG_USER_TOKEN_KEY = 'lgg_user_token';
+	var LGG_USER_INFO_KEY = 'lgg_user_info';
+	function getLocalStorage(key) {
+	  try {
+	    if (typeof wx !== 'undefined' && wx.getStorageSync) {
+	      return wx.getStorageSync(key) || '';
+	    }
+	  } catch (e) {
+	    console.warn('读取本地缓存失败', key, e);
+	  }
+	  return '';
+	}
+	function setLocalStorage(key, value) {
+	  try {
+	    if (typeof wx !== 'undefined' && wx.setStorageSync) {
+	      if (value) {
+	        wx.setStorageSync(key, value);
+	      } else if (wx.removeStorageSync) {
+	        wx.removeStorageSync(key);
+	      }
+	    }
+	  } catch (e) {
+	    console.warn('写入本地缓存失败', key, e);
+	  }
+	}
+	var store = new _vuex.default.Store({
   state: {
     storeInfo: {}, // 店铺请求的id信息
     shopInfo: '', // 店铺详细信息
@@ -2645,7 +2670,7 @@ var store = new _vuex.default.Store({
     shopPhone: '', //店铺电话
     shopStatus: {}, //店铺状态
     orderData: {},
-    token: '',
+	    token: getLocalStorage(LGG_USER_TOKEN_KEY),
     arrivals: '',
     remarkData: '', //备注
     addressData: {} //地址选择
@@ -2660,9 +2685,10 @@ var store = new _vuex.default.Store({
     initdishListMut: function initdishListMut(state, provider) {
       state.orderListData = provider;
     },
-    setBaseUserInfo: function setBaseUserInfo(state, provider) {
-      state.baseUserInfo = provider;
-    },
+	    setBaseUserInfo: function setBaseUserInfo(state, provider) {
+	      state.baseUserInfo = provider;
+	      setLocalStorage(LGG_USER_INFO_KEY, provider);
+	    },
     setLodding: function setLodding(state, provider) {
       console.log(5656, provider);
       state.lodding = provider;
@@ -2686,9 +2712,10 @@ var store = new _vuex.default.Store({
       state.orderData = provider;
 
     },
-    setToken: function setToken(state, provider) {
-      state.token = provider;
-    },
+	    setToken: function setToken(state, provider) {
+	      state.token = provider;
+	      setLocalStorage(LGG_USER_TOKEN_KEY, provider);
+	    },
     setArrivalTime: function setArrivalTime(state, provider) {
       state.arrivals = provider;
     },
@@ -4264,17 +4291,22 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
   'setBaseUserInfo', 'setLodding', 'setToken'])),
 
   (0, _vuex.mapState)(['shopInfo', 'shopPhone', 'orderListData', 'baseUserInfo', 'lodding', 'sessionId', 'token'])), {}, {
-    loginSync: function loginSync() {
-      return new Promise(function (resolve, reject) {
-        uni.login({
-          // provider: 'weixin',
-          success: function success(loginRes) {
-            if (loginRes.errMsg === 'login:ok') {
-              resolve(loginRes.code);
-            }
-          } });
+	    loginSync: function loginSync() {
+	      return new Promise(function (resolve, reject) {
+	        uni.login({
+	          // provider: 'weixin',
+	          success: function success(loginRes) {
+	            if (loginRes.errMsg === 'login:ok') {
+	              resolve(loginRes.code);
+	            } else {
+	              reject(loginRes);
+	            }
+	          },
+	          fail: function fail(err) {
+	            reject(err);
+	          } });
 
-      });
+	      });
     },
     // 获取用户信息
     getData: function getData() {
@@ -4291,14 +4323,17 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
           success: function success(res) {
             if (res.confirm) {
               var jsCode = '';
-              uni.login({
-                provider: 'weixin',
-                success: function success(loginRes) {
-                  if (loginRes.errMsg === 'login:ok') {
-                    console.log('-=-=-=-=loginRes-=-=-=', loginRes);
-                    jsCode = loginRes.code;
-                  }
-                } });
+	              uni.login({
+	                success: function success(loginRes) {
+	                  if (loginRes.errMsg === 'login:ok') {
+	                    console.log('-=-=-=-=loginRes-=-=-=', loginRes);
+	                    jsCode = loginRes.code;
+	                  }
+	                },
+	                fail: function fail(err) {
+	                  console.warn('微信登录失败，启用本地沙箱 code', err);
+	                  jsCode = 'mock_' + Date.now();
+	                } });
 
               // 授权
               uni.getUserProfile({
@@ -4310,7 +4345,10 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
                     // avatar: userInfo.userInfo.avatarUrl,
                     // name: userInfo.userInfo.nickName,
                     // sex: userInfo.userInfo.gender,
-                    code: jsCode };
+	                    code: jsCode || 'mock_' + Date.now(),
+	                    avatar: userInfo.userInfo.avatarUrl,
+	                    name: userInfo.userInfo.nickName,
+	                    sex: String(userInfo.userInfo.gender || '') };
 
                   console.log(userInfo.userInfo, 11);
                   (0, _api.userLogin)(params).then(function (success) {
@@ -20310,14 +20348,20 @@ function request(_ref) {var _ref$url = _ref.url,url = _ref$url === void 0 ? '' :
   uni.getStorage({
     key: '' });
 
-  var storeInfo = _store.default.state;
-  var header = {
+	  var storeInfo = _store.default.state;
+	  var persistedToken = '';
+	  try {
+	    persistedToken = uni.getStorageSync('lgg_user_token') || '';
+	  } catch (e) {
+	    persistedToken = '';
+	  }
+	  var header = {
     'Accept': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
     // 'shopid':storeInfo.storeInfo.shopId ?? '',
     // 'storeid':storeInfo.storeInfo.storeId ?? '',
-    'authentication': storeInfo.token };
+	    'authentication': storeInfo.token || persistedToken };
 
 
   var requestRes = new Promise(function (resolve, reject) {
@@ -22118,7 +22162,22 @@ var _default = {
     },
     // 返回上一级
     goBack: function goBack() {
-      uni.navigateBack();
+      var pages = getCurrentPages ? getCurrentPages() : [];
+      var fallback = function fallback() {
+        uni.navigateTo({
+          url: '/pages/historyOrder/historyOrder',
+          fail: function fail() {
+            uni.switchTab({
+              url: '/pages/index/index' });
+          } });
+      };
+      if (pages.length > 1) {
+        uni.navigateBack({
+          delta: 1,
+          fail: fallback });
+      } else {
+        fallback();
+      }
 
     },
     closeMask: function closeMask() {
@@ -28680,7 +28739,22 @@ var _default = {
     },
     // 返回上一级
     goBack: function goBack() {
-      uni.navigateBack();
+      var pages = getCurrentPages ? getCurrentPages() : [];
+      var fallback = function fallback() {
+        uni.navigateTo({
+          url: '/pages/historyOrder/historyOrder',
+          fail: function fail() {
+            uni.switchTab({
+              url: '/pages/index/index' });
+          } });
+      };
+      if (pages.length > 1) {
+        uni.navigateBack({
+          delta: 1,
+          fail: fallback });
+      } else {
+        fallback();
+      }
 
     },
     openPopuos: function openPopuos(type) {

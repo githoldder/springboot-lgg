@@ -327,4 +327,278 @@ graph TD
     Z --> AA{微信原路退款/售后发起?}
     AA -- 是 (逆向流程) --> AB[开启退款事务: 原路发起退款, 失败进入人工对账补偿通道]
     AA -- 否 (正常结束) --> AC[订单归档]
+    ```
+
+---
+
+### 12. 答辩重点：数据项存在哪里，如何从数据库层层返回到界面
+
+老师如果追问“这个字段在哪里”“底层 SQL 怎么查”“数据怎么从后端传到前端”，回答时不要只说“后端返回的”，而要按 **数据库表 → Mapper SQL → Service 业务组装 → Controller API → 网关/HTTP → 前端 request → 页面状态/ECharts** 这条链路展开。
+
+#### 12.1 高频数据项定位表
+
+| 页面/业务数据项 | 前端看到的字段 | 数据库存储位置 | 后端入口 | 底层 SQL/Mapper | 关键说明 |
+|---|---|---|---|---|---|
+| 微信用户身份 | `id`、`openid`、`token` | `lgg_user.id/openid/name/avatar/sex/create_time` | `POST /user/user/login` | `UserMapper.getByOpenid`: `select * from lgg_user where openid = #{openid}`；新用户 `insert into lgg_user (...)` | 真实环境用微信 `code2Session` 换 `openid`；当前 mock appid/secret 会降级为 `mock_openid_{code}`。 |
+| 小程序登录态 | 请求头 `authentication` | 不直接存 MySQL；JWT 由后端签发，前端存 Vuex + `wx.setStorageSync('lgg_user_token')` | `JwtTokenUserInterceptor` | `JwtUtil.parseJWT(userSecretKey, token)` | Sprint06 已补启动恢复和请求头本地兜底；刷新/重载后优先从 storage 恢复 token。 |
+| 收货地址 | `consignee`、`phone`、`address` | `lgg_address_book` | `/user/addressBook/list/default` | `AddressBookMapper.list`: `select * from lgg_address_book where user_id = ? ...` | 地址按 `user_id` 隔离，依赖 JWT 解析出的当前用户 ID。 |
+| 购物车 | 商品名、数量、金额 | `lgg_shopping_cart` | `/user/shoppingCart/list/add/clean` | `ShoppingCartMapper.list`: `select ... from lgg_shopping_cart where user_id = ?` | 购物车是 MySQL 持久化数据，不是纯前端内存；但下单成功后会清空该用户购物车。 |
+| 订单主信息 | 订单号、金额、状态、收货人 | `lgg_orders` | `/user/order/submit`、`/user/order/historyOrders`、`/admin/order/conditionSearch` | `OrderMapper.insert/pageQuery/getById` | 金额以后端购物车实算为准，不信任前端传入的 `amount`。 |
+| 订单明细 | 商品名、数量、单价 | `lgg_order_detail` | `/user/order/orderDetail/{id}` | `OrderDetailMapper.getByOrderId` | 下单时从购物车复制到订单明细，保留历史成交快照。 |
+| 管理端今日营业额 | `turnover` | `lgg_orders.amount` | `GET /admin/workspace/businessData` | `OrderMapper.sumByMap`: `select sum(amount) from lgg_orders where order_time between ? and ? and status = 5` | 只统计已完成订单，不统计待支付/待接单/配送中订单。 |
+| 管理端订单概览 | 待接单、待派送、已完成、已取消 | `lgg_orders.status` | `GET /admin/workspace/overviewOrders` | `OrderMapper.countByMap`: `select count(id) from lgg_orders where status = ?` | 统计维度由订单状态决定，业务状态流转决定图表变化。 |
+| 热销商品 TOP10 | 商品名、销量 | `lgg_order_detail` + `lgg_orders` | `GET /admin/report/top10` | `select od.name, sum(od.number) ... where od.order_id=o.id and o.status=5 group by od.name` | 只有完成订单才进入销量榜，防止未支付订单污染经营数据。 |
+
+#### 12.2 一句话判断原则
+
+- **用户归属类数据**：先找 JWT 里解析出的 `userId`，再看 SQL 是否带 `user_id = 当前用户`。
+- **订单经营类数据**：先看 `lgg_orders.status`。管理端营业额、销量榜通常只看 `COMPLETED(5)`，不是支付成功就立刻入账。
+- **前端突然没数据**：优先判断是前端运行时状态丢失（Vuex/token/addressData）还是 MySQL 真没数据。MySQL 数据不会因为页面刷新消失。
+- **图表数据不变化**：优先查接口是否调用真实 API，再查统计 SQL 的时间范围和状态过滤条件。
+- **某字段页面显示为空**：沿着 `数据库列 -> resultMap/实体字段 -> VO 字段 -> Controller 返回 JSON -> 前端取字段名` 五步排查。
+
+---
+
+### 13. 典型业务流程一：微信小程序登录、用户持久化与 token 回传
+
+#### 13.1 细粒度时序图
+
+```mermaid
+sequenceDiagram
+    participant U as 用户微信
+    participant MP as 小程序前端
+    participant GW as 网关/业务服务路由
+    participant C as UserController
+    participant S as UserServiceImpl
+    participant WX as 微信 code2Session
+    participant M as UserMapper
+    participant DB as MySQL lgg_user
+
+    U->>MP: 打开小程序并点击授权登录
+    MP->>MP: wx.login/uni.login 获取一次性 code
+    MP->>GW: POST /user/user/login {code,nickName,avatar,sex}
+    GW->>C: 路由到 lgg-business
+    C->>S: wxLogin(UserLoginDTO)
+    S->>WX: GET jscode2session(appid,secret,js_code,grant_type)
+    WX-->>S: 返回 openid/session_key 或错误
+    alt 获取 openid 成功
+        S->>M: getByOpenid(openid)
+    else 获取 openid 失败
+        S->>S: 当前代码降级为 mock_openid_{code}
+        S->>M: getByOpenid(mock_openid)
+    end
+    M->>DB: select * from lgg_user where openid = ?
+    DB-->>M: User 或 null
+    alt 新用户
+        S->>M: insert(User)
+        M->>DB: insert into lgg_user(openid,name,avatar,sex,create_time)
+    else 老用户
+        S->>M: 必要时 update name/avatar/sex
+    end
+    S-->>C: User(id,openid,...)
+    C->>C: JwtUtil.createJWT(userId)
+    C-->>MP: {id,openid,token}
+    MP->>MP: setToken(token) 存入 Vuex 和 wx storage
+    MP->>GW: 后续请求头 authentication: token
 ```
+
+#### 13.2 老师追问时怎么答
+
+1. **真实微信凭证能不能做？** 能。正式链路就是 `wx.login` 获取临时 code，后端调用微信 `auth.code2Session` 换 `openid/session_key`。本项目后端已经按这个模式写了 `jscode2session` 调用；正式上线还需要在微信开发者平台配置真实小程序 `appid/secret`。
+2. **为什么以前每次像新用户？** 旧配置中 `appid/secret` 是 mock，微信接口拿不到真实 openid 后，后端会按 code 生成 `mock_openid_{code}`。真实 `wx.login` 的 code 是一次性的，经常变化，所以 mock openid 也会变，导致后端认为是不同用户。
+3. **现在怎么防止重复用户？** Sprint06 已给 `lgg_user.openid` 建唯一索引，并在 `UserServiceImpl.wxLogin` 中按 openid 查询、插入、并发唯一键冲突后回查已有用户。同一 openid 只能对应一条 MySQL 用户记录。
+4. **数据有没有写 MySQL？** 有。只要登录接口走到 `userMapper.insert(user)`，就写入 `lgg_user`；地址写 `lgg_address_book`，购物车写 `lgg_shopping_cart`，订单写 `lgg_orders/lgg_order_detail`。
+5. **前端重新加载为什么还能恢复？** Sprint06 已让小程序端 `setToken` 写入 `wx.setStorageSync('lgg_user_token')`，Vuex 初始化和 request 请求头都会从 storage 兜底恢复。
+6. **服务重启会丢吗？** MySQL 中的 `lgg_user/lgg_address_book/lgg_orders` 不会因为后端服务重启消失；会丢的是 Redis 临时缓存、前端未落盘状态、或未持久化数据库卷/重跑 drop table 初始化脚本造成的数据。
+
+---
+
+### 14. 典型业务流程二：用户下单到管理端首页营业额/ECharts 展示
+
+#### 14.1 下单与支付状态流转时序图
+
+```mermaid
+sequenceDiagram
+    participant MP as 小程序前端
+    participant I as JwtTokenUserInterceptor
+    participant OC as OrderController
+    participant OS as OrderServiceImpl
+    participant AM as AddressBookMapper
+    participant SCM as ShoppingCartMapper
+    participant OM as OrderMapper
+    participant ODM as OrderDetailMapper
+    participant DB as MySQL
+    participant WS as WebSocket
+
+    MP->>I: POST /user/order/submit + authentication
+    I->>I: 解析 JWT，BaseContext.setCurrentId(userId)
+    I->>OC: 放行到 submit
+    OC->>OS: submitOrder(OrdersSubmitDTO)
+    OS->>AM: getById(addressBookId)
+    AM->>DB: select * from lgg_address_book where id = ?
+    OS->>SCM: list(userId)
+    SCM->>DB: select * from lgg_shopping_cart where user_id = ?
+    OS->>OS: stream 计算 total = sum(amount * number)
+    OS->>OM: insert(orders)
+    OM->>DB: insert into lgg_orders(...)
+    OS->>ODM: insertBatch(orderDetailList)
+    ODM->>DB: insert into lgg_order_detail(...)
+    OS->>SCM: deleteByUserId(userId)
+    SCM->>DB: delete from lgg_shopping_cart where user_id = ?
+    OS-->>MP: 返回 orderId/orderNumber/orderAmount
+
+    MP->>OC: PUT /user/order/payment/confirm
+    OC->>OS: confirmPayment(orderNumber)
+    OS->>OM: getByNumberAndUserId(orderNumber,userId)
+    OM->>DB: select * from lgg_orders where number=? and user_id=?
+    OS->>OM: markPaymentSuccessWithLock(status=1,pay_status=0 -> status=2,pay_status=1)
+    OM->>DB: update lgg_orders set status=2,pay_status=1,checkout_time=? where id=? and status=1 and pay_status=0
+    OS->>WS: 推送来单提醒
+    OS-->>MP: 返回订单详情
+```
+
+#### 14.2 管理端首页/ECharts 数据读取时序图
+
+```mermaid
+sequenceDiagram
+    participant WEB as 管理端 Vue 首页/ECharts
+    participant REQ as request.js/Axios
+    participant GW as 网关/业务服务
+    participant WC as WorkSpaceController
+    participant RC as ReportController
+    participant WSVC as WorkspaceServiceImpl
+    participant RSVC as ReportServiceImpl
+    participant OM as OrderMapper
+    participant UM as UserMapper
+    participant DB as MySQL
+
+    WEB->>REQ: 页面 mounted 调 businessData/overviewOrders/report APIs
+    REQ->>GW: GET /admin/workspace/businessData
+    GW->>WC: 路由到工作台接口
+    WC->>WSVC: getBusinessData(todayBegin,todayEnd)
+    WSVC->>OM: countByMap(begin,end)
+    OM->>DB: select count(id) from lgg_orders where order_time between ? and ?
+    WSVC->>OM: sumByMap(begin,end,status=COMPLETED)
+    OM->>DB: select sum(amount) from lgg_orders where order_time between ? and ? and status = 5
+    WSVC->>UM: countByMap(begin,end)
+    UM->>DB: select count(id) from lgg_user where create_time between ? and ?
+    WC-->>WEB: turnover/validOrderCount/orderCompletionRate/unitPrice/newUsers
+
+    WEB->>REQ: GET /admin/report/turnoverStatistics?begin&end
+    REQ->>RC: 统计接口
+    RC->>RSVC: getTurnoverStatistics(begin,end)
+    loop 每一天
+        RSVC->>OM: sumByMap(dayBegin,dayEnd,status=COMPLETED)
+        OM->>DB: select sum(amount) ...
+    end
+    RC-->>WEB: dateList,turnoverList
+    WEB->>WEB: ECharts setOption 渲染折线图
+```
+
+#### 14.3 “营业额为什么没有和用户订单同步”的准确解释
+
+当前不是数据库没有写订单，而是**统计口径和订单生命周期不一致**：
+
+1. 小程序下单后 `lgg_orders.status = 1`（待付款）。
+2. 用户支付确认后 `status = 2`（待接单），`pay_status = 1`（已支付）。
+3. 管理端营业额统计使用 `OrderMapper.sumByMap`，并且 `WorkspaceServiceImpl`、`ReportServiceImpl` 都传入 `status = Orders.COMPLETED`。
+4. SQL 等价于：
+   ```sql
+   select sum(amount)
+   from lgg_orders
+   where order_time >= ?
+     and order_time <= ?
+     and status = 5;
+   ```
+5. 所以只有管理员接单、派送、完成后，订单变成 `status = 5`，才会进入今日营业额、营业额折线图和 TOP10 统计。
+
+答辩时可以这样说：**这是经营统计口径，不是数据没同步。支付成功代表资金链路完成，营业额统计采用“已完成订单”作为有效收入口径，避免取消、退款、配送失败订单污染经营数据。若老师要求“支付成功即入账”，可以改统计口径为 `pay_status=1`，但要配套退款/取消冲销机制。**
+
+---
+
+### 15. 临场举一反三：老师追问时的判断框架
+
+#### 15.1 看到一个页面字段，如何快速反推链路
+
+1. **先看页面属于 C 端还是管理端**：
+   - C 端 `/user/**`：一定先经过 `JwtTokenUserInterceptor`，核心是 `BaseContext.getCurrentId()`。
+   - 管理端 `/admin/**`：通常是管理员 JWT/RuoYi 权限体系，核心是后台统计/管理查询。
+2. **再看字段类型**：
+   - 身份类：`lgg_user`、`openid`、JWT。
+   - 地址类：`lgg_address_book`。
+   - 交易类：`lgg_orders`、`lgg_order_detail`、`lgg_shopping_cart`。
+   - 运营统计类：`OrderMapper.sumByMap/countByMap/getSalesTop10`。
+3. **最后看状态过滤**：
+   - `status=1` 待付款：不算营业额。
+   - `status=2/3/4` 已支付但履约中：可用于待处理订单，不一定算营业额。
+   - `status=5` 已完成：进入营业额、有效订单、销量榜。
+   - `status=6` 已取消：不进入有效经营统计。
+
+#### 15.2 常见追问速答
+
+| 老师追问 | 速答框架 |
+|---|---|
+| “这个用户的地址存在哪？” | `lgg_address_book`，通过 JWT 解析 `userId` 后执行 `select * from lgg_address_book where user_id=?`，返回 JSON 给小程序地址页。 |
+| “订单金额从哪里来，能不能被前端改？” | 前端可以传 `amount`，但后端不信任；`OrderServiceImpl.submitOrder` 从 `lgg_shopping_cart` 实算 `sum(amount*number)` 并覆盖订单金额。 |
+| “为什么页面刷新后小程序还能恢复登录态？” | Sprint06 后 token 同时写入 Vuex 和 `wx.setStorageSync('lgg_user_token')`；启动时从 storage 恢复，请求头也从 storage 兜底取 `authentication`。 |
+| “为什么后台首页没有显示刚付完款的营业额？” | SQL 统计 `status=5` 已完成订单，刚支付是 `status=2`，所以未计入营业额。 |
+| “热销商品 TOP10 怎么来的？” | `lgg_order_detail` join `lgg_orders`，限定 `o.status=5`，按商品名 group by，`sum(od.number)` 排序取前 10。 |
+| “Redis 和 MySQL 分别存什么？” | MySQL 存业务事实和历史记录；Redis 存登录缓存、限流锁、营业状态和商品目录缓存，Redis 丢失后可从 MySQL 重建或重新登录。 |
+| “如果重启服务数据会不会丢？” | 后端服务重启不丢 MySQL；Redis/token/Vuex 会受影响；如果删除 Docker volume 或重跑 drop table 初始化脚本，MySQL 测试数据才会丢。 |
+
+---
+
+### 16. Sprint06 落地状态：真实微信用户绑定、MySQL 持久化数据同步到管理端 ECharts
+
+#### 16.1 Sprint 目标
+
+Sprint06 的目标不是继续堆 mock，而是让“真实微信用户 -> MySQL 持久化 -> 管理端首页/ECharts 可视化”形成完整闭环。当前已完成后端 openid 唯一约束、登录 upsert、token 本地持久化和 5 组真实用户 API 端到端用例：
+
+1. **管理端测试数据 ECharts 真实可视化**：之前通过测试注入的订单、用户、商品销量，必须能被 `/admin/workspace/**` 和 `/admin/report/**` 真实读到并显示在 ECharts。
+2. **微信小程序用户是真实用户数据**：每个微信号对应稳定 `openid`，后端 `lgg_user.openid` 唯一，JWT token 对应真实 `userId`，用户地址、购物车、订单按真实用户隔离。
+3. **测试数据满足条件覆盖**：通过 Playwright 或 Python API 测试注入多状态、多日期、多用户、多商品订单，覆盖已完成、待接单、配送中、已取消、退款/取消候选场景。
+
+#### 16.2 后端改造任务
+
+| 任务 | 说明 | 验收标准 |
+|---|---|---|
+| 微信登录正式化 | 配置正式 `appid/secret`，移除或限制 `mock_openid_{code}` 降级，只在 dev profile 可用。 | remaining：需要真实小程序账号凭证；代码链路已具备。 |
+| `lgg_user.openid` 唯一约束 | 为 `openid` 增加唯一索引，防止并发登录写出重复用户。 | done：schema 和运行库均已加 `uk_lgg_user_openid`。 |
+| 用户资料补全 | 小程序端传 `nickName/avatar/gender`，后端 update 非空字段。 | done：`vendor.js` 传 name/avatar/sex，`UserServiceImpl` 合并更新。 |
+| token 本地持久化 | 小程序端登录成功后 `wx.setStorageSync('lgg_user_token', token)`，启动时恢复 Vuex。 | done：关闭重开小程序后可恢复请求头。 |
+| 统计口径确认 | 明确营业额默认按 `status=5` 已完成订单。 | done：`WorkspaceServiceImpl`、`ReportServiceImpl` 均按已完成订单聚合。 |
+| 首页 ECharts 对接真实 API | 首页卡片、折线图、柱状图、饼图全部从后端接口读取。 | done：现有首页调用 `/admin/workspace/**`、`/admin/report/**`，本轮回归构建通过。 |
+
+#### 16.3 测试数据设计与覆盖矩阵
+
+| 覆盖维度 | 需要注入的数据 | 验证接口/页面 |
+|---|---|---|
+| 用户覆盖 | 至少 5 个不同微信 openid 用户，姓名、电话、地址不同 | `lgg_user`、`/user/order/historyOrders`、用户统计 ECharts |
+| 商品覆盖 | 单品水果、果篮、饮品/鲜切类，覆盖 TOP10 聚合 | `/admin/report/top10`、柱状图 |
+| 订单状态覆盖 | `1` 待付款、`2` 待接单、`3` 已接单、`4` 配送中、`5` 已完成、`6` 已取消 | `/admin/workspace/overviewOrders`、饼图 |
+| 时间覆盖 | 今天、昨天、近 7 天、跨月边界 | `/admin/report/turnoverStatistics`、折线图 |
+| 金额覆盖 | 低金额、高金额、多商品组合、前端篡改金额 | 订单详情、营业额、平均客单价 |
+| 持久化覆盖 | 重启后端、重启小程序、清 Redis、不清 MySQL | 登录态恢复、历史订单仍可查询 |
+
+#### 16.4 测试工具策略
+
+- **Playwright**：用于管理端页面级验证，检查 ECharts canvas 是否非空、卡片数字是否来自 API、订单列表是否显示测试订单。
+- **Python API 测试**：用于高效构造 API 级测试数据和断言数据库状态。当前脚本已支持零第三方依赖直接运行；有 `pytest/requests` 时也可用 pytest 收集：
+  ```bash
+  python3 tests/real_user_order_cases.py
+  # 或：uv run --with pytest --with requests pytest tests/real_user_order_cases.py -q
+  ```
+- **直接 SQL 校验**：用于答辩前快速确认数据口径：
+  ```sql
+  select status, pay_status, count(*), sum(amount)
+  from lgg_orders
+  group by status, pay_status;
+  ```
+
+#### 16.5 Definition of Done
+
+1. 真机微信小程序登录后，数据库 `lgg_user` 中出现真实稳定 openid 用户。
+2. 同一微信号重启小程序后仍能看到历史地址、购物车或订单。
+3. 测试注入的 5 个用户、至少 10 个订单、至少 5 个商品明细能在管理端首页和 ECharts 中体现。
+4. 营业额、有效订单、用户增长、TOP10 商品、订单状态占比均可用 SQL 手工核对。
+5. Redis 清空后，核心 MySQL 历史数据不丢；重新登录后 token 可重新生成并访问旧数据。

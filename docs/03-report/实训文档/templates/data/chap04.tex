@@ -44,7 +44,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[height=0.40\textheight,keepaspectratio]{figures-pdf/S07-mp-checkout.pdf}
+  \includegraphics[height=0.40\textheight,keepaspectratio]{figures/S07-mp-checkout.png}
   \caption{微信小程序商品结算UI}
   \label{fig:S07}
 \end{figure}
@@ -74,7 +74,7 @@
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[height=0.40\textheight,keepaspectratio]{figures-pdf/S14-mp-order-detail.pdf}
+  \includegraphics[height=0.40\textheight,keepaspectratio]{figures/S14-mp-order-detail.png}
   \caption{微信小程序订单详情UI}
   \label{fig:S14}
 \end{figure}
@@ -96,7 +96,7 @@ OpenFeign 客户端的调用配置中设置了 connectTimeout 连接超时为 50
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[height=0.40\textheight,keepaspectratio]{figures-pdf/S15-mp-order-list.pdf}
+  \includegraphics[height=0.40\textheight,keepaspectratio]{figures/S15-mp-order-list.png}
   \caption{微信小程序订单列表UI}
   \label{fig:S15}
 \end{figure}
@@ -150,7 +150,7 @@ OpenFeign 客户端的调用配置中设置了 connectTimeout 连接超时为 50
 
 \section{本地 PM2 长运行进程托管实现}
 
-为了避免在课程设计答辩现场启动大量的单独 Terminal 窗口并手动管理各项服务的生命周期，项目利用 PM2 进程管理器通过一份统一的 ecosystem.config.cjs 配置文件托管了整个微服务运行环境。该配置文件采用 CommonJS 模块格式导出一个包含 apps 数组的对象，数组中的每个元素定义了一个独立进程的完整运行参数。
+为了避免在课程设计验收环境中启动大量的单独 Terminal 窗口并手动管理各项服务的生命周期，项目利用 PM2 进程管理器通过一份统一的 ecosystem.config.cjs 配置文件托管了整个微服务运行环境。该配置文件采用 CommonJS 模块格式导出一个包含 apps 数组的对象，数组中的每个元素定义了一个独立进程的完整运行参数。
 
 
 \begin{figure}[htbp]
@@ -166,4 +166,4 @@ cwd 字段为每个服务指定了工作目录，确保 jar 包中的相对路�
 
 对于中间件进程，配置文件中同样定义了 Redis 和 Nacos 的守护配置。Redis 的 script 字段指向本地 redis-server 可执行程序并通过 args 传入默认配置文件路径。Nacos 的 script 字段指向其启动脚本 startup.sh 并附加 -m standalone 参数以单机模式启动。前端服务则配置为在固定的 8087 端口以 vite preview 预览模式运行，args 字段中包含 --port 8087 和 --strictPort 两个参数，后者强制要求 Vite 在指定端口不可用时直接报错退出而非自动漂移至下一个可用端口，从根本上消除了因端口漂移导致 Playwright 测试脚本中硬编码的 URL 失效的隐患。
 
-通过 PM2 的统一管理，答辩现场只需执行一条 pm2 start ecosystem.config.cjs 命令即可一键拉起全部服务。运行期间可以通过 pm2 monit 命令打开实时资源监控看板，以文本仪表盘形式展示每个进程的 CPU 使用率、内存占用、运行时间和重启次数。当某个服务异常崩溃时，PM2 会在毫秒级别自动检测到进程退出事件并立即重新拉起该服务，整个恢复过程对前端用户完全透明，极大地保障了现场课程设计展示的极高稳定性。
+通过 PM2 的统一管理，课程验收时只需执行一条 pm2 start ecosystem.config.cjs 命令即可一键拉起全部服务。运行期间可以通过 pm2 monit 命令打开实时资源监控看板，以文本仪表盘形式展示每个进程的 CPU 使用率、内存占用、运行时间和重启次数。当某个服务异常崩溃时，PM2 会在毫秒级别自动检测到进程退出事件并立即重新拉起该服务，整个恢复过程对前端用户完全透明，极大地保障了课程设计运行验证的稳定性。

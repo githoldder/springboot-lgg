@@ -1,0 +1,23 @@
+{
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.outDir": "%DIR%",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "training-report: xelatex -> bibtex -> xelatex -> xelatex",
+      "tools": [
+        "training-report-build-script"
+      ]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "training-report-build-script",
+      "command": "bash",
+      "args": [
+        "/Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/templates/scripts/build.sh"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipe.default": "training-report: xelatex -> bibtex -> xelatex -> xelatex",
+  "latex-workshop.view.pdf.viewer": "tab"
+}

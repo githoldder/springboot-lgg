@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build template.pdf",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "/Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/templates/scripts/build.sh"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "sprint_id": "S06",
+  "title": "真实微信用户绑定、持久化数据同步与答辩级数据流闭环",
+  "last_updated": "2026-07-07 00:00",
+  "objective": "从功能可演示推进到数据真实、链路可解释、重启可恢复、答辩可追问。围绕真实微信小程序登录、用户 token 与 openid 绑定、MySQL 持久化、管理端首页 ECharts 读取真实业务数据、以及 Playwright/Python 测试注入建立一致数据闭环。",
+  "source_documents": [
+    {
+      "path": "docs/02-process/document/issue.md",
+      "section": "答辩重点：数据项存在哪里，如何从数据库层层返回到界面"
+    },
+    {
+      "path": "docs/02-process/document/issue.md",
+      "section": "下一 Sprint 规划：真实微信用户绑定、MySQL 持久化数据同步到管理端 ECharts"
+    },
+    {
+      "path": "tests/real_user_order_cases.py",
+      "section": "真实用户下单测试样本"
+    }
+  ],
+  "current_state": [
+    {
+      "module": "微信登录",
+      "state": "后端已有 jscode2session 调用，但配置仍是 mock appid/secret，openid 为空时降级为 mock_openid_{code}",
+      "risk": "每次重新加载可能形成临时用户或丢失 token 上下文"
+    },
+    {
+      "module": "小程序 token",
+      "state": "主要存在 Vuex 内存态，未形成可靠本地持久化恢复",
+      "risk": "重启小程序或重新编译后需要重新登录，页面看起来没有数据"
+    },
+    {
+      "module": "管理端首页",
+      "state": "营业额/订单统计依赖后端统计接口，且默认只统计已完成订单",
+      "risk": "用户刚支付或待配送订单不会立即进入营业额，需要清晰解释统计口径"
+    },
+    {
+      "module": "订单详情返回",
+      "state": "左上角返回已增加页面栈判断和历史订单/首页兜底",
+      "risk": "页面栈为空时不再表现为点击无反应"
+    }
+  ],
+  "boards": {
+    "product_board": [
+      {
+        "id": "S06-PB-1",
+        "title": "真实微信用户绑定到数据库用户",
+        "acceptance": "同一微信 openid 多次登录映射同一 lgg_user.id，重启后订单和地址仍可查询",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-PB-2",
+        "title": "用户下单、订单、地址、购物车数据可持久化",
+        "acceptance": "重启后端和小程序后，用户历史订单、地址、购物车按 token/openid 恢复",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-PB-3",
+        "title": "管理端首页 ECharts 展示真实业务数据",
+        "acceptance": "营业额、有效订单、商品销量、订单趋势均来自 MySQL 聚合 SQL",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-PB-4",
+        "title": "答辩可解释数据项从哪里来、怎么回到界面",
+        "acceptance": "至少两条典型业务流程具备时序图、SQL、DTO/VO、Controller、前端渲染说明",
+        "priority": "P1"
+      },
+      {
+        "id": "S06-PB-5",
+        "title": "测试数据覆盖真实姓名、电话、地址、商品和金额",
+        "acceptance": "3-5 个真实用户样本可一键注入，满足状态/金额/用户归属条件覆盖",
+        "priority": "P1"
+      }
+    ],
+    "engineering_board": [
+      {
+        "id": "S06-EB-1",
+        "title": "修复订单详情页左上角返回兜底",
+        "target_files": [
+          "mp-weixin/common/vendor.js"
+        ],
+        "status": "completed",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-EB-2",
+        "title": "接入真实微信 appid/secret 配置与环境隔离",
+        "target_files": [
+          "application.yml",
+          "配置类",
+          "部署说明"
+        ],
+        "status": "pending",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-EB-3",
+        "title": "token 本地持久化与启动恢复",
+        "target_files": [
+          "小程序 Vuex/store",
+          "request 拦截器",
+          "登录入口"
+        ],
+        "status": "pending",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-EB-4",
+        "title": "校验并补齐 user/openid 唯一索引和 upsert 登录逻辑",
+        "target_files": [
+          "lgg_user",
+          "UserMapper",
+          "UserServiceImpl"
+        ],
+        "status": "pending",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-EB-5",
+        "title": "管理端首页统计接口改为真实 MySQL 聚合",
+        "target_files": [
+          "workspace/report/order/statistics 相关 Controller/Mapper/Service"
+        ],
+        "status": "pending",
+        "priority": "P0"
+      },
+      {
+        "id": "S06-EB-6",
+        "title": "ECharts 对接真实接口并增加空态/加载态",
+        "target_files": [
+          "管理端首页 Vue/ECharts 组件"
+        ],
+        "status": "pending",
+        "priority": "P1"
+      },
+      {
+        "id": "S06-EB-7",
+        "title": "用 uv 管理 Python 测试环境并注入真实用户订单样本",
+        "target_files": [
+          "tests/",
+          "pyproject.toml 或测试说明"
+        ],
+        "status": "pending",
+        "priority": "P1"
+      },
+      {
+        "id": "S06-EB-8",
+        "title": "更新 issue.md 的答辩数据流与 SQL 追问索引",
+        "target_files": [
+          "docs/02-process/document/issue.md"
+        ],
+        "status": "pending",
+        "priority": "P1"
+      }
+    ]
+  },
+  "phases": [
+    {
+      "id": "S06-PHASE-1",
+      "title": "小程序导航与登录状态止血",
+      "milestones": [
+        "订单详情页 goBack 增加页面栈判断和历史订单兜底",
+        "梳理支付成功页、历史订单页、消息入口进入详情页的导航方式",
+        "小程序 token 写入本地存储，启动时恢复 Vuex token 和 userInfo",
+        "request 拦截器在 token 缺失时触发静默登录或引导重新登录"
+      ],
+      "acceptance": "订单详情页左上角返回在有上级页面时回上一页；无页面栈时进入历史订单或首页。小程序重启后仍能带 token 查询用户历史数据。"
+    },
+    {
+      "id": "S06-PHASE-2",
+      "title": "真实微信登录绑定与 MySQL 用户持久化",
+      "milestones": [
+        "调研并配置微信开发者平台 appid/secret，区分 dev/test/prod",
+        "后端 wx.login code -> jscode2session -> openid/session_key 流程可观测",
+        "lgg_user.openid 建唯一索引，同一 openid 登录执行查询或更新",
+        "登录成功签发业务 token，token payload 绑定 userId"
+      ],
+      "acceptance": "同一微信账号连续登录三次，数据库只有一条用户记录；地址、购物车、订单均绑定同一个 userId。"
+    },
+    {
+      "id": "S06-PHASE-3",
+      "title": "管理端首页真实数据与 ECharts 同步",
+      "milestones": [
+        "统一定义营业额口径：默认只统计已完成且已支付订单",
+        "Mapper 层新增真实聚合 SQL：营业额、有效订单、商品销量 TopN、近 7 日订单趋势",
+        "Service 层将 SQL 结果封装为 VO，Controller 返回管理端首页",
+        "ECharts 图表读取接口数据，移除静态 mock"
+      ],
+      "acceptance": "MySQL 插入或测试脚本生成的订单完成后，管理端首页 ECharts 和指标卡能实时反映聚合结果。"
+    },
+    {
+      "id": "S06-PHASE-4",
+      "title": "真实用户订单数据注入与覆盖测试",
+      "milestones": [
+        "维护 3-5 个真实用户样本：姓名、电话、地址、商品、金额、状态",
+        "使用 uv 建立 Python 测试环境，优先通过接口注入数据，必要时用 Playwright 驱动前端",
+        "覆盖登录恢复、下单、支付、完成、统计同步、订单详情返回",
+        "输出测试报告，标明哪些数据写入 MySQL、哪些数据只在前端内存或缓存中"
+      ],
+      "acceptance": "测试数据能重复注入和清理；关键业务条件覆盖通过；重启服务后持久化数据仍存在。"
+    },
+    {
+      "id": "S06-PHASE-5",
+      "title": "答辩材料同步与追问防御",
+      "milestones": [
+        "更新 issue.md：数据项存储表、接口路径、SQL、DTO/VO、Controller、前端组件",
+        "写清两个典型流程：微信登录恢复、用户下单到管理端 ECharts",
+        "增加老师追问判断框架：先定位数据来源，再定位 SQL，再定位封装层，再定位页面渲染"
+      ],
+      "acceptance": "面对字段存储、SQL 查询、层层返回、营业额不同步等追问，能给出确定答案和文件级定位。"
+    }
+  ],
+  "scope_boundary": [
+    "本轮接入真实微信登录的目标是真实 openid 绑定业务用户，不要求上线真实微信支付。",
+    "管理端首页统计按 MySQL 已完成订单口径实现，待支付、待接单、配送中订单进入运营指标而非营业额。",
+    "测试数据优先走 API 和 Playwright 注入，避免直接手工改库造成业务链路不可解释。",
+    "继续保留 mock 登录/支付作为本地无微信凭证时的开发降级，但必须在文档和日志中明确标记。"
+  ],
+  "revision_history": [
+    {
+      "date": "2026-07-07",
+      "version": "v1.1",
+      "description": "同步 Sprint06 实施状态：token storage、openid 唯一索引/upsert、真实用户订单 E2E、issue.md 数据流已完成；真实微信 appid/secret 仍待凭证。"
+    },
+    {
+      "date": "2026-07-07",
+      "version": "v1",
+      "description": "新增 Sprint06 双板规划，覆盖真实微信登录、MySQL 持久化、管理端 ECharts 真实数据、测试注入与订单详情返回 bug。"
+    }
+  ],
+  "verification": [
+    "node --check mp-weixin/common/vendor.js",
+    "mvn test -pl ruoyi-business -am -> 24 tests passed",
+    "npm run build:prod -> Vite production build passed",
+    "mvn package -DskipTests -pl ruoyi-business -am -> business jar rebuilt",
+    "pm2 restart lgg-business -> service online",
+    "python3 tests/real_user_order_cases.py -> 5 real user order cases passed"
+  ]
+}
