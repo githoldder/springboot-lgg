@@ -1,0 +1,32 @@
+{
+  "sprint_id": "S09",
+  "title": "首页瀑布流、规则推荐与 AI 数据底座",
+  "last_updated": "2026-07-17",
+  "epics": ["EPIC-A", "EPIC-B"],
+  "objective": "把首页升级为可持续滚动的推荐入口，同时建立后续 AI 推荐和多 Agent 的数据底座。",
+  "product_board": [
+    {"id": "S09-PB-1", "title": "首页瀑布流", "acceptance": "首页瀑布流展示热销、新品、活动、库存优先商品", "priority": "P0"},
+    {"id": "S09-PB-2", "title": "推荐权重配置", "acceptance": "后台可设置商品是否推荐、排序权重、活动标签", "priority": "P0"},
+    {"id": "S09-PB-3", "title": "推荐结果可解释", "acceptance": "每个推荐商品可返回近期热销、同类偏好、活动优惠等理由", "priority": "P0"},
+    {"id": "S09-PB-4", "title": "AI 可用行为数据", "acceptance": "曝光、点击、加购、下单、评价等事件可落库或进入日志表", "priority": "P0"},
+    {"id": "S09-PB-5", "title": "AI 接入边界", "acceptance": "后端存在统一 AI client/service 接口，支持 mock、超时和降级", "priority": "P1"},
+    {"id": "S09-PB-6", "title": "热销/滞销与补货提醒", "acceptance": "报表展示销量、库存、转化、低库存/高销量提醒", "priority": "P1"}
+  ],
+  "engineering_board": [
+    {"id": "S09-EB-1", "title": "商品推荐字段", "target_modules": ["sql", "Dish", "views/business/fruit"], "status": "planned", "priority": "P0"},
+    {"id": "S09-EB-2", "title": "首页瀑布流接口", "target_modules": ["DishController", "DishMapper", "mp-weixin/pages/index"], "status": "planned", "priority": "P0"},
+    {"id": "S09-EB-3", "title": "管理端商品推荐配置", "target_modules": ["views/business/fruit"], "status": "planned", "priority": "P0"},
+    {"id": "S09-EB-4", "title": "用户行为轻量埋点", "target_modules": ["lgg_user_behavior_log", "mp-weixin"], "status": "planned", "priority": "P0"},
+    {"id": "S09-EB-5", "title": "推荐理由字段与规则解释器", "target_modules": ["RecommendService", "RecommendationVO"], "status": "planned", "priority": "P0"},
+    {"id": "S09-EB-6", "title": "AI 调用边界与 mock provider", "target_modules": ["AiClient", "AiService"], "status": "planned", "priority": "P1"},
+    {"id": "S09-EB-7", "title": "热销/滞销/库存预警报表", "target_modules": ["ReportService", "views/business/revenue"], "status": "planned", "priority": "P1"},
+    {"id": "S09-EB-8", "title": "推荐接口测试与数据样本", "target_modules": ["tests"], "status": "planned", "priority": "P0"}
+  ],
+  "scope_boundary": [
+    "推荐算法先用规则权重",
+    "不做机器学习训练平台",
+    "AI 只做接口边界和 mock provider",
+    "行为埋点只覆盖关键事件",
+    "推荐失败时回退到默认热销/上架商品列表"
+  ]
+}

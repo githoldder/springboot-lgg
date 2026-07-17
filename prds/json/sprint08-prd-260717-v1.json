@@ -1,0 +1,29 @@
+{
+  "sprint_id": "S08",
+  "title": "多角色履约、权限划分与运营治理",
+  "last_updated": "2026-07-17",
+  "epics": ["EPIC-A"],
+  "objective": "补齐管理员、商家、骑手、用户的权限边界，复用 RuoYi 系统管理、角色菜单、日志和监控能力。",
+  "product_board": [
+    {"id": "S08-PB-1", "title": "多角色权限边界", "acceptance": "RuoYi 菜单、角色、权限能区分管理员、商家运营、骑手管理", "priority": "P0"},
+    {"id": "S08-PB-2", "title": "骑手配送任务", "acceptance": "骑手端或轻量页面展示待配送、配送中、已完成订单", "priority": "P0"},
+    {"id": "S08-PB-3", "title": "商家运营权限", "acceptance": "商家角色能操作核心业务，不暴露系统底层配置", "priority": "P0"},
+    {"id": "S08-PB-4", "title": "系统运行状态", "acceptance": "复用 RuoYi 监控、缓存、服务状态、日志入口", "priority": "P1"},
+    {"id": "S08-PB-5", "title": "服务质量指标", "acceptance": "管理端新增售后率、评价率、优惠券使用率统计卡片", "priority": "P1"}
+  ],
+  "engineering_board": [
+    {"id": "S08-EB-1", "title": "角色权限模型", "target_modules": ["system/role", "menu sql"], "status": "planned", "priority": "P0"},
+    {"id": "S08-EB-2", "title": "骑手任务接口", "target_modules": ["OrderController", "OrdersAssignRiderDTO", "views/business/rider"], "status": "planned", "priority": "P0"},
+    {"id": "S08-EB-3", "title": "商家端权限菜单收束", "target_modules": ["lgg_business_menu.sql", "frontend router permission"], "status": "planned", "priority": "P0"},
+    {"id": "S08-EB-4", "title": "轻量骑手入口", "target_modules": ["mp-weixin/pages/rider"], "status": "planned", "priority": "P1"},
+    {"id": "S08-EB-5", "title": "RuoYi 监控复用", "target_modules": ["views/monitor", "api/monitor"], "status": "planned", "priority": "P1"},
+    {"id": "S08-EB-6", "title": "业务运营统计", "target_modules": ["ReportService", "WorkSpaceController"], "status": "planned", "priority": "P1"},
+    {"id": "S08-EB-7", "title": "权限回归测试", "target_modules": ["tests"], "status": "planned", "priority": "P0"}
+  ],
+  "scope_boundary": [
+    "不做三套完整小程序端",
+    "不新增独立商家 App",
+    "不重构完整认证系统",
+    "系统监控优先复用现有 views/monitor"
+  ]
+}

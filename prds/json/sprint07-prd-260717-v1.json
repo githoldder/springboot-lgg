@@ -1,0 +1,31 @@
+{
+  "sprint_id": "S07",
+  "title": "成交转化、复购基础与售后口碑 MVP",
+  "last_updated": "2026-07-17",
+  "epics": ["EPIC-A"],
+  "objective": "把当前能下单的 MVP 推进到能转化、能复购、能处理售后、能沉淀口碑的业务系统。",
+  "product_board": [
+    {"id": "S07-PB-1", "title": "首页轮播图", "acceptance": "首页展示后台配置的轮播图，可跳转商品详情或活动页", "priority": "P0"},
+    {"id": "S07-PB-2", "title": "商品详情页", "acceptance": "展示图、价格、规格、库存、销量、评价摘要、加购入口", "priority": "P0"},
+    {"id": "S07-PB-3", "title": "优惠券 MVP", "acceptance": "用户端展示可用/已用/过期券，下单可选择并抵扣", "priority": "P0"},
+    {"id": "S07-PB-4", "title": "用户评价与商家回复", "acceptance": "已完成订单可评价，后台可回复/隐藏，商品详情显示评价摘要", "priority": "P0"},
+    {"id": "S07-PB-5", "title": "售后工单", "acceptance": "用户基于订单提交退款/补发/投诉，后台可处理并留痕", "priority": "P0"},
+    {"id": "S07-PB-6", "title": "会员 MVP", "acceptance": "用户端展示会员等级/成长值/权益文案", "priority": "P1"}
+  ],
+  "engineering_board": [
+    {"id": "S07-EB-1", "title": "轮播图表、接口、后台配置页、小程序展示", "target_modules": ["lgg_banner", "views/business/banner", "mp-weixin/pages/index"], "status": "planned", "priority": "P0"},
+    {"id": "S07-EB-2", "title": "商品详情真实接口与页面字段", "target_modules": ["DishController", "DishService", "mp-weixin/pages/details"], "status": "planned", "priority": "P0"},
+    {"id": "S07-EB-3", "title": "优惠券领券/用券/核销逻辑", "target_modules": ["CouponController", "CouponService", "OrderService"], "status": "planned", "priority": "P0"},
+    {"id": "S07-EB-4", "title": "评论表、评价校验、商家回复", "target_modules": ["ReviewController", "ReviewService", "views/business/review"], "status": "planned", "priority": "P0"},
+    {"id": "S07-EB-5", "title": "售后表、用户提交、后台处理", "target_modules": ["AfterSaleController", "AfterSaleService", "views/business/aftersale"], "status": "planned", "priority": "P0"},
+    {"id": "S07-EB-6", "title": "会员等级/成长值展示", "target_modules": ["lgg_user", "lgg_member", "mp-weixin/pages/my"], "status": "planned", "priority": "P1"},
+    {"id": "S07-EB-7", "title": "菜单、字典、状态码、迁移 SQL、回归测试", "target_modules": ["sql", "tests"], "status": "planned", "priority": "P0"}
+  ],
+  "scope_boundary": [
+    "优惠券只做满减/立减 MVP",
+    "会员只做等级、成长值、权益展示",
+    "售后只做工单，不做实时客服 IM",
+    "评论只做订单后评价和商家回复",
+    "后端新增业务优先放在 ruoyi-business"
+  ]
+}

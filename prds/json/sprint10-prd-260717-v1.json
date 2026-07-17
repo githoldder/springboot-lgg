@@ -1,0 +1,29 @@
+{
+  "sprint_id": "S10",
+  "title": "LangChain/LangGraph 业务辅助能力",
+  "last_updated": "2026-07-17",
+  "epics": ["EPIC-B"],
+  "objective": "引入 AI 业务辅助工作流，只输出建议、草稿、摘要、润色，所有业务动作必须人工确认。",
+  "product_board": [
+    {"id": "S10-PB-1", "title": "AI 评价润色", "acceptance": "用户输入短评后可生成更自然评价，用户确认后提交", "priority": "P0"},
+    {"id": "S10-PB-2", "title": "FAQ 回复建议", "acceptance": "售后/客服页可生成 FAQ 回复建议，管理员确认发送", "priority": "P0"},
+    {"id": "S10-PB-3", "title": "AI 推荐理由润色", "acceptance": "推荐接口可返回规则理由 + AI 润色理由，失败时回退", "priority": "P1"},
+    {"id": "S10-PB-4", "title": "日经营 AI 摘要", "acceptance": "基于订单、销量、评价、售后生成今日运营摘要", "priority": "P1"}
+  ],
+  "engineering_board": [
+    {"id": "S10-EB-1", "title": "AI 编排服务或模块边界", "target_modules": ["ruoyi-ai", "ruoyi-business.ai"], "status": "planned", "priority": "P0"},
+    {"id": "S10-EB-2", "title": "LangChain/LangGraph 工作流 PoC", "target_modules": ["ai workflow"], "status": "planned", "priority": "P0"},
+    {"id": "S10-EB-3", "title": "评价润色接口", "target_modules": ["ReviewAiController", "ReviewAiService"], "status": "planned", "priority": "P0"},
+    {"id": "S10-EB-4", "title": "客服 FAQ 话术生成接口", "target_modules": ["CustomerServiceAiService"], "status": "planned", "priority": "P0"},
+    {"id": "S10-EB-5", "title": "AI 调用日志、超时、失败降级", "target_modules": ["lgg_ai_call_log"], "status": "planned", "priority": "P0"},
+    {"id": "S10-EB-6", "title": "管理端 AI 建议 UI", "target_modules": ["views/business/aftersale", "views/business/review"], "status": "planned", "priority": "P1"},
+    {"id": "S10-EB-7", "title": "日经营摘要接口与展示", "target_modules": ["AiOpsService"], "status": "planned", "priority": "P1"}
+  ],
+  "scope_boundary": [
+    "AI 回复必须人工确认",
+    "AI 不自动退款、改价、发券或改库存",
+    "不做向量数据库和大规模 RAG 知识库",
+    "LangChain/LangGraph 先做单场景 PoC",
+    "AI 失败不影响原业务流程"
+  ]
+}

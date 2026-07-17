@@ -1,0 +1,28 @@
+{
+  "sprint_id": "S11",
+  "title": "多 Agent 运营助手雏形",
+  "last_updated": "2026-07-17",
+  "epics": ["EPIC-B"],
+  "objective": "构建多 Agent 运营助手雏形，包括运营分析 Agent、客服 Agent、推荐策略 Agent，所有关键动作必须人工审批。",
+  "product_board": [
+    {"id": "S11-PB-1", "title": "每日经营建议", "acceptance": "系统输出热销、滞销、补货、优惠建议", "priority": "P0"},
+    {"id": "S11-PB-2", "title": "客服问题分类与处理建议", "acceptance": "售后/客服工单可被分类为退款、补发、投诉、咨询", "priority": "P0"},
+    {"id": "S11-PB-3", "title": "推荐策略优化建议", "acceptance": "根据点击/下单转化反馈调整推荐权重建议", "priority": "P1"},
+    {"id": "S11-PB-4", "title": "多 Agent 工作流可观测", "acceptance": "每次 Agent 推理有输入、输出、调用链和人工确认记录", "priority": "P1"}
+  ],
+  "engineering_board": [
+    {"id": "S11-EB-1", "title": "Agent 角色与工具调用边界", "target_modules": ["LangGraph workflow"], "status": "planned", "priority": "P0"},
+    {"id": "S11-EB-2", "title": "运营分析 Agent", "target_modules": ["order api", "product api", "review api", "member api"], "status": "planned", "priority": "P0"},
+    {"id": "S11-EB-3", "title": "客服 Agent", "target_modules": ["aftersale api", "faq api", "review reply api"], "status": "planned", "priority": "P0"},
+    {"id": "S11-EB-4", "title": "推荐策略 Agent", "target_modules": ["recommend log", "conversion data", "product data"], "status": "planned", "priority": "P1"},
+    {"id": "S11-EB-5", "title": "Agent 执行日志与人工审批表", "target_modules": ["lgg_agent_run_log", "lgg_agent_action_approval"], "status": "planned", "priority": "P0"},
+    {"id": "S11-EB-6", "title": "管理端 Agent 控制台 MVP", "target_modules": ["views/business/ai-ops"], "status": "planned", "priority": "P1"}
+  ],
+  "scope_boundary": [
+    "多 Agent 只输出建议，不自动执行业务写操作",
+    "自动退款、自动发券、自动改价、自动补货全部禁止",
+    "Agent 工具只能调用白名单 API",
+    "每次 Agent 运行必须有 run log 和 action approval",
+    "不做复杂 A/B 测试平台"
+  ]
+}

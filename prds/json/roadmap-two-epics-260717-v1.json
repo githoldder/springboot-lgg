@@ -1,0 +1,82 @@
+{
+  "roadmap_id": "second-iteration-two-epics-260717",
+  "title": "业务流水线 + AI 增强业务中台",
+  "last_updated": "2026-07-17",
+  "vision": "把常工鲜生从可演示的校园水果下单 MVP 推进为可运营、可复购、可观察、可逐步智能化的一人公司业务系统。",
+  "epics": [
+    {
+      "id": "EPIC-A",
+      "title": "水果生鲜公司完整业务流水线",
+      "goal": "补齐获客展示、商品转化、订单履约、售后处理、评价口碑、复购营销、角色协作和运营监控。",
+      "scope_boundary": [
+        "后端优先复用 ruoyi-business，不新增业务微服务",
+        "管理端页面统一放入 ruoyi-vue-lgg-frontend/src/views/business",
+        "小程序优先复用现有页面",
+        "客服售后降级为工单，不做实时 IM",
+        "优惠券和会员只做 MVP"
+      ],
+      "success_metrics": [
+        "用户能从轮播、瀑布流、商品详情进入加购与下单",
+        "用户可提交售后，后台可处理并留痕",
+        "用户完成订单后可评价，商家可回复或隐藏",
+        "优惠券和会员状态影响用户端展示与下单抵扣",
+        "管理员、商家、骑手、用户角色边界清晰"
+      ]
+    },
+    {
+      "id": "EPIC-B",
+      "title": "AI 增强业务中台",
+      "goal": "逐步接入规则推荐、AI 文案/客服、LangChain/LangGraph 工作流，并演进为辅助一人公司运营的多 Agent 系统。",
+      "scope_boundary": [
+        "AI 不替代订单、支付、库存、退款等核心事务",
+        "早期不训练重模型，不建设复杂 ML 平台",
+        "AI 客服先生成草稿，必须人工确认",
+        "LangChain/LangGraph 作为独立编排层调用业务 API"
+      ],
+      "success_metrics": [
+        "首页推荐能返回可解释理由",
+        "曝光、点击、加购、下单、评价等行为可记录",
+        "AI 调用有统一入口、日志、超时、mock 和失败回退",
+        "Agent 输入、输出、工具调用、审批记录可追踪"
+      ]
+    }
+  ],
+  "sprints": [
+    {
+      "id": "S07",
+      "epics": ["EPIC-A"],
+      "title": "成交转化 + 复购基础 + 售后口碑 MVP",
+      "prd": "prds/md/sprint07-prd-260717-v1.md"
+    },
+    {
+      "id": "S08",
+      "epics": ["EPIC-A"],
+      "title": "多角色履约 + 运营治理",
+      "prd": "prds/md/sprint08-prd-260717-v1.md"
+    },
+    {
+      "id": "S09",
+      "epics": ["EPIC-A", "EPIC-B"],
+      "title": "首页瀑布流 + 规则推荐 + AI 数据底座",
+      "prd": "prds/md/sprint09-prd-260717-v1.md"
+    },
+    {
+      "id": "S10",
+      "epics": ["EPIC-B"],
+      "title": "LangChain/LangGraph 业务辅助能力",
+      "prd": "prds/md/sprint10-prd-260717-v1.md"
+    },
+    {
+      "id": "S11",
+      "epics": ["EPIC-B"],
+      "title": "多 Agent 运营助手雏形",
+      "prd": "prds/md/sprint11-prd-260717-v1.md"
+    }
+  ],
+  "non_goals": [
+    "不在第二次迭代早期建设完整 IM 客服系统",
+    "不在 Sprint07-S09 做复杂机器学习训练",
+    "不让 AI 自动退款、自动改价、自动发券或自动修改库存",
+    "不新增过多微服务"
+  ]
+}
