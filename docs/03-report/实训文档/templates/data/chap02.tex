@@ -126,6 +126,19 @@ WebSocket 协议是基于 TCP 的双向通信应用层协议，能够在客户�
 
 PM2 是一款基于 Node.js 编写的生产级进程管理器，广泛应用于前端与微服务的守护进程管理。PM2 支持两种进程运行模式：Cluster 模式和 Fork 模式。Cluster 模式利用 Node.js 原生的 cluster 模块，在主进程（Master）中创建多个工作进程（Worker），每个 Worker 共享同一个服务器端口，通过操作系统内核的负载分发机制将请求分配到不同的 Worker 进程中，充分利用多核 CPU 的计算能力，适用于 Node.js HTTP 服务的水平扩展场景。Fork 模式则直接通过 child\_process.spawn 创建独立子进程，每个进程拥有独立的端口和标准输入输出，适用于非 Node.js 应用（如本项目中的 Java 微服务进程和 Redis 服务进程）的托管。在日志管理方面，PM2 搭配 pm2-logrotate 插件实现日志轮转，该插件可以按照文件大小阈值（例如 10MB）或时间间隔（例如每日）自动对日志文件进行切割和压缩归档，防止日志文件无限增长占满磁盘空间，本项目配置了每日轮转并保留最近七天的日志文件。在传统的 Java 分布式开发调试中，开发人员往往需要启动多个 Terminal 控制台，或者使用后台守护命令，这难以监控服务的实时资源消耗，还经常会产生僵尸进程占用端口。PM2 通过 ecosystem.config.cjs 配置文件实现了对所有服务的集中托管，该配置文件中的 apps 数组定义了每个被管理进程的详细参数：name 字段指定进程的显示名称，用于在 PM2 面板中标识不同服务；script 字段指定要执行的脚本路径或可执行文件命令；args 字段传递启动参数（如 Java 服务的 JAR 包路径和 JVM 参数）；cwd 字段指定进程的工作目录；interpreter 字段指定解释器路径，对于 Java 服务设置为 java，对于 Shell 脚本设置为 bash；autorestart 字段控制进程异常退出后是否自动重启；max\_restarts 字段限定最大自动重启次数以防止无限崩溃循环；watch 字段配置文件监听实现热重载。PM2 提供了健康自动拉起、日志监控、资源消耗看板和优雅退出机制，保证了本地运行验证的稳定性。
 
+\section{Docker 与 Docker Compose 容器化编排}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth,height=5cm,keepaspectratio]{figures/docker.svg}
+  \caption{Docker 容器化标识}
+\end{figure}
+
+Docker 是目前主流的云原生容器化引擎，它通过 Linux 内核的 Namespace（命名空间）实现进程隔离，通过 Cgroups（控制组）实现 CPU、内存等系统资源的配额限制。相较于传统虚拟机（如 VMware、KVM）需要为每个实例运行完整的操作系统内核，Docker 容器直接共享宿主机的操作系统内核，具备秒级启动、占用资源少和极高计算效能的优势。
+
+Docker Compose 则是 Docker 官方提供的多容器轻量级编排工具，它通过声明式的 \texttt{docker-compose.yml} 配置文件定义多个互相依赖的容器服务，实现了分布式微服务集群的“一键启动、统一停止与健康检查”。在本项目中，为了真实模拟企业级 Linux 服务器部署环境，系统在基于 OrbStack 的 Ubuntu 虚拟机中通过 Docker Compose 统一托管编排了全部 11 个核心服务，包括 MySQL 8.0、Redis 7.0、Nacos 2.2.3、RabbitMQ 3.9、MinIO 对象存储、Nginx 反向代理以及 \texttt{lgg-gateway}、\texttt{lgg-business}、\texttt{lgg-admin}、\texttt{lgg-pay} 和 \texttt{lgg-notice} 五大 Spring Cloud Java 微服务。利用容器镜像构建技术，彻底抹平了开发环境与生产部署环境之间的差异，消除了“本地能运行、服务器却报错”的经典部署难题。
+
+
 \section{Newman 与 Playwright 质量控制体系}
 
 为了满足系统工程化测试的硬性指标，项目建立了两条自动化测试防线。从架构原理层面看，Newman 与 Playwright 分别代表了 API 测试和 UI 端到端测试两种截然不同的测试范式。
