@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <rect width="800" height="600" fill="#ffffff" rx="20"/>
+  <!-- Docker Blue Theme Accent Background -->
+  <defs>
+    <linearGradient id="dockerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1D63ED" />
+      <stop offset="100%" stop-color="#0DB7ED" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#1D63ED" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g transform="translate(100, 80)">
+    <!-- Containers (Compose Grid) -->
+    <!-- Row 1 -->
+    <rect x="230" y="80" width="42" height="38" rx="4" fill="#0DB7ED" />
+    
+    <!-- Row 2 -->
+    <rect x="180" y="126" width="42" height="38" rx="4" fill="#0DB7ED" />
+    <rect x="230" y="126" width="42" height="38" rx="4" fill="#1D63ED" />
+    <rect x="280" y="126" width="42" height="38" rx="4" fill="#0DB7ED" />
+
+    <!-- Row 3 -->
+    <rect x="130" y="172" width="42" height="38" rx="4" fill="#0DB7ED" />
+    <rect x="180" y="172" width="42" height="38" rx="4" fill="#1D63ED" />
+    <rect x="230" y="172" width="42" height="38" rx="4" fill="#1D63ED" />
+    <rect x="280" y="172" width="42" height="38" rx="4" fill="#1D63ED" />
+    <rect x="330" y="172" width="42" height="38" rx="4" fill="#0DB7ED" />
+
+    <!-- Whale Body -->
+    <path d="M 120 220 
+             C 120 220, 80 220, 50 250 
+             C 20 280, 20 310, 40 325 
+             C 65 345, 120 345, 160 345
+             C 320 345, 450 340, 520 270
+             C 540 250, 550 230, 550 220
+             C 510 215, 470 230, 430 230
+             C 380 230, 320 220, 120 220 Z" fill="url(#dockerGrad)" filter="url(#shadow)"/>
+             
+    <!-- Whale Eye -->
+    <circle cx="470" cy="255" r="7" fill="#ffffff"/>
+
+    <!-- Text: Docker Compose -->
+    <text x="300" y="420" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="52" font-weight="bold" fill="#091E42">
+      Docker Compose
+    </text>
+    <text x="300" y="465" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="24" font-weight="500" fill="#5E6C84">
+      Multi-Container Orchestration
+    </text>
+  </g>
+</svg>
