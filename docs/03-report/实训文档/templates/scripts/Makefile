@@ -1,7 +1,7 @@
 MAIN ?= template
 SCRIPT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 LATEX_DIR := $(abspath $(SCRIPT_DIR)/..)
-FINAL_PDF ?= /Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/23030301曹磊-课程报告-答辩记录/5课程报告.pdf
+FINAL_PDF ?= /Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/23030301曹磊/5课程报告.pdf
 LATEXMK = xelatex
 BIBTEX = bibtex
 

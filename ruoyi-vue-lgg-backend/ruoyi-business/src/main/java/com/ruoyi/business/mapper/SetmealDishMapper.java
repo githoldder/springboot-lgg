@@ -3,6 +3,7 @@ package com.ruoyi.business.mapper;
 import com.ruoyi.business.entity.SetmealDish;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -31,4 +32,7 @@ public interface SetmealDishMapper {
      */
     @Delete("delete from lgg_fruit_box_item where fruit_box_id = #{setmealId}")
     void deleteBySetmealId(Long setmealId);
+
+    @Select("select id, fruit_box_id as setmealId, fruit_id as dishId, name, price, copies from lgg_fruit_box_item where fruit_box_id = #{setmealId}")
+    List<SetmealDish> getBySetmealId(Long setmealId);
 }

@@ -9,7 +9,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LATEX_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 MAIN="${MAIN:-template}"
-FINAL_PDF="${FINAL_PDF:-/Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/23030301曹磊-课程报告-答辩记录/5课程报告.pdf}"
+FINAL_PDF="${FINAL_PDF:-/Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/23030301曹磊/5课程报告.pdf}"
 
 cleanup_intermediates() {
   rm -f \
@@ -41,6 +41,9 @@ OVERFULL=$(grep -c "Overfull" "$MAIN.log" 2>/dev/null || true)
 mkdir -p "$(dirname "$FINAL_PDF")"
 cp "$MAIN.pdf" "$FINAL_PDF"
 echo "📦 Updated: $FINAL_PDF"
+mkdir -p "$(dirname "$FINAL_PDF2")"
+cp "$MAIN.pdf" "$FINAL_PDF2"
+echo "📦 Updated: $FINAL_PDF2"
 
 cleanup_intermediates
 echo "🧹 Cleaned intermediate files"

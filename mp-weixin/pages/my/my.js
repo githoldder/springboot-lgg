@@ -305,7 +305,10 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
         total: 0 },
 
       loadingText: '',
-      loading: false };
+      loading: false,
+      showEditModal: false,
+      tempAvatarUrl: '',
+      inputNickName: '' };
 
   },
   components: {
@@ -322,6 +325,14 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
     this.gender = this.$store.state.baseUserInfo && this.$store.state.baseUserInfo.gender;
     this.phoneNumber = this.$store.state.shopPhone && this.$store.state.shopPhone;
     console.log(this.phoneNumber);
+  },
+  onShow: function onShow() {
+    this.psersonUrl = this.$store.state.baseUserInfo && this.$store.state.baseUserInfo.avatarUrl;
+    this.nickName = this.$store.state.baseUserInfo && this.$store.state.baseUserInfo.nickName;
+    this.gender = this.$store.state.baseUserInfo && this.$store.state.baseUserInfo.gender;
+    this.phoneNumber = this.$store.state.shopPhone && this.$store.state.shopPhone;
+    this.pageInfo.page = 1;
+    this.recentOrdersList = [];
     this.getList();
   },
   created: function created() {
@@ -356,10 +367,14 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
       var params = {
         pageSize: 10,
         page: this.pageInfo.page };
-
+ 
       (0, _api.getOrderPage)(params).then(function (res) {
         if (res.code === 1) {
-          _this2.recentOrdersList = _this2.recentOrdersList.concat(res.data.records);
+          if (_this2.pageInfo.page === 1) {
+            _this2.recentOrdersList = res.data.records || [];
+          } else {
+            _this2.recentOrdersList = _this2.recentOrdersList.concat(res.data.records);
+          }
           _this2.pageInfo.total = res.data.total;
           _this2.loadingText = '';
           _this2.loading = false;
@@ -423,6 +438,87 @@ var _index = __webpack_require__(/*! @/utils/index.js */ 29);function _interopRe
       this.loading = true;
       this.dataAdd();
 
+    },
+    showEditProfileModal: function showEditProfileModal() {
+      this.tempAvatarUrl = this.psersonUrl;
+      this.inputNickName = this.nickName === '微信用户' ? '' : this.nickName;
+      this.showEditModal = true;
+    },
+    hideEditProfileModal: function hideEditProfileModal() {
+      this.showEditModal = false;
+    },
+    onChooseAvatar: function onChooseAvatar(e) {
+      console.log('choose avatar', e);
+      var avatarUrl = e.detail.avatarUrl;
+      this.tempAvatarUrl = avatarUrl;
+    },
+    onNicknameInput: function onNicknameInput(e) {
+      this.inputNickName = e.detail.value;
+    },
+    onNicknameBlur: function onNicknameBlur(e) {
+      this.inputNickName = e.detail.value;
+    },
+    saveProfile: function saveProfile() {
+      var _this = this;
+      if (!_this.inputNickName) {
+        uni.showToast({ title: '请输入昵称', icon: 'none' });
+        return;
+      }
+      uni.showLoading({ title: '保存中...' });
+      var doUpdate = function(finalAvatarUrl) {
+        var baseInfo = {
+          nickName: _this.inputNickName,
+          avatarUrl: finalAvatarUrl,
+          gender: Number(_this.gender || 0)
+        };
+        _this.$store.commit('setBaseUserInfo', baseInfo);
+        uni.setStorageSync('baseUserInfo', baseInfo);
+        var params = {
+          code: 'mock_profile_update_' + Date.now(),
+          avatar: finalAvatarUrl,
+          name: _this.inputNickName,
+          sex: String(_this.gender || '')
+        };
+        (0, _api.userLogin)(params).then(function (success) {
+          uni.hideLoading();
+          if (success.code === 1) {
+            _this.psersonUrl = finalAvatarUrl;
+            _this.nickName = _this.inputNickName;
+            _this.showEditModal = false;
+            uni.showToast({ title: '修改成功', icon: 'success' });
+          } else {
+            uni.showToast({ title: '同步到服务器失败', icon: 'none' });
+          }
+        }).catch(function (err) {
+          uni.hideLoading();
+          uni.showToast({ title: '保存出错', icon: 'none' });
+        });
+      };
+      if (_this.tempAvatarUrl.startsWith('http://tmp/') || _this.tempAvatarUrl.startsWith('wxfile://') || _this.tempAvatarUrl.startsWith('http://usr/')) {
+        uni.uploadFile({
+          url: 'http://localhost:8090/common/upload',
+          filePath: _this.tempAvatarUrl,
+          name: 'file',
+          success: function(uploadRes) {
+            try {
+              var data = JSON.parse(uploadRes.data);
+              if (data.url || data.fileName) {
+                var finalUrl = data.url || ('http://127.0.0.1:9020/greenfruit/' + data.fileName);
+                doUpdate(finalUrl);
+              } else {
+                doUpdate(_this.tempAvatarUrl);
+              }
+            } catch (e) {
+              doUpdate(_this.tempAvatarUrl);
+            }
+          },
+          fail: function() {
+            doUpdate(_this.tempAvatarUrl);
+          }
+        });
+      } else {
+        doUpdate(_this.tempAvatarUrl);
+      }
     },
     goBack: function goBack() {
       uni.switchTab({

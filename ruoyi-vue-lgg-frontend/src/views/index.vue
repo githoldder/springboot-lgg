@@ -381,10 +381,13 @@ const initOrderOverviewChart = () => {
   orderOverviewChart = echarts.init(orderOverviewChartRef.value)
   
   const data = [
+    { value: orderOverview.value.pendingPaymentOrders || 0, name: '待付款', itemStyle: { color: '#a29bfe' } },
     { value: orderOverview.value.waitingOrders || 0, name: '待接单', itemStyle: { color: '#ff7675' } },
+    { value: orderOverview.value.acceptedOrders || 0, name: '已接单', itemStyle: { color: '#ffeaa7' } },
     { value: orderOverview.value.deliveredOrders || 0, name: '派送中', itemStyle: { color: '#0984e3' } },
     { value: orderOverview.value.completedOrders || 0, name: '已完成', itemStyle: { color: '#00b894' } },
-    { value: orderOverview.value.cancelledOrders || 0, name: '已取消', itemStyle: { color: '#bdc3c7' } }
+    { value: orderOverview.value.cancelledOrders || 0, name: '已取消', itemStyle: { color: '#bdc3c7' } },
+    { value: orderOverview.value.refundedOrders || 0, name: '已退款', itemStyle: { color: '#d63031' } }
   ].filter(item => item.value > 0)
   
   if (data.length === 0) {

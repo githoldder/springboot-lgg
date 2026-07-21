@@ -195,7 +195,7 @@ var _vuex = __webpack_require__(/*! vuex */ 13);function ownKeys(object, enumera
     // 回首页
     goIndex: function goIndex() {
       // console.log(23)
-      uni.navigateTo({
+      uni.reLaunch({
         url: '/pages/index/index?status=' + '不验证' });
 
     },

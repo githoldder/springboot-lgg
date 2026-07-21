@@ -33,18 +33,18 @@ ON DUPLICATE KEY UPDATE
   `update_user` = VALUES(`update_user`);
 
 INSERT INTO `lgg_fruit` (`id`, `name`, `category_id`, `price`, `image`, `description`, `status`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(101, '阿克苏冰糖心苹果(500g)', 10, 8.80, 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=800', '脆甜多汁，冷链到店，适合每日补充维C', 1, NOW(), NOW(), 1, 1),
-(102, '泰国金枕榴莲果肉(300g)', 14, 69.90, 'https://images.unsplash.com/photo-1620646146961-cb1610ca1439?w=800', '自然解冻即食，奶香浓郁', 1, NOW(), NOW(), 1, 1),
-(103, '精品红颜草莓(250g)', 10, 18.00, 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=800', '当天分拣，颗颗红润，酸甜平衡', 1, NOW(), NOW(), 1, 1),
-(104, '海南贵妃芒果(500g)', 10, 12.50, 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=800', '皮薄核小，果香清甜', 1, NOW(), NOW(), 1, 1),
-(105, '智利进口车厘子(500g)', 14, 49.90, 'https://images.unsplash.com/photo-1528821128474-27f963b062bf?w=800', '大颗饱满，脆甜爆汁', 1, NOW(), NOW(), 1, 1),
-(106, '阳光玫瑰青提(500g)', 14, 29.90, 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=800', '清香脆甜，果粒紧实', 1, NOW(), NOW(), 1, 1),
-(111, '鲜切西瓜拼盘(300g)', 11, 9.90, 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800', '现切现装，冰爽多汁', 1, NOW(), NOW(), 1, 1),
-(112, '鲜切蜜瓜拼盘(300g)', 11, 12.00, 'https://images.unsplash.com/photo-1571575173700-afb9492e6a50?w=800', '香甜爽口，办公室下午茶优选', 1, NOW(), NOW(), 1, 1),
-(113, '缤纷家庭分享果切(600g)', 11, 25.00, 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=800', '多种果切组合，清爽不腻', 1, NOW(), NOW(), 1, 1),
-(131, '鲜榨橙汁(350ml)', 13, 12.00, 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=800', '鲜橙现榨，不加糖', 1, NOW(), NOW(), 1, 1),
-(132, '椰青鲜椰水(350ml)', 13, 15.00, 'https://images.unsplash.com/photo-1580984969071-a8da5656c2fb?w=800', '清甜解渴，低负担', 1, NOW(), NOW(), 1, 1),
-(133, '冰爽西瓜汁(350ml)', 13, 10.00, 'https://images.unsplash.com/photo-1525385133512-2f3bdd039054?w=800', '现榨西瓜汁，夏日清爽款', 1, NOW(), NOW(), 1, 1)
+(101, '阿克苏冰糖心苹果(500g)', 10, 8.80, 'http://127.0.0.1:9020/greenfruit/3053198a-e9be-4983-ad03-c93184ca6f70.jpg', '脆甜多汁，冷链到店，适合每日补充维C', 1, NOW(), NOW(), 1, 1),
+(102, '泰国金枕榴莲果肉(300g)', 14, 69.90, 'http://127.0.0.1:9020/greenfruit/0fc24421-544d-4855-81b0-ded51675ee09.jpg', '自然解冻即食，奶香浓郁', 1, NOW(), NOW(), 1, 1),
+(103, '精品红颜草莓(250g)', 10, 18.00, 'http://127.0.0.1:9020/greenfruit/84cf94e5-82e9-4284-b69e-54c26f39d575.jpg', '当天分拣，颗颗红润，酸甜平衡', 1, NOW(), NOW(), 1, 1),
+(104, '海南贵妃芒果(500g)', 10, 12.50, 'http://127.0.0.1:9020/greenfruit/57edce19-9799-4497-bff6-a1a0ae043704.jpg', '皮薄核小，果香清甜', 1, NOW(), NOW(), 1, 1),
+(105, '智利进口车厘子(500g)', 14, 49.90, 'http://127.0.0.1:9020/greenfruit/63c2057f-5e75-49c5-b31d-225a33e45891.jpg', '大颗饱满，脆甜爆汁', 1, NOW(), NOW(), 1, 1),
+(106, '阳光玫瑰青提(500g)', 14, 29.90, 'http://127.0.0.1:9020/greenfruit/99170108-7c62-479b-987a-dab60f9e4328.jpg', '清香脆甜，果粒紧实', 1, NOW(), NOW(), 1, 1),
+(111, '鲜切西瓜拼盘(300g)', 11, 9.90, 'http://127.0.0.1:9020/greenfruit/ad14fd7d-0dc0-46fb-b351-feb05345debe.jpg', '现切现装，冰爽多汁', 1, NOW(), NOW(), 1, 1),
+(112, '鲜切蜜瓜拼盘(300g)', 11, 12.00, 'http://127.0.0.1:9020/greenfruit/fbf738a7-a996-4856-809f-a2c242cd8c6e.jpg', '香甜爽口，办公室下午茶优选', 1, NOW(), NOW(), 1, 1),
+(113, '缤纷家庭分享果切(600g)', 11, 25.00, 'http://127.0.0.1:9020/greenfruit/4c7eadbe-1dc7-47d2-9705-cea0fac14be3.jpg', '多种果切组合，清爽不腻', 1, NOW(), NOW(), 1, 1),
+(131, '鲜榨橙汁(350ml)', 13, 12.00, 'http://127.0.0.1:9020/greenfruit/da93b44f-12f8-4fd3-b144-a9e71e9e4d32.jpg', '鲜橙现榨，不加糖', 1, NOW(), NOW(), 1, 1),
+(132, '椰青鲜椰水(350ml)', 13, 15.00, 'http://127.0.0.1:9020/greenfruit/c2ad3323-ede6-43cb-b455-0921352abecf.jpg', '清甜解渴，低负担', 1, NOW(), NOW(), 1, 1),
+(133, '冰爽西瓜汁(350ml)', 13, 10.00, 'http://127.0.0.1:9020/greenfruit/e0d11a49-c5b1-4d41-a1df-fb5daac9b0b8.jpg', '现榨西瓜汁，夏日清爽款', 1, NOW(), NOW(), 1, 1)
 ON DUPLICATE KEY UPDATE
   `category_id` = VALUES(`category_id`),
   `price` = VALUES(`price`),
@@ -67,10 +67,10 @@ ON DUPLICATE KEY UPDATE
   `value` = VALUES(`value`);
 
 INSERT INTO `lgg_fruit_box` (`id`, `category_id`, `name`, `price`, `status`, `description`, `image`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(201, 12, '元气满满单人果切果汁餐', 19.90, 1, '鲜切西瓜拼盘 + 鲜榨橙汁，轻负担补能', 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=800', NOW(), NOW(), 1, 1),
-(202, 12, '温馨家庭幸福果篮', 88.00, 1, '苹果、芒果、草莓、车厘子组合，适合家庭分享', 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=800', NOW(), NOW(), 1, 1),
-(203, 12, '尊贵商务送礼果篮', 168.00, 1, '榴莲、车厘子、芒果高端组合，附精美礼盒', 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=800', NOW(), NOW(), 1, 1),
-(204, 12, '轻食下午茶鲜果盒', 39.90, 1, '阳光玫瑰、草莓、蜜瓜与椰水组合', 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800', NOW(), NOW(), 1, 1)
+(201, 12, '元气满满单人果切果汁餐', 19.90, 1, '鲜切西瓜拼盘 + 鲜榨橙汁，轻负担补能', 'http://127.0.0.1:9020/greenfruit/c91c3d83-5632-4040-9852-e0c2695a0d24.jpg', NOW(), NOW(), 1, 1),
+(202, 12, '温馨家庭幸福果篮', 88.00, 1, '苹果、芒果、草莓、车厘子组合，适合家庭分享', 'http://127.0.0.1:9020/greenfruit/501f24e4-e7a6-4546-b788-b1a470a9e6ee.jpg', NOW(), NOW(), 1, 1),
+(203, 12, '尊贵商务送礼果篮', 168.00, 1, '榴莲、车厘子、芒果高端组合，附精美礼盒', 'http://127.0.0.1:9020/greenfruit/e7f4af44-24f6-4488-8582-43b7251bb872.jpg', NOW(), NOW(), 1, 1),
+(204, 12, '轻食下午茶鲜果盒', 39.90, 1, '阳光玫瑰、草莓、蜜瓜与椰水组合', 'http://127.0.0.1:9020/greenfruit/9a6c9f4a-3e07-4b2c-8d69-99ba47eacb02.jpg', NOW(), NOW(), 1, 1)
 ON DUPLICATE KEY UPDATE
   `category_id` = VALUES(`category_id`),
   `price` = VALUES(`price`),
@@ -104,7 +104,10 @@ INSERT INTO `employee` (`id`, `name`, `username`, `password`, `phone`, `sex`, `i
 (1, '门店管理员', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '13812312312', '1', '110101199001010047', 1, NOW(), NOW(), 1, 1),
 (2, '果品采购员', 'buyer', 'e10adc3949ba59abbe56e057f20f883e', '13812312313', '1', '110101199202020058', 1, NOW(), NOW(), 1, 1),
 (3, '分拣打包员', 'packer', 'e10adc3949ba59abbe56e057f20f883e', '13812312314', '2', '110101199303030069', 1, NOW(), NOW(), 1, 1),
-(4, '骑手调度员', 'dispatcher', 'e10adc3949ba59abbe56e057f20f883e', '13812312315', '1', '110101199404040070', 1, NOW(), NOW(), 1, 1)
+(4, '骑手调度员', 'dispatcher', 'e10adc3949ba59abbe56e057f20f883e', '13812312315', '1', '110101199404040070', 1, NOW(), NOW(), 1, 1),
+(5, '专职骑手01', 'rider01', 'e10adc3949ba59abbe56e057f20f883e', '13812312316', '1', '110101199505050071', 1, NOW(), NOW(), 1, 1),
+(6, '兼职配送员02', 'rider02', 'e10adc3949ba59abbe56e057f20f883e', '13812312317', '1', '110101199606060072', 1, NOW(), NOW(), 1, 1),
+(7, '高级骑手03', 'rider03', 'e10adc3949ba59abbe56e057f20f883e', '13812312318', '2', '110101199707070073', 1, NOW(), NOW(), 1, 1)
 ON DUPLICATE KEY UPDATE
   `name` = VALUES(`name`),
   `phone` = VALUES(`phone`),

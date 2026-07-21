@@ -2662,7 +2662,7 @@ _vue.default.use(_vuex.default);
     storeInfo: {}, // 店铺请求的id信息
     shopInfo: '', // 店铺详细信息
     orderListData: [], // 购物车列表信息
-    baseUserInfo: '', // 存储获取的用户微信的信息（用户名、头像）
+    baseUserInfo: getLocalStorage(LGG_USER_INFO_KEY) || '', // 存储获取的用户微信的信息（用户名、头像）
     lodding: false,
     sessionId: '',
     addressBackUrl: '',
@@ -4218,7 +4218,10 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
       menuHeight: 0, // 左边菜单的高度
       menuItemHeight: 0, // 左边菜单item的高度
       itemId: '', // 栏目右边scroll-view用于滚动的id
-      arr: [] };
+      arr: [],
+      showLoginModal: false,
+      tempAvatarUrl: '',
+      inputNickName: '' };
 
   },
   computed: {
@@ -4275,9 +4278,19 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
     // this.sessionId() && this.init()
   },
   created: function created() {
-    // 
-    // this.phoneData=splitMobile('15200000001')
-
+    var _this = this;
+    if (this.$store) {
+      this.$store.watch(
+        function(state) {
+          return state.token;
+        },
+        function(newVal) {
+          if (!newVal || newVal === '') {
+            _this.showLoginModal = true;
+          }
+        }
+      );
+    }
   },
   onShow: function onShow() {
     // 有sessionId免授权
@@ -4312,62 +4325,104 @@ var _index = __webpack_require__(/*! ../../utils/index.js */ 29);function _inter
     getData: function getData() {
       var res = wx.getMenuButtonBoundingClientRect();
       var _this = this;
-      // 获取店铺状态
       this.getShopInfo();
       this.selectHeight = res.height;
       if (this.token() === '') {
-        uni.showModal({
-          title: '温馨提示',
-          content: '授权微信登录后才能选购！',
-          showCancel: false,
-          success: function success(res) {
-            if (res.confirm) {
-              var jsCode = '';
-	              uni.login({
-	                success: function success(loginRes) {
-	                  if (loginRes.errMsg === 'login:ok') {
-	                    console.log('-=-=-=-=loginRes-=-=-=', loginRes);
-	                    jsCode = loginRes.code;
-	                  }
-	                },
-	                fail: function fail(err) {
-	                  console.warn('微信登录失败，启用本地沙箱 code', err);
-	                  jsCode = 'mock_' + Date.now();
-	                } });
-
-              // 授权
-              uni.getUserProfile({
-                desc: '登录',
-                success: function success(userInfo) {
-                  _this.setBaseUserInfo(userInfo.userInfo);
-                  var params = {
-                    // phone: jsCode,
-                    // avatar: userInfo.userInfo.avatarUrl,
-                    // name: userInfo.userInfo.nickName,
-                    // sex: userInfo.userInfo.gender,
-	                    code: jsCode || 'mock_' + Date.now(),
-	                    avatar: userInfo.userInfo.avatarUrl,
-	                    name: userInfo.userInfo.nickName,
-	                    sex: String(userInfo.userInfo.gender || '') };
-
-                  console.log(userInfo.userInfo, 11);
-                  (0, _api.userLogin)(params).then(function (success) {
-                    if (success.code === 1) {
-
-                      _this.setToken(success.data.token);
-                      _this.init();
-                    }
-                  }).catch(function (err) {});
-                },
-                fail: function fail(err) {
-
-                } });
-
-            }
-          } });
-
+        this.showLoginModal = true;
+      } else {
+        this.init();
       }
-
+    },
+    onChooseAvatar: function onChooseAvatar(e) {
+      console.log('choose avatar', e);
+      var avatarUrl = e.detail.avatarUrl;
+      this.tempAvatarUrl = avatarUrl;
+    },
+    onNicknameInput: function onNicknameInput(e) {
+      this.inputNickName = e.detail.value;
+    },
+    onNicknameBlur: function onNicknameBlur(e) {
+      this.inputNickName = e.detail.value;
+    },
+    saveProfile: function saveProfile() {
+      var _this = this;
+      if (!_this.inputNickName) {
+        uni.showToast({ title: '请输入昵称', icon: 'none' });
+        return;
+      }
+      
+      uni.showLoading({ title: '授权登录中...' });
+      
+      var doLogin = function(finalAvatarUrl) {
+        var baseInfo = {
+          nickName: _this.inputNickName,
+          avatarUrl: finalAvatarUrl,
+          gender: 0
+        };
+        
+        // 1. 获取微信登录 code
+        uni.login({
+          success: function success(loginRes) {
+            var jsCode = loginRes.errMsg === 'login:ok' ? loginRes.code : 'mock_' + Date.now();
+            
+            var params = {
+              code: jsCode,
+              avatar: finalAvatarUrl,
+              name: _this.inputNickName,
+              sex: '0'
+            };
+            
+            (0, _api.userLogin)(params).then(function (success) {
+              uni.hideLoading();
+              if (success.code === 1) {
+                // 2. 同步到 Vuex store 与本地缓存
+                _this.setBaseUserInfo(baseInfo);
+                uni.setStorageSync('baseUserInfo', baseInfo);
+                _this.setToken(success.data.token);
+                _this.showLoginModal = false;
+                uni.showToast({ title: '登录成功', icon: 'success' });
+                _this.init();
+              } else {
+                uni.showToast({ title: '登录失败：' + success.msg, icon: 'none' });
+              }
+            }).catch(function (err) {
+              uni.hideLoading();
+              uni.showToast({ title: '服务器登录异常', icon: 'none' });
+            });
+          },
+          fail: function fail() {
+            uni.hideLoading();
+            uni.showToast({ title: '微信登录失败', icon: 'none' });
+          }
+        });
+      };
+      
+      // 如果头像是小程序生成的临时文件，需要上传到 MinIO
+      if (_this.tempAvatarUrl.startsWith('http://tmp/') || _this.tempAvatarUrl.startsWith('wxfile://') || _this.tempAvatarUrl.startsWith('http://usr/')) {
+        uni.uploadFile({
+          url: 'http://localhost:8090/common/upload',
+          filePath: _this.tempAvatarUrl,
+          name: 'file',
+          success: function(uploadRes) {
+            try {
+              var data = JSON.parse(uploadRes.data);
+              if (data.url || data.fileName) {
+                var finalUrl = data.url || ('http://127.0.0.1:9020/greenfruit/' + data.fileName);
+                doLogin(finalUrl);
+              } else {
+                doLogin(_this.tempAvatarUrl);
+              }
+            } catch (e) {
+              doLogin(_this.tempAvatarUrl);
+            }
+          },
+          fail: function() {
+            doLogin(_this.tempAvatarUrl);
+          }
+        });
+      } else {
+        doLogin(_this.tempAvatarUrl);
+      }
     },
 
     init: function init() {var _this2 = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
@@ -20371,9 +20426,16 @@ function request(_ref) {var _ref$url = _ref.url,url = _ref$url === void 0 ? '' :
       data: params,
       header: header,
       method: method,
-      success: function success(res) {var
-        data = res.data;
-        if (data.code == 200 || data.code === 1) {
+      success: function success(res) {
+        var data = res.data;
+        if (res.statusCode === 401) {
+          _store.default.commit('setToken', '');
+          uni.removeStorageSync('baseUserInfo');
+          uni.showToast({ title: '登录已失效，请重新登录', icon: 'none' });
+          reject({ code: 401, msg: '未授权' });
+          return;
+        }
+        if (data && (data.code == 200 || data.code === 1)) {
           // store.commit('setLodding', false)
           resolve(res.data);
         } else {

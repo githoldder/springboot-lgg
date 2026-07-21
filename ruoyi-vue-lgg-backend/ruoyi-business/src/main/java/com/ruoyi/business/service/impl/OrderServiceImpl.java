@@ -68,6 +68,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private SetmealDishMapper setmealDishMapper;
+
     /**
      * 用户提交订单
      */
@@ -220,9 +223,24 @@ public class OrderServiceImpl implements OrderService {
             List<OrderDetail> details = orderDetailMapper.getByOrderId(orders.getId());
             if (details != null) {
                 for (OrderDetail detail : details) {
-                    int rows = dishMapper.decreaseStock(detail.getDishId(), detail.getNumber());
-                    if (rows == 0) {
-                        throw new OrderBusinessException("商品库存不足，支付回调失败！商品ID：" + detail.getDishId());
+                    if (detail.getDishId() != null) {
+                        int rows = dishMapper.decreaseStock(detail.getDishId(), detail.getNumber());
+                        if (rows == 0) {
+                            throw new OrderBusinessException("商品库存不足，支付回调失败！商品ID：" + detail.getDishId());
+                        }
+                    } else if (detail.getSetmealId() != null) {
+                        List<SetmealDish> setmealDishes = setmealDishMapper.getBySetmealId(detail.getSetmealId());
+                        if (setmealDishes != null) {
+                            for (SetmealDish sd : setmealDishes) {
+                                if (sd.getDishId() != null) {
+                                    int totalNum = sd.getCopies() * detail.getNumber();
+                                    int rows = dishMapper.decreaseStock(sd.getDishId(), totalNum);
+                                    if (rows == 0) {
+                                        throw new OrderBusinessException("套餐内商品库存不足，支付回调失败！商品ID：" + sd.getDishId());
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -457,6 +475,18 @@ public class OrderServiceImpl implements OrderService {
         if (!Orders.CONFIRMED.equals(orders.getStatus()) && !Orders.TO_BE_CONFIRMED.equals(orders.getStatus())) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
+
+        // 限制单个骑手同时配送订单数量上限为 3 单
+        if (ordersAssignRiderDTO.getRiderId() != null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("riderId", ordersAssignRiderDTO.getRiderId());
+            map.put("status", Orders.DELIVERY_IN_PROGRESS);
+            Integer activeOrdersCount = orderMapper.countByMap(map);
+            if (activeOrdersCount != null && activeOrdersCount >= 3) {
+                throw new OrderBusinessException("该骑手当前配送中订单已达上限(3单)，请选择其他骑手或等待其配送完成！");
+            }
+        }
+
         orders.setRiderId(ordersAssignRiderDTO.getRiderId());
         orders.setRiderName(ordersAssignRiderDTO.getRiderName());
         orders.setRiderPhone(ordersAssignRiderDTO.getRiderPhone());

@@ -43,8 +43,11 @@ public class UserServiceImpl implements UserService {
         // 判断openid是否为空，如果为空，则启用开发沙箱模拟登录，保证本地联调链路畅通
         if (StringUtils.isBlank(openid)) {
             log.warn("微信 API 获取 openid 失败，启用开发沙箱登录模式！");
-            String mockCode = StringUtils.defaultIfBlank(userLoginDTO.getCode(), "default_user");
-            openid = "mock_openid_" + mockCode;
+            String mockKey = userLoginDTO.getName();
+            if (StringUtils.isBlank(mockKey)) {
+                mockKey = StringUtils.defaultIfBlank(userLoginDTO.getCode(), "default_user");
+            }
+            openid = "mock_openid_" + mockKey;
         }
 
         //判断当前用户是否为新用户

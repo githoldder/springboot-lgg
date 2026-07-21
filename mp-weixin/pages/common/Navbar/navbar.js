@@ -128,30 +128,47 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+var _api = __webpack_require__(/*! ../../api/api.js */ 24);
 var _default =
 {
+  data: function data() {
+    return {
+      defaultAddressStr: ''
+    };
+  },
   computed: {
-    // ht: function () {
-    // 	let res = uni.getMenuButtonBoundingClientRect()
-    // 	let num = 24
-    // 	if(/iPhone.*/.test(uni.getSystemInfoSync().model)){
-    // 		 num = res.top * 1.6
-    // 	} else {
-    // 		num = res.top * 2
-    // 	}
-    // 	return num
-    // }
+    deliveryAddress: function deliveryAddress() {
+      var addr = this.$store.state.addressData;
+      if (addr && addr.detail) {
+        return addr.provinceName + addr.cityName + addr.districtName + addr.detail;
+      }
+      return this.defaultAddressStr || '选择收货地址';
+    },
     ht: function ht() {
       var res = uni.getMenuButtonBoundingClientRect();
       return res.top + 5;
-    } },
-
+    }
+  },
+  created: function created() {
+    var _this = this;
+    if (this.$store.state.token) {
+      (0, _api.getAddressBookDefault)().then(function(res) {
+        if (res && res.code === 1 && res.data) {
+          var str = res.data.provinceName + res.data.cityName + res.data.districtName + res.data.detail;
+          _this.defaultAddressStr = str;
+        }
+      }).catch(function() {});
+    }
+  },
   methods: {
-    myCenterFun: function myCenterFun() {
+    goAddressSelect: function goAddressSelect() {
+      this.$store.commit('setAddressBackUrl', '/pages/index/index');
       uni.navigateTo({
-        url: '/pages/my/my' });
-
-    } } };exports.default = _default;
+        url: '/pages/address/address'
+      });
+    }
+  }
+};exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 
 /***/ })

@@ -92,33 +92,47 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      */
     public OrderOverViewVO getOrderOverView() {
         Map map = new HashMap();
-        map.put("begin", LocalDateTime.now().with(LocalTime.MIN));
-        map.put("status", Orders.TO_BE_CONFIRMED);
 
-        //待接单
+        // 1. 待付款
+        map.put("status", Orders.PENDING_PAYMENT);
+        Integer pendingPaymentOrders = orderMapper.countByMap(map);
+
+        // 2. 待接单
+        map.put("status", Orders.TO_BE_CONFIRMED);
         Integer waitingOrders = orderMapper.countByMap(map);
 
-        //待派送
+        // 3. 已接单
         map.put("status", Orders.CONFIRMED);
+        Integer acceptedOrders = orderMapper.countByMap(map);
+
+        // 4. 派送中
+        map.put("status", Orders.DELIVERY_IN_PROGRESS);
         Integer deliveredOrders = orderMapper.countByMap(map);
 
-        //已完成
+        // 5. 已完成
         map.put("status", Orders.COMPLETED);
         Integer completedOrders = orderMapper.countByMap(map);
 
-        //已取消
+        // 6. 已取消
         map.put("status", Orders.CANCELLED);
         Integer cancelledOrders = orderMapper.countByMap(map);
 
-        //全部订单
+        // 7. 已退款
+        map.put("status", 7);
+        Integer refundedOrders = orderMapper.countByMap(map);
+
+        // 全部订单
         map.put("status", null);
         Integer allOrders = orderMapper.countByMap(map);
 
         return OrderOverViewVO.builder()
+                .pendingPaymentOrders(pendingPaymentOrders)
                 .waitingOrders(waitingOrders)
+                .acceptedOrders(acceptedOrders)
                 .deliveredOrders(deliveredOrders)
                 .completedOrders(completedOrders)
                 .cancelledOrders(cancelledOrders)
+                .refundedOrders(refundedOrders)
                 .allOrders(allOrders)
                 .build();
     }

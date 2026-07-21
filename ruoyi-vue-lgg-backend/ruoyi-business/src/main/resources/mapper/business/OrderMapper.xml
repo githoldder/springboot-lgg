@@ -177,6 +177,9 @@
             <if test="status != null">
                 and status = #{status}
             </if>
+            <if test="riderId != null">
+                and rider_id = #{riderId}
+            </if>
         </where>
     </select>
     <select id="getSalesTop10" resultType="com.ruoyi.business.dto.GoodsSalesDTO">
