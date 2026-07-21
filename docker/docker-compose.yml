@@ -43,7 +43,19 @@ services:
       - "5672:5672"
       - "15672:15672"
 
-  # 2. Spring Cloud 微服务集群 (注入 Docker 内部容器主机名)
+  lgg-minio:
+    image: minio/minio:RELEASE.2023-09-04T19-57-37Z
+    container_name: lgg-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "password"
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  # 2. Spring Cloud 微服务集群
   lgg-gateway:
     build:
       context: ..
@@ -51,11 +63,9 @@ services:
     container_name: lgg-gateway
     restart: always
     environment:
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+      SPRING_CLOUD_NACOS_DISCOVERY_ENABLED: "false"
     ports:
       - "8090:8090"
-    depends_on:
-      - lgg-nacos
 
   lgg-business:
     build:
@@ -67,7 +77,6 @@ services:
       SPRING_DATASOURCE_DRUID_MASTER_URL: "jdbc:mysql://lgg-mysql:3306/lgg_ruoyi?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8"
       SPRING_DATA_REDIS_HOST: "lgg-redis"
       SPRING_DATA_REDIS_PORT: "6379"
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
       SPRING_CLOUD_NACOS_DISCOVERY_ENABLED: "false"
     ports:
       - "8088:8088"
@@ -85,7 +94,6 @@ services:
       SPRING_DATASOURCE_DRUID_MASTER_URL: "jdbc:mysql://lgg-mysql:3306/lgg_ruoyi?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8"
       SPRING_DATA_REDIS_HOST: "lgg-redis"
       SPRING_DATA_REDIS_PORT: "6379"
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
       SPRING_CLOUD_NACOS_DISCOVERY_ENABLED: "false"
     ports:
       - "8080:8080"
@@ -100,11 +108,9 @@ services:
     container_name: lgg-pay
     restart: always
     environment:
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+      SPRING_CLOUD_NACOS_DISCOVERY_ENABLED: "false"
     ports:
       - "8085:8085"
-    depends_on:
-      - lgg-business
 
   lgg-notice:
     build:
@@ -114,7 +120,7 @@ services:
     restart: always
     environment:
       SPRING_RABBITMQ_HOST: "lgg-rabbitmq"
-      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+      SPRING_CLOUD_NACOS_DISCOVERY_ENABLED: "false"
     ports:
       - "8086:8086"
     depends_on:
