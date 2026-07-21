@@ -3,22 +3,26 @@
   "latex-workshop.latex.outDir": "%DIR%",
   "latex-workshop.latex.recipes": [
     {
-      "name": "template: xelatex -> bibtex -> xelatex -> xelatex",
+      "name": "latexmk: xelatex",
       "tools": [
-        "template-build-script"
+        "latexmk-xelatex"
       ]
     }
   ],
   "latex-workshop.latex.tools": [
     {
-      "name": "template-build-script",
-      "command": "bash",
+      "name": "latexmk-xelatex",
+      "command": "latexmk",
       "args": [
-        "/Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/templates/scripts/build.sh"
+        "-xelatex",
+        "-interaction=nonstopmode",
+        "-synctex=1",
+        "%DOC%"
       ]
     }
   ],
-  "latex-workshop.latex.recipe.default": "template: xelatex -> bibtex -> xelatex -> xelatex",
+  "latex-workshop.latex.recipe.default": "latexmk: xelatex",
   "latex-workshop.latex.rootFile.indicator": "\\documentclass",
-  "latex-workshop.view.pdf.viewer": "tab"
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.latex.autoBuild.clean.enabled": true
 }

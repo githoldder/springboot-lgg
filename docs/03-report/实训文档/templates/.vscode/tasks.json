@@ -4,10 +4,16 @@
     {
       "label": "Build template.pdf",
       "type": "shell",
-      "command": "bash",
+      "command": "latexmk",
       "args": [
-        "/Users/caolei/Desktop/springboot-lgg/docs/03-report/实训文档/templates/scripts/build.sh"
+        "-xelatex",
+        "-interaction=nonstopmode",
+        "-synctex=1",
+        "template"
       ],
+      "options": {
+        "cwd": "${workspaceFolder}/docs/03-report/实训文档/templates"
+      },
       "group": {
         "kind": "build",
         "isDefault": true
