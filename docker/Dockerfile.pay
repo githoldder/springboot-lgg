@@ -1,0 +1,5 @@
+FROM amazoncorretto:17
+WORKDIR /app
+COPY ruoyi-vue-lgg-backend/ruoyi-pay/target/ruoyi-pay.jar app.jar
+EXPOSE 8085
+ENTRYPOINT ["java", "-Dfile.encoding=UTF-8", "-jar", "app.jar"]

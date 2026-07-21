@@ -70,4 +70,5 @@ officecli_materials.zip
 # Large git bundles and generated outputs
 output/*.bundle
 *.bundle
+docker/mysql-data/
 

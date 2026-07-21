@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  # 1. 基础数据库与中间件
+  lgg-mysql:
+    image: mysql:8.0
+    container_name: lgg-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      MYSQL_DATABASE: "lgg_ruoyi"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ../ruoyi-vue-lgg-backend/sql/ry_20260417.sql:/docker-entrypoint-initdb.d/01-ry.sql
+      - ../ruoyi-vue-lgg-backend/sql/lgg_business_schema.sql:/docker-entrypoint-initdb.d/02-schema.sql
+      - ../ruoyi-vue-lgg-backend/sql/lgg_business_menu.sql:/docker-entrypoint-initdb.d/03-menu.sql
+      - ../ruoyi-vue-lgg-backend/sql/lgg_seed_fruit_staff.sql:/docker-entrypoint-initdb.d/04-seed.sql
+
+  lgg-redis:
+    image: redis:7.0-alpine
+    container_name: lgg-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  lgg-nacos:
+    image: nacos/nacos-server:v2.2.3
+    container_name: lgg-nacos
+    restart: always
+    environment:
+      - MODE=standalone
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+
+  lgg-rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: lgg-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # 2. Spring Cloud 微服务集群 (注入 Docker 内部容器主机名)
+  lgg-gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gateway
+    container_name: lgg-gateway
+    restart: always
+    environment:
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+    ports:
+      - "8090:8090"
+    depends_on:
+      - lgg-nacos
+
+  lgg-business:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.business
+    container_name: lgg-business
+    restart: always
+    environment:
+      SPRING_DATASOURCE_DRUID_MASTER_URL: "jdbc:mysql://lgg-mysql:3306/lgg_ruoyi?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8"
+      SPRING_DATA_REDIS_HOST: "lgg-redis"
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+      SPRING_CLOUD_NACOS_DISCOVERY_ENABLED: "false"
+    ports:
+      - "8088:8088"
+    depends_on:
+      - lgg-mysql
+      - lgg-redis
+
+  lgg-admin:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.admin
+    container_name: lgg-admin
+    restart: always
+    environment:
+      SPRING_DATASOURCE_DRUID_MASTER_URL: "jdbc:mysql://lgg-mysql:3306/lgg_ruoyi?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8"
+      SPRING_DATA_REDIS_HOST: "lgg-redis"
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+      SPRING_CLOUD_NACOS_DISCOVERY_ENABLED: "false"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - lgg-mysql
+      - lgg-redis
+
+  lgg-pay:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.pay
+    container_name: lgg-pay
+    restart: always
+    environment:
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+    ports:
+      - "8085:8085"
+    depends_on:
+      - lgg-business
+
+  lgg-notice:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.notice
+    container_name: lgg-notice
+    restart: always
+    environment:
+      SPRING_RABBITMQ_HOST: "lgg-rabbitmq"
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "lgg-nacos:8848"
+    ports:
+      - "8086:8086"
+    depends_on:
+      - lgg-rabbitmq
+
+  # 3. 前端与反向代理网关
+  lgg-nginx:
+    image: nginx:alpine
+    container_name: lgg-nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ../ruoyi-vue-lgg-frontend/dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - lgg-business
